@@ -24,7 +24,21 @@ type Rect = { x: number; y: number; w: number; h: number };
 const intersects = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, b: Rect) => a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
 
+/** Every node, boundary and caption lies inside the canvas, and no two captions overlap. */
+function assertInsideAndCaptionsApart(m: DiagramModel) {
+  const canvas = { x: 0, y: 0, w: m.width, h: m.height };
+  for (const r of [...m.nodes, ...m.boundaries, ...m.edges.map((e) => e.captionBox)]) expect(inside(r, canvas), JSON.stringify(r)).toBe(true);
+  for (const b of m.boundaries) {
+    expect(b.y + b.h).toBeLessThanOrEqual(m.height - 8);
+    expect(b.x).toBeGreaterThanOrEqual(8);
+    expect(b.x + b.w).toBeLessThanOrEqual(m.width - 8);
+  }
+  for (let i = 0; i < m.edges.length; i++)
+    for (let j = i + 1; j < m.edges.length; j++) expect(intersects(m.edges[i]!.captionBox, m.edges[j]!.captionBox), `${m.edges[i]!.caption} / ${m.edges[j]!.caption}`).toBe(false);
+}
+
 function assertNoOverlaps(m: DiagramModel) {
+  assertInsideAndCaptionsApart(m);
   for (let i = 0; i < m.nodes.length; i++)
     for (let j = i + 1; j < m.nodes.length; j++) expect(intersects(m.nodes[i]!, m.nodes[j]!), `${m.nodes[i]!.name} / ${m.nodes[j]!.name}`).toBe(false);
   for (let i = 0; i < m.boundaries.length; i++)
@@ -212,14 +226,31 @@ describe('layoutDiagram', () => {
   it('places edge captions so they overlap no box, boundary title or other caption when there is room', () => {
     const m = layoutDiagram({ sketch: SKETCH, threats: [] });
     expect(m.edges.map((e) => e.caption)).toEqual(['1. refund request', '2. order lookup', expect.stringMatching(/^3\. refund amount and .*…$/), '4. tool call']);
-    const boxes = m.edges.map((e) => {
-      const w = Array.from(e.caption).length * 6.2 + 6;
-      return { x: e.labelX - w / 2, y: e.labelY - 11, w, h: 14 };
-    });
+    const boxes = m.edges.map((e) => e.captionBox);
+    for (const [i, e] of m.edges.entries()) {
+      // The caption's text sits inside its halo box.
+      expect(e.labelX).toBeCloseTo(e.captionBox.x + e.captionBox.w / 2, 0);
+      expect(e.labelY).toBeGreaterThan(boxes[i]!.y);
+      expect(e.labelY).toBeLessThan(boxes[i]!.y + boxes[i]!.h);
+    }
     for (let i = 0; i < boxes.length; i++) {
       for (const n of m.nodes) expect(intersects(boxes[i]!, n), `${m.edges[i]!.caption} / ${n.name}`).toBe(false);
       for (let j = i + 1; j < boxes.length; j++) expect(intersects(boxes[i]!, boxes[j]!)).toBe(false);
     }
+  });
+
+  it('captions never overlap each other, even when many flows share one gutter', () => {
+    const fan = Array.from({ length: 30 }, (_, i) => ({ from: 'Hub', to: `Store ${i % 3}`, data: `field number ${i} of the record` }));
+    const m = layoutDiagram({ sketch: { components: ['Hub'], dataStores: ['Store 0', 'Store 1', 'Store 2'], flows: fan }, threats: [] });
+    expect(m.edges).toHaveLength(30);
+    assertInsideAndCaptionsApart(m);
+  });
+
+  it('the canvas holds the last lane’s boundary box with a margin below it', () => {
+    const m = layoutDiagram({ sketch: { ...SKETCH, trustBoundaries: ['Public internet to Refund API', 'Core (Orders DB, Support agent)'] }, threats: [] });
+    const last = [...m.boundaries].sort((a, b) => b.y - a.y)[0]!;
+    expect(m.height - (last.y + last.h)).toBeGreaterThanOrEqual(16);
+    assertInsideAndCaptionsApart(m);
   });
 
   it('is deterministic: the same input gives the same model', () => {

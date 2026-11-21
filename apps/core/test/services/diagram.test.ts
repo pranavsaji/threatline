@@ -107,6 +107,15 @@ describe('resolvedThreatIds', () => {
 });
 
 describe('get-review dataFlowDiagram', () => {
+  it('the action description names dataFlowDiagram and fits Rovo’s 255 characters', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { parse } = await import('yaml');
+    const m = parse(readFileSync(new URL('../../manifest.yml', import.meta.url), 'utf8')) as { modules: { action: Array<{ key: string; description: string }> } };
+    const d = m.modules.action.find((a) => a.key === 'get-review')!.description;
+    expect(d).toContain('dataFlowDiagram');
+    expect(d.length).toBeLessThanOrEqual(255);
+  });
+
   it('adds a compact text DFD with the same T-n refs as the threats', async () => {
     const { t } = await withSketch();
     const r = await getReview({ issueKey: 'PAY-7', ...ctx }, t.deps);

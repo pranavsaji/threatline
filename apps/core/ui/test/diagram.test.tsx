@@ -55,6 +55,26 @@ describe('Diagram tab', () => {
     expect(container.querySelector(`[data-node="${provider.id}"] title`)!.textContent).toContain('Email provider (SendGrid)');
   });
 
+  it('captions sit on an opaque surface-coloured halo drawn above every line, and the canvas is never cut short', async () => {
+    await openDiagram();
+    const svg = screen.getByRole('img', { name: DIAGRAM_FIXTURE.summary });
+    const captions = [...svg.querySelectorAll('[data-caption]')];
+    expect(captions).toHaveLength(DIAGRAM_FIXTURE.edges.length);
+    const lastEdge = [...svg.querySelectorAll('[data-edge]')].pop()!;
+    for (const c of captions) {
+      // Halo first, then text; and after every edge in document order (painted on top).
+      expect(c.firstElementChild!.tagName.toLowerCase()).toBe('rect');
+      expect(c.firstElementChild!.getAttribute('fill')).toMatch(/--ds-surface\)/);
+      expect(c.lastElementChild!.tagName.toLowerCase()).toBe('text');
+      expect(lastEdge.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+    expect(svg.getAttribute('height')).toBe(String(DIAGRAM_FIXTURE.height));
+    const scroller = svg.parentElement!.parentElement as HTMLElement;
+    expect(scroller.style.maxHeight).toBe('');
+    // The fixture's model keeps every boundary inside the canvas, with room below the last one.
+    for (const b of DIAGRAM_FIXTURE.boundaries) expect(b.y + b.h).toBeLessThanOrEqual(DIAGRAM_FIXTURE.height - 8);
+  });
+
   it('colour is never the only signal: each element says its open threats and highest severity', async () => {
     await openDiagram();
     expect(node('Account settings').getAttribute('aria-label')).toMatch(/1 open threat · Critical$/);

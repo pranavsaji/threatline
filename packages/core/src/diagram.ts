@@ -58,9 +58,11 @@ export interface DiagramEdge {
   crossesBoundary: boolean;
   /** SVG path data (a cubic curve) from the source's side to the target's. */
   path: string;
-  /** Where the caption sits (centre, baseline): a point on the curve chosen so captions do not overlap each other or a box. */
+  /** Where the caption's text sits (centre, baseline), inside `captionBox`. */
   labelX: number;
   labelY: number;
+  /** The caption's halo (drawn behind the text over the lines). Never overlaps another caption's; avoids boxes and boundary titles where it can. */
+  captionBox: { x: number; y: number; w: number; h: number };
 }
 
 export interface DiagramBoundary {
@@ -118,7 +120,10 @@ const MAX_INFERRED = 30;
 /** Up to this many flows, each edge is captioned with its data; past it only with its number. */
 const CAPTIONED_EDGES = 12;
 const CHAR_W = 6.2;
-const CAPTION_H = 14;
+const CAPTION_H = 16;
+/** Text baseline below the top of the caption's halo (11px text). */
+const CAPTION_BASE = 12;
+const CAPTION_GRID = 12;
 const CAPTION_TS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.12, 0.88];
 const KINDS: DiagramNodeKind[] = ['external', 'process', 'store'];
 /** Flow endpoints that read like a person or a client are drawn as external entities. */
@@ -334,10 +339,14 @@ export function layoutDiagram(input: DiagramInput): DiagramModel {
   const pairKey = (a: number, b: number) => (a < b ? `${a}|${b}` : `${b}|${a}`);
   for (const f of flows) pairCount.set(pairKey(f.from, f.to), (pairCount.get(pairKey(f.from, f.to)) ?? 0) + 1);
   const pairSeen = new Map<string, number>();
-  // Captions avoid the boxes, the boundary titles and the captions placed before them (first free spot along the curve).
+  // Captions take the first spot along their curve that is clear of the boxes, the boundary titles and earlier captions.
+  // Failing that, the nearest spot clear of earlier captions (scanning the whole canvas): two captions never overlap.
   type Box = { x: number; y: number; w: number; h: number };
-  const taken: Box[] = [...nodes, ...boundaries.map((b) => ({ x: b.x + 6, y: b.y + 4, w: Array.from(b.implied ? 'System (implied)' : b.label).length * CHAR_W + 8, h: 20 }))];
-  const hits = (r: Box) => taken.filter((o) => r.x < o.x + o.w && o.x < r.x + r.w && r.y < o.y + o.h && o.y < r.y + r.h).length;
+  const overlap = (r: Box, o: Box) => r.x < o.x + o.w && o.x < r.x + r.w && r.y < o.y + o.h && o.y < r.y + r.h;
+  const solid: Box[] = [...nodes, ...boundaries.map((b) => ({ x: b.x + 6, y: b.y + 4, w: Array.from(b.implied ? 'System (implied)' : b.label).length * CHAR_W + 8, h: 20 }))];
+  const captions: Box[] = [];
+  const clearOfCaptions = (r: Box) => !captions.some((o) => overlap(r, o));
+  const clear = (r: Box) => clearOfCaptions(r) && !solid.some((o) => overlap(r, o));
   const captioned = flows.length <= CAPTIONED_EDGES;
   const edges: DiagramEdge[] = flows.map((f, i) => {
     const pk = pairKey(f.from, f.to);
@@ -368,22 +377,33 @@ export function layoutDiagram(input: DiagramInput): DiagramModel {
     const [x0, y0, x1, y1, x2, y2, x3, y3] = p.map(r1) as typeof p;
     const label = truncate(f.data, EDGE_CHARS);
     const caption = captioned && label ? `${i + 1}. ${label}` : String(i + 1);
-    const cw = Array.from(caption).length * CHAR_W + 6;
-    const at = (t: number, dy: number) => {
+    const cw = Math.min(width - 4, Array.from(caption).length * CHAR_W + 8);
+    /** The caption's halo centred on (cx, cy), kept 2px inside the canvas. */
+    const boxAt = (cx: number, cy: number): Box => ({
+      x: r1(Math.max(2, Math.min(width - cw - 2, cx - cw / 2))),
+      y: r1(Math.max(2, Math.min(height - CAPTION_H - 2, cy - CAPTION_H / 2))),
+      w: r1(cw),
+      h: CAPTION_H,
+    });
+    const point = (t: number) => {
       const u = 1 - t;
-      const cx = u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x3;
-      const cy = u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3;
-      const x = Math.max(cw / 2, Math.min(width - cw / 2, cx));
-      const y = Math.max(CAPTION_H, Math.min(height, cy - 3 + dy));
-      return { x, y, box: { x: x - cw / 2, y: y - CAPTION_H + 3, w: cw, h: CAPTION_H } };
+      return [u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x3, u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3] as const;
     };
-    const spots = [0, -CAPTION_H, CAPTION_H].flatMap((dy) => CAPTION_TS.map((t) => at(t, dy)));
-    const spot = spots.find((c) => hits(c.box) === 0) ?? spots.reduce((best, c) => (hits(c.box) < hits(best.box) ? c : best));
-    taken.push(spot.box);
+    const [mx, my] = point(0.5);
+    const along = [0, -CAPTION_H, CAPTION_H, -2 * CAPTION_H, 2 * CAPTION_H].flatMap((dy) => CAPTION_TS.map((t) => boxAt(point(t)[0], point(t)[1] + dy)));
+    let box = along.find(clear);
+    if (!box) {
+      const grid: Box[] = [];
+      for (let gy = 0; gy <= height; gy += CAPTION_GRID) for (let gx = 0; gx <= width; gx += CAPTION_GRID) grid.push(boxAt(gx, gy));
+      const dist = (r: Box) => (r.x + r.w / 2 - mx) ** 2 + (r.y + r.h / 2 - my) ** 2;
+      grid.sort((a, b) => dist(a) - dist(b) || a.y - b.y || a.x - b.x);
+      box = grid.find(clear) ?? along.find(clearOfCaptions) ?? grid.find(clearOfCaptions) ?? along[0]!;
+    }
+    captions.push(box);
     return {
       id: `e${i + 1}`, n: i + 1, from: a.id, to: b.id, data: f.data, label, caption, crossesBoundary: zone(f.from) !== zone(f.to),
       path: `M${x0} ${y0} C${x1} ${y1} ${x2} ${y2} ${x3} ${y3}`,
-      labelX: r1(spot.x), labelY: r1(spot.y),
+      labelX: r1(box.x + box.w / 2), labelY: r1(box.y + CAPTION_BASE), captionBox: box,
     };
   });
 

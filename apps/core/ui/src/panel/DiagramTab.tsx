@@ -151,7 +151,8 @@ export function DiagramTab({ diagram }: { diagram: DiagramDto | undefined }) {
         </SectionMessage>
       )}
       <Legend />
-      <div style={{ overflow: 'auto', maxHeight: 560, border: `1px solid ${token('color.border')}`, borderRadius: 4 }}>
+      {/* Scrolls sideways in a narrow panel; never cut short vertically (the page scrolls instead). */}
+      <div style={{ overflowX: 'auto', overflowY: 'hidden', border: `1px solid ${token('color.border')}`, borderRadius: 4 }}>
         <div style={{ position: 'relative', width: m.width, height: m.height }}>
           <svg role="img" aria-label={m.summary} width={m.width} height={m.height} viewBox={`0 0 ${m.width} ${m.height}`} style={{ display: 'block' }}>
             <defs>
@@ -177,24 +178,25 @@ export function DiagramTab({ diagram }: { diagram: DiagramDto | undefined }) {
                 <g key={e.id} data-edge={e.id} opacity={dim ? 0.35 : 1}>
                   <title>{`${e.n}. ${byId.get(e.from)?.name} to ${byId.get(e.to)?.name}${e.data ? `: ${e.data}` : ''}${cross ? ' (crosses a trust boundary)' : ''}`}</title>
                   <path d={e.path} fill="none" stroke={token(cross ? 'color.border.discovery' : 'color.border.bold')} strokeWidth={cross ? 2 : 1.25} markerEnd={`url(#${marker(cross ? 'cross' : 'flow')})`} />
-                  <text
-                    x={e.labelX}
-                    y={e.labelY}
-                    textAnchor="middle"
-                    fontSize={11}
-                    fill={token('color.text.subtle')}
-                    stroke={token('elevation.surface')}
-                    strokeWidth={4}
-                    paintOrder="stroke"
-                  >
-                    {e.caption}
-                  </text>
                 </g>
               );
             })}
             {m.nodes.map((n) => (
               <Shape key={n.id} n={n} focused={focused === n.id} selected={selected === n.id} />
             ))}
+            {/* Captions last, each on an opaque halo in the surface colour, so they read over any line in light and dark. */}
+            {m.edges.map((e) => {
+              const dim = selected !== null && e.from !== selected && e.to !== selected;
+              const b = e.captionBox;
+              return (
+                <g key={e.id} data-caption={e.id}>
+                  <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={3} fill={token('elevation.surface')} stroke={token('color.border')} strokeWidth={0.5} />
+                  <text x={e.labelX} y={e.labelY} textAnchor="middle" fontSize={11} fill={token(dim ? 'color.text.subtlest' : 'color.text.subtle')}>
+                    {e.caption}
+                  </text>
+                </g>
+              );
+            })}
           </svg>
           {m.nodes.map((n) => (
             <button

@@ -145,7 +145,7 @@ modules:
       name: Get Threatline review
       function: getReviewFn
       actionVerb: GET
-      description: Returns Threatline's latest security review of a Jira work item - the verdict and why, risk score, whether the context was partial, and the threats with short refs (T-1, T-2...) and quoted citations.
+      description: Returns Threatline's latest security review of a Jira work item - verdict and why, risk score, partial-context flag, threats with refs (T-1, T-2...) and quoted citations, and dataFlowDiagram (elements, flows, trust boundaries).
       inputs:
         issueKey:
           title: Issue key

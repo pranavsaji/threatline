@@ -176,7 +176,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": true,
       "path": "M208 58 C288 58 288 294 368 294",
       "labelX": 288,
-      "labelY": 173
+      "labelY": 180,
+      "captionBox": {
+        "x": 234.4,
+        "y": 168,
+        "w": 107.2,
+        "h": 16
+      }
     },
     {
       "id": "e2",
@@ -189,7 +195,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": true,
       "path": "M536 294 C568 294 568 402 536 402",
       "labelX": 560,
-      "labelY": 345
+      "labelY": 352,
+      "captionBox": {
+        "x": 506.4,
+        "y": 340,
+        "w": 107.2,
+        "h": 16
+      }
     },
     {
       "id": "e3",
@@ -202,7 +214,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": false,
       "path": "M536 402 C616 402 616 466 696 466",
       "labelX": 616,
-      "labelY": 431
+      "labelY": 438,
+      "captionBox": {
+        "x": 540.7,
+        "y": 426,
+        "w": 150.6,
+        "h": 16
+      }
     },
     {
       "id": "e4",
@@ -215,7 +233,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": true,
       "path": "M368 402 C288 402 288 122 208 122",
       "labelX": 288,
-      "labelY": 259
+      "labelY": 266,
+      "captionBox": {
+        "x": 237.5,
+        "y": 254,
+        "w": 101,
+        "h": 16
+      }
     },
     {
       "id": "e5",
@@ -228,7 +252,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": false,
       "path": "M208 122 C240 122 240 58 208 58",
       "labelX": 232,
-      "labelY": 87
+      "labelY": 94,
+      "captionBox": {
+        "x": 162.9,
+        "y": 82,
+        "w": 138.2,
+        "h": 16
+      }
     },
     {
       "id": "e6",
@@ -241,7 +271,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": true,
       "path": "M208 58 C288 58 288 466 368 466",
       "labelX": 275.8,
-      "labelY": 198.6
+      "labelY": 205.6,
+      "captionBox": {
+        "x": 212.9,
+        "y": 193.6,
+        "w": 125.8,
+        "h": 16
+      }
     },
     {
       "id": "e7",
@@ -254,7 +290,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": false,
       "path": "M536 466 C616 466 616 402 696 402",
       "labelX": 616,
-      "labelY": 417
+      "labelY": 422,
+      "captionBox": {
+        "x": 559.3,
+        "y": 410,
+        "w": 113.4,
+        "h": 16
+      }
     },
     {
       "id": "e8",
@@ -267,7 +309,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": false,
       "path": "M536 530 C616 530 616 402 696 402",
       "labelX": 616,
-      "labelY": 463
+      "labelY": 470,
+      "captionBox": {
+        "x": 540.7,
+        "y": 458,
+        "w": 150.6,
+        "h": 16
+      }
     },
     {
       "id": "e9",
@@ -280,7 +328,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": true,
       "path": "M208 186 C288 186 288 530 368 530",
       "labelX": 275.8,
-      "labelY": 304.1
+      "labelY": 311.1,
+      "captionBox": {
+        "x": 203.6,
+        "y": 299.1,
+        "w": 144.4,
+        "h": 16
+      }
     },
     {
       "id": "e10",
@@ -293,7 +347,13 @@ export const DIAGRAM_FIXTURE: DiagramDto = {
       "crossesBoundary": false,
       "path": "M536 466 C616 466 616 530 696 530",
       "labelX": 616,
-      "labelY": 495
+      "labelY": 502,
+      "captionBox": {
+        "x": 559.3,
+        "y": 490,
+        "w": 113.4,
+        "h": 16
+      }
     }
   ],
   "boundaries": [
