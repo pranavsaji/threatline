@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design lacks GPS stop condition and endpoint expiry; enables historical tracking of drivers via old delivery IDs.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Tracking continues outside the active delivery window, exposing drivers' private movements"
+    }
+  ]
+}

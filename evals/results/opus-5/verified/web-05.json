@@ -1,0 +1,10 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states role attribute from assertion grants admin; forged assertion attack is concrete and supported.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack and harm as T1: unverified assertion signature yields admin/arbitrary identity login.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design explicitly notes internet-reachable internal admin portal; exposure-based attack path on login endpoints is supported.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: unsolicited/uncorrelated SAML response causing session fixation or login CSRF in SSO flow.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Portal parses attacker-supplied SAML XML from internet; XXE file/internal-service disclosure is concrete.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Quotes mention no RelayState or post-login redirect handling; component absent from design evidence.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1 - both cover unauthorized prompt-driven installations with no approval gate\"},\n  {\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic agent misuse, not specific to runtime installation; could apply to any agent tools\"},\n  {\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific prompt injection via tool metadata, distinct from code execution or capability expansion threats\"},\n  {\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific forensics threat - runtime changes prevent incident reconstruction, distinct from unauthorized installation\"},\n  {\"id\":\"x5\",\"valid\":true,\"reason\":\"Specific DoS via resource exhaustion from untrusted tools, distinct from code execution threats\"}\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "No authorisation gate on who or what can trigger a tool install"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Poisoned tool descriptions hijack the agent's goal (tool-description injection)"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of which tool version acted, so incidents cannot be reconstructed"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Untrusted tool installs crash or exhaust the agent host and cascade (ASI08)"
+    }
+  ]
+}

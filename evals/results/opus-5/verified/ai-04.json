@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Forward capability in design; concrete exfiltration attack via hijacked agent with named harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design feeds attacker-controlled internet email into agent prompt; prompt injection attack concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Agent acts on behalf of sales team; privilege inheritance attack supported by quotes.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent-sent mail indistinguishable from human; attribution gap tied to on-behalf-of design.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Summaries exist in design; persistent context poisoning attack distinct from direct injection.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Unauthenticated internet senders; sender spoofing to gain agent trust is distinct attack vector.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Public inbox trigger per quote; flooding exhausts budget and delays leads.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

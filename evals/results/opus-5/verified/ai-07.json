@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has automatic unvalidated memory writes reused in later answers; concrete persistent poisoning attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states per-user memory store with no stated isolation; cross-user leak attack is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Automatic capture of anything users say supports unbounded sensitive-data accumulation and breach/deletion harm.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same attack and harm as T1: user-written memory text steers later model behavior persistently.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Automatic writes consumed in answers with no provenance; concrete inability to investigate or attribute poisoning.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Automatic unbounded memory writes plus retrieval into prompts supports concrete flooding/context-exhaustion attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

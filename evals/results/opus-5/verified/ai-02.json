@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design indexes HR/finance with embedding retrieval and no permission filter; concrete cross-user disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Broad indexing identity implied by all-space crawl; attack via compromised service credentials differs from T1's query path.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Embedding and LLM answering send indexed HR/finance text to external provider; concrete trust-boundary leak.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Retrieved page text is concatenated into LLM prompt; editable wiki pages enable indirect prompt injection.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Separate vector index of page chunks supports stale-copy attack after deletion or restriction.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Employee querying path bypasses Confluence page-view history; lack of per-query attribution prevents tracing leaks.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

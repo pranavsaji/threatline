@@ -1,0 +1,22 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Identity field manipulation distinct from c1 role escalation and c2 data corruption threat\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Missing authorization on path id enables cross-user attacks not covered by c1 c2\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover by overwriting the login identifier or email"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "The user id is taken from the URL, so one user may be able to edit another user's record"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Extractable session follows from issuing real customer credentials; distinct from c1-c3 privilege, attribution, access threats.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Issued customer session is a reusable credential that can be stolen or shared"
+    }
+  ]
+}

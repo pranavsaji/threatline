@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Flights agent ingesting third-party supplier content plus payments agent charging card supports concrete injection-to-charge attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unauthenticated shared queue and card-charging payments agent directly support forged planner command attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Unauthenticated queue supports in-flight modification/replay of booking amount; distinct from forging new messages.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Repeats T1: injection influencing planner escalates to unauthorized card charge; same attack and harm.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"No sender identity on queue messages supports distinct non-attribution/dispute harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Unauthenticated queue carrying booking and payment data supports eavesdropping disclosure.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Delegation between planner, flights, payments over queue supports loop/retry causing repeated charges and quota exhaustion.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

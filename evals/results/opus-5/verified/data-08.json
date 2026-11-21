@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms free SQL editor on production replica; concrete mass data exfiltration by internal user.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows editor connected directly to replica; arbitrary SQL could enable DDL/DML or engine command execution.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design names business users with no stated auth; unauthenticated internal access to production data is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Free-form queries against production replica with no stated limits; resource exhaustion harms replica consumers.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Attribution/audit gap distinct from exfiltration threat; relevant given many users issuing arbitrary SQL.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

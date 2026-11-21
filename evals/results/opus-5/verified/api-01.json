@@ -1,0 +1,10 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design puts API key in query string; log/Referer leakage of permanent credential is concrete and supported.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design explicitly states keys never expire; unbounded impersonation window with no revocation is a distinct lifecycle attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"No rate limiting plus public API and PII access supports bulk harvesting/key-spraying attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Quote shows single key grants all orders and customer emails; lack of scoping blast radius is supported.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Public internet-facing API with no rate limiting supports resource-exhaustion denial of service for other partners.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Quotes state keys are scoped to the partner's own orders; missing per-object ownership check is not in the design.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Permanent per-partner key plausibly shared; attribution gap during PII export is a concrete distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

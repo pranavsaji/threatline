@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Sign-up only needs email is in design; disposable email farming is specific and plausible; not duplicate.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design mentions no record retrieval mechanism; generic unauthorized access not specific to referral codes.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Mobile client and API parameters not mentioned in design; attacks unspecified implementation components.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Not a specific attack; describes missing control and its consequences; generic audit trail hygiene.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Sign-up must validate codes creating oracle; specific enumeration attack follows from feature design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Self-referral farming with throwaway emails because sign-up needs nothing but an email"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Credit amount or recipient taken from the client request"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No link recorded between a credit grant and the referral that caused it"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Referral codes can be enumerated to harvest valid accounts"
+    }
+  ]
+}

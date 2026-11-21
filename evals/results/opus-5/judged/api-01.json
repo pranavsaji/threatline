@@ -1,0 +1,32 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"bulk PII exfiltration distinct from c3 DoS; follows from no rate limiting\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"duplicate: full access harm already in c1,c2; describes root cause not distinct threat\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"assumes authorization bug not in design; partner's orders implies isolation exists\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"attribution loss from shared keys; distinct from leakage c1 and permanent access c2\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Bulk harvesting of customer email addresses with no throttling"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "One key grants full access to all of a partner's orders and customer emails"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Cross-partner data access if tenant ownership is not checked per object"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Shared, never-expiring keys make partner actions impossible to attribute"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic credential theft not specific to biometric/refresh token design. Covered more specifically by c1 and c2.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Valid: different enrolled face on shared device grants access. Different attack path than c1/c2's storage/API bypass.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (stolen token) and harm (account takeover). Lack of revocation worsens c1's impact.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Valid: local-only biometric means no server-side proof of authentication. Different concern: forensics, not access control.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any face enrolled on the device, or a shared unlocked phone, gets full banking access"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "A long-lived refresh token with no revocation path means device loss equals permanent account access"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "The backend cannot prove a biometric login actually happened, so fraud claims cannot be resolved"
+    }
+  ]
+}

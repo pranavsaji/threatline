@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows broad support-role impersonation issuing customer sessions; concrete insider/phished-account takeover attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Customer session issuance supports attribution gap; distinct repudiation harm from T1.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same actor, same broad-role impersonation access and data exposure harm already covered by T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Session issuance in design; distinct attack on stolen/shared persistent credential beyond support interaction.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

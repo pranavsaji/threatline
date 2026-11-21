@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic prompt injection, not specific to memory feature; design mentions no pages or tools.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design mentions no tools or agent capabilities beyond conversation and memory storage.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from automatic writing of unfiltered user input; over-retention is distinct from poisoning or leakage.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: both describe memory poisoning to change agent behavior across sessions.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Lack of attribution follows from automatic writing; enables denial of poisoning after harm occurs.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Unbounded automatic memory growth follows from design; resource exhaustion distinct from content threats.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Unbounded automatic capture of whatever users volunteer, including secrets"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Retrieved memories are injected into the prompt as trusted instructions"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No way to show which memory caused a harmful answer or who planted it"
+    },
+    {
+      "id": "x6",
+      "stride": "DenialOfService",
+      "title": "Unbounded memory growth degrades or disables the chatbot"
+    }
+  ]
+}

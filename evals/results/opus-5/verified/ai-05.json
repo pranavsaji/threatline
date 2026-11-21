@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows shared service credential execution; concrete escalation past per-analyst database grants.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows LLM SQL executing before display; destructive/multi-statement SQL is a concrete tampering attack.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same post-hoc-display weakness and same harm (harmful statement already executed) as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared credential plus post-execution SQL display supports distinct attribution-loss harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Free-form generated SQL running directly on shared analytics DB supports resource-exhaustion attack.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Repeats T1's attack (broad service credential, free-form SQL) and harm (reading credential tables).\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states unencrypted dumps in a shared bucket; over-broad grant exposing data is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Shared writable bucket with no integrity check; backup poisoning on restore is distinct from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Deletion/overwrite of backups causing recovery loss is a distinct harm from tampering.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design grants reporting team bucket access; bypassing app-level controls via restore is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Team-shared bucket supports attribution gap; distinct repudiation harm, not merely generic hygiene.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

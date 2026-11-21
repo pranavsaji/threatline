@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows public webhook with no signature check; concrete forged-paid-order attack with financial loss.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unvalidated order id in body enables tampering with other customers' orders; distinct harm from T1's free goods.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Webhook event ingestion with no event-id/nonce mentioned; replay attack concretely described.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design accepts any status value; invalid lifecycle transitions corrupt order/accounting state.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"No provider authentication or event reference means paid status unprovable in disputes; distinct repudiation harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public unauthenticated endpoint that writes order state; flooding stalls genuine payments. Concrete attacker and harm.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Public endpoint responding to arbitrary order ids plausibly enables enumeration; keeping as unsure.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

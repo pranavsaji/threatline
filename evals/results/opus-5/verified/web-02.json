@@ -1,0 +1,10 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Rich-text comments stored and rendered to all visitors; concrete stored XSS attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Immediate rendering plus manual moderation supports flooding/spam attack on public pages.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Images in comments rendered to every visitor; concrete IP/UA leak to attacker server.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Links in comments rendered on trusted pages; concrete phishing/impersonation attack distinct from XSS.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design includes customer post and moderator delete endpoints; concrete CSRF attack described.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Admin delete screen in design; concrete missing-authorization abuse by ordinary customer.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Deletion from comments DB with no audit trail; concrete repudiation of moderator deletions.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

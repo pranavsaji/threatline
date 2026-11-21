@@ -1,0 +1,10 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states topic readable by every internal service with card BIN/last four/customer id; concrete harvesting attack and breach harm.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same exposure of same card fields via same topic read; restates T1's attack and disclosure harm as data-minimization framing.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attacker landing on internal host reading payment stream due to no consumer authorization; repeats T1's attack and harm.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

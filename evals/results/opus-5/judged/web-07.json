@@ -1,0 +1,27 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1 - both exploit server accepting client-controlled price\"},\n  {\"id\":\"x2\",\"valid\":true,\"reason\":\"Distinct repudiation threat about missing audit trail for pricing decisions\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Too generic - doesn't specify what data, harm, or how material to this feature\"}\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Shopper edits the price in the browser and pays whatever they like"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No authoritative record of why an order was charged a given amount"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    }
+  ]
+}

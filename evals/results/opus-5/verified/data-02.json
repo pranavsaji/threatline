@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms parser imports files into orders database with no validation; injection/corruption attack is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Multi-gigabyte files are explicit in design; resource exhaustion blocking all partner imports is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Partner SFTP upload is in design; impersonating another partner's orders is a distinct concrete attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Parser pickup of large uploaded files supported; TOCTOU/partial-read tampering distinct from validation threat.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Import pipeline exists with no stated upload-to-order linkage; dispute/rollback harm is distinct.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

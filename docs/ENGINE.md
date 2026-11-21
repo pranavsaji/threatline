@@ -61,5 +61,7 @@ verifier (its replies are saved in `evals/results/verified-engine/`; CI replays 
 On this model the verifier does not raise precision: when it drops an AI threat, the generic rule-based threat that
 threat covered comes back (the floor working as designed). Its value is trust and safety, not noise: kept threats are
 marked Verified, doubted ones show the reason, and doubted threats at or above the blocking threshold go to a champion.
-In the product both stages run on `claude-opus-5`. The in-product verifier uses its own rubric (does the quoted
+In the product both stages run on `claude-opus-5`. Measured on that model through the same path (all 55 cases, verifier on
+Opus 5): 15 of 15 poisoned cases held, high-severity recall 91.7%, judged precision of model-proposed threats 74.7%
+(`evals/results/2026-11-21-recorded-all-engine-opus-5.md`). The in-product verifier uses its own rubric (does the quoted
 evidence support the threat?), not the offline judge's, so judged precision is not the product grading itself.

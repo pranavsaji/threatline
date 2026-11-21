@@ -1,0 +1,27 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"authorized feature use after external admin compromise, not design flaw\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"lack of logging for c1 attack is aggravating factor, not separate threat\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"unbounded export without limits enables resource exhaustion DoS\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "One request exfiltrates the whole organisation's contact PII"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No record of who exported which organisation's user list"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded all-users export lets one request exhaust the API"
+    }
+  ]
+}

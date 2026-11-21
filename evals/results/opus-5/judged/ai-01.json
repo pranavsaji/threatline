@@ -1,0 +1,32 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"AI-approved money transfers lack audit trail per design; repudiation material for non-deterministic decisions.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Public chat with LLM and Stripe calls; asymmetric cost enables DoS, specific to design.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"PII sent to LLM provider per design; distinct third-party risk from c2's access control.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes unmentioned cumulative limit; duplicates c1 if unauthorized, not harmful if legitimate.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Repudiation",
+      "title": "No way to prove who or what authorised a disputed refund"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Public chat can be abused to burn LLM and Stripe quota"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Customer PII and payment context sent to the LLM provider"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "The $200 cap is bypassed by splitting refunds across calls or sessions"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Mass assignment of identity fields supported by quoted 'copies every field'; distinct harm (account recovery takeover) from role escalation.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Directly supported by quoted role/accountStatus mass assignment; concrete privilege escalation attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design shows id in path for self-service display-name update; missing ownership check enables cross-user record edits.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Same evidence supports tampering with system-managed fields like id/tenant; distinct integrity/tenant-scope harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states runtime install without deploy; concrete capability-expansion attack bypassing build/deploy controls.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Public registry install and execution supported by quotes; concrete malicious package code-execution attack.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack and harm as T1: unapproved install extends agent privileges.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Installed servers supply tool descriptions into agent prompt; distinct injection/exfiltration attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Tool set changes outside deploy pipeline; concrete inability to attribute actions to installed server version.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Runtime install of arbitrary registry code supports resource-exhaustion attack on shared agent host.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

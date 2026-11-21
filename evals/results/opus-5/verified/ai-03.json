@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design gives agent untrusted input, shell and token; exfiltration of secrets/source is a concrete distinct harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Issue comments are explicit agent input; prompt injection to shell/push is concrete and supported.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Org-wide write token explicitly in design; blast-radius escalation to other repos is a distinct harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shell access explicitly in design; host takeover/persistence is a distinct harm from code injection.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"No CI/CD pipeline or build credentials appear in the quoted design; attacked component unsupported.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Single shared agent token and identity supported; attribution loss during response is a distinct concern.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Developers requesting agent fixes is in design; trusted-review merge of hidden change is a plausible distinct vector.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Agent reads repository content; persistent context poisoning across future runs differs from comment injection.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes flights agent fetches from third parties and processes supplier text; design doesn't mention external data sources.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes agents vulnerable to prompt injection not in design; unauthorized payment already covered by c1 spoofing.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Too generic; doesn't specify which agent, what text, or specific action from this design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"No authentication means no sender identity; disputed charges can't be traced to agent or request.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"No authentication means anyone can read queue; payment and traveler details are in messages.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Assumes delegation loops, retry behavior, and multiple-charge mechanics that design doesn't specify.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack: attacker-controlled flight content steers the planner into paying"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Payments agent can spend the user's money with no scoped, user-confirmed authorization"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Charges cannot be attributed to a specific agent or user request"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Payment and traveller details readable by anyone subscribed to the shared queue"
+    },
+    {
+      "id": "x6",
+      "stride": "DenialOfService",
+      "title": "Delegation loop between agents causes repeated charges and runaway cost"
+    }
+  ]
+}

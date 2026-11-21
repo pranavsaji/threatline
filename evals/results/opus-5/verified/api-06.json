@@ -1,0 +1,10 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Shared HS256 secret in all services is in design; forging high-privilege service identity is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Env-variable storage quoted; leak vector and mesh-wide rotation problem distinct from insider forging in T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design specifies only signing algorithm, no verification rules; replay/claim-confusion attack is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"7-day lifetime quoted; stolen-token reuse with no revocation path is a concrete attack.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same alg-confusion attack and forged-claim harm as T3.\",\"duplicateOf\":\"T3\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared key means signature cannot attribute signer; non-attribution harm distinct from forgery threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

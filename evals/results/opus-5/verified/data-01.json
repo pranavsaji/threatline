@@ -1,0 +1,10 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states all analysts read the warehouse containing identifiers; concrete insider/phished-account bulk PII exfiltration.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack surface and harm as T1: bulk PII disclosure from the unmasked warehouse copy.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Nightly copy with no retention/deletion propagation is in design; distinct erasure-persistence harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Export job implies a production-read service credential; distinct credential-theft attack path.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Nightly copy exists; integrity/completeness tampering of warehouse data is a distinct attack and harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared blanket analyst read grant supports lack of per-analyst query attribution and repudiation of bulk export.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

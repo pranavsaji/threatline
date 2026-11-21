@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1; both describe unauthorized access to restricted content via missing permission controls\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Too generic; design mentions RAG retrieval not tools; fails specificity on who attacks what\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Valid; stale index after deletion/restriction is RAG-specific; temporal aspect distinct from c1 spatial issue\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Valid; RAG indirection bypasses Confluence audit trails for sensitive data; material not generic logging\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Valid; LLM receives HR/finance data per design; exfiltration to provider is specific distinct threat\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Indexer's broad service account becomes the assistant's effective identity"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Internal wiki content, including HR data, is sent to an external LLM and embedding provider"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Index keeps copies of pages after they are restricted or deleted"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No way to tell who asked the assistant for sensitive HR or finance content"
+    }
+  ]
+}

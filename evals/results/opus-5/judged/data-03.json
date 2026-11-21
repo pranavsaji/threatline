@@ -1,0 +1,27 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate: c1 already covers card data exposure to all services via topic access\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Doesn't follow from design: threat addresses payment execution flow not event streaming feature\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate: c1 already covers privilege escalation via service compromise; write access not in design\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Card fields published when consumers do not need them"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "No access control model stated between the payment service and the broker"
+    }
+  ]
+}

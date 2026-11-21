@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":false,\"reason\":\"Quotes describe only the push payload; no logging, telemetry or log store appears in the design evidence — generic logging hygiene.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design has a service sending order details; concrete authorization-bypass attack turning notifier into an order/address oracle.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Payload with order contents and address necessarily transits APNs/FCM; concrete third-party exposure attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Push delivery implies device tokens; concrete misdelivery of prior customer's order and address to new token holder.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

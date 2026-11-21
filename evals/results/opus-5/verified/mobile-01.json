@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states refresh token in plain app storage; concrete theft-to-takeover attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same stolen-refresh-token-to-valid-session attack and harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design has Face ID login as screen unlock only; distinct local-access enrollment attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Token persists after single password login; persistence/revocation gap is a distinct harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Biometric decision local only; backend lacks evidence, distinct dispute/repudiation harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

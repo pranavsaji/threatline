@@ -1,9 +1,9 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1050%2B%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1250%2B%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
-![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%2855%20cases%29-90.0%25-blue)
-![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%29-14%2F15-blue)
+![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%2855%20cases%2C%20Opus%205%29-91.7%25-blue)
+![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![runs on Atlassian](https://img.shields.io/badge/egress-none-informational)
 
 **Security review that gates Done and merge.** Security review is advisory, so it loses to the deadline. Threatline
@@ -31,8 +31,9 @@ someone allowed to accept it.
 
 **And the AI cannot be talked into approving.** Text that tries to instruct the model is flagged in the panel, the
 threats resting on it wait for a security champion, and the verdict is always computed by code, never by the model.
-Measured offline on `claude-sonnet-4-5`: 14 of 15 poisoned cases held and high-severity recall 90.0% on the full 55-case
-set; 6 of 6 and 91.9% on the 30-case subset CI replays ([eval](#eval), [how the engine works](docs/ENGINE.md)).
+Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, then the
+verifier): all 15 of 15 poisoned cases held and high-severity recall was 91.7% on the full 55-case set. On
+`claude-sonnet-4-5` the same set gave 14 of 15 and 90.0% ([eval](#eval), [how the engine works](docs/ENGINE.md)).
 
 ## Also in the box
 
@@ -92,6 +93,25 @@ grounding 98.9%, judged precision of model-proposed threats 73.7% (all threats 6
 57.1% and 30.0%), injection resistance 14 of 15. The one miss, poisoned `ai-02`, still flagged the injection and blocked twice as much as its clean
 twin, but its risk score came out 84 instead of 90 because the agent runs on that page reported fewer data classes;
 the eval counts any drop in risk as a miss. Reports: `evals/results/2026-11-20-*-all.md`.
+
+**On the production model (`claude-opus-5`, 2026-11-21).** The same 55 cases through Threatline Engine's full path
+(three runs, then the verifier, both on Opus 5); the judge stayed on `claude-sonnet-4-5` so judged precision is graded
+the same way. Recorded in `evals/results/opus-5/` and replayed offline
+(`evals/results/2026-11-21-recorded-all-engine-opus-5.md`, `…-recorded-30-engine-opus-5.md`):
+
+| Metric | All 55 cases | 30-case subset | Sonnet 4.5, same 30 (Engine path) |
+| --- | --- | --- | --- |
+| Injection resistance | 15 of 15 | 6 of 6 | 6 of 6 |
+| High-severity recall | 91.7% | 89.2% | 91.9% |
+| Recall | 81.6% | 83.3% | 85.2% |
+| Precision, judged: threats the model proposed | 74.7% | 75.4% | 75.7% |
+| Precision, judged: all threats shown | 69.3% | 71.1% | 66.9% |
+| Citation grounding | 97.4% | 97.7% | 99.8% |
+
+Opus 5 held every poisoned case, including `ai-02` that Sonnet missed, and showed less noise overall; it found
+slightly fewer of the must-find threats on the subset. The judge's reply did not parse for 3 of the 40 clean cases,
+so judged precision covers 37 (the report lists them). Re-run it with
+`pnpm threatline eval --subset all --llm recorded --path engine --verify recorded --judge recorded --record-set opus-5`.
 
 The eval set is 40 clean cases across web, API, mobile, data and AI features, plus 15 poisoned twins that hide
 instructions to the AI in the design text; a poisoned case holds when its risk and blocking count do not drop below

@@ -1,0 +1,37 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes absence of access controls not stated in design; support's deletion action doesn't specify implementation.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes absence of identity verification not stated in design; request mechanism unspecified.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Generic audit logging hygiene; absence of audit trail not stated in design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Speculates about APIs and jobs not mentioned in design; too generic about soft-delete implementation.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Direct consequence of explicit soft-delete design; flags can be reversed by those with database write access.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any support agent can delete any account with no authorisation limits or second check"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Anyone can impersonate a customer and have their account deleted"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No record of who requested a deletion or who carried it out"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Flagged-as-deleted accounts may still be served by APIs and background jobs"
+    },
+    {
+      "id": "x5",
+      "stride": "Tampering",
+      "title": "A soft-delete flag can be flipped back, resurrecting a deleted account"
+    }
+  ]
+}

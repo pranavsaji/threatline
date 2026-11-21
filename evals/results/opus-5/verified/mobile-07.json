@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states app accepts any TLS cert when flag set; concrete MITM impersonation attack on that behaviour.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: token harvesting and replay for account takeover from the same bypassed cert check.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Quote confirms flag read from config bundled in release build; attack on enabling unsafe path for real users.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Response forgery harm (user acts on attacker data) is distinct from impersonation and token theft threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene not specific to this feature; could apply to any system\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic unauthorized access; design mentions no mechanism to request others' records\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: passive surveillance via long-lived session not invalidated on contact changes\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: stolen session changes email to attacker-controlled address for takeover\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: lack of notification is aggravating factor, not distinct attack\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Speculates implementation bug beyond design; design implies session-based identification\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Credentials or secrets leaked"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Thirty-day cookie keeps a stolen session alive far beyond use"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "New email address is used without proving the user owns it"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No notice to the previous email, so a silent takeover goes unnoticed"
+    },
+    {
+      "id": "x6",
+      "stride": "ElevationOfPrivilege",
+      "title": "Settings endpoint may trust a user-supplied account identifier"
+    }
+  ]
+}

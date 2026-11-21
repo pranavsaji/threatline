@@ -1,0 +1,27 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (SSRF to metadata), target, and harm (credential theft). Redirect/DNS rebinding are bypass techniques, not separate threats.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Different target and harm from c1: targets internal services/databases vs metadata endpoint, causing unauthorized internal access vs credential theft.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Different attack class and harm: memory corruption/code execution via malicious image, unlike SSRF or resource exhaustion DoS.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Redirects and DNS rebinding bypass any address check done before the fetch"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service used as a proxy to reach internal databases and admin endpoints inside the VPC"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Malicious image exploits the decoder for code execution in the VPC"
+    }
+  ]
+}

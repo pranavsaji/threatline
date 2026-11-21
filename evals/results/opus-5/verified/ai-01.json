@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has public LLM chat agent with refund tool; concrete prompt-injection goal hijack moving money.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Order history tool returns PII and no verified identity; concrete enumeration attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Refund authorization by LLM with no per-refund audit record; concrete repudiation risk.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Public chat triggers costly LLM/tool loops; concrete resource exhaustion attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Attacker-writable order fields read into agent context; indirect injection distinct from T1's direct chat vector.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"PII placed in prompts to third-party model provider; distinct disclosure path from T2.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Per-refund $200 cap stated; concrete aggregation bypass across calls/sessions, distinct harm mechanism.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
