@@ -32,6 +32,12 @@ job lists the active rules on the ops work item for re-approval.
 - A hidden AI threat covers nothing, so the rule-based threat it would have covered stays active.
 - A suppressed threat is not carried to the next revision as a decision: rules are applied afresh each time.
 - If the rules cannot be read, the review applies none (every threat stays shown).
+- The gate re-checks every stored suppression: a `suppressed` threat counts as the state it had once its severity is
+  at or above the current blocking level (for example after the policy is lowered), once its rule's expiry has passed,
+  or once its rule is no longer active (revoked; or the active rules could not be read). A hidden threat cannot be
+  triaged until a champion unhides it.
+- Suggestions and their evidence only use dismissals on work items the viewer can browse, of threats whose every cited
+  source the viewer can open (the panel's rule).
 
 In the panel a hidden threat reads "Hidden by team rule: *reason* (expires *date*; rule *id*)". A champion can
 **Unhide here**: the work item's threats hidden by that rule come back with their requirements, the verdict is

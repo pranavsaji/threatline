@@ -1,4 +1,4 @@
-import { appendLedger, ruleMatches, suggestSuppressions, SUPPRESSION_MAX_ACTIVE_PER_PROJECT, SUPPRESSION_WINDOW_DAYS, unhidden, type ActiveSuppression, type SuppressionSuggestion } from '@threatline/core';
+import { appendLedger, type DismissalRow, ruleMatches, suggestSuppressions, SUPPRESSION_MAX_ACTIVE_PER_PROJECT, SUPPRESSION_WINDOW_DAYS, unhidden, type ActiveSuppression, type SuppressionSuggestion } from '@threatline/core';
 import { appError, err, newId, ok, SUPPRESSION_MAX_DAYS, type Result, type Review, type Stride, type SuppressionRule, type Threat } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
@@ -7,11 +7,14 @@ import { SYSTEM_ACTOR } from './acceptance-service.js';
 import { opsAlert } from './ops-alert.js';
 import { syncRequirement } from './triage-service.js';
 import { refreshVerdict } from './verdict-service.js';
+import { newScopeCache, scopeForViewer } from './viewer-scope.js';
 
 const DAY = 86_400_000;
 /** Bounded work per job run and per admin page load. */
 const MAX_RULES_READ = 500;
-const MAX_DISMISSALS_READ = 2000;
+const MAX_DISMISSALS_READ = 500;
+/** Dismissals whose threat is checked against what the caller may read (newest first); older ones are left out. */
+const MAX_DISMISSALS_CHECKED = 300;
 const REMINDER_LISTED = 20;
 
 /** The project a work item belongs to, from its key (PAY-12 → PAY). */
@@ -166,8 +169,44 @@ export interface SuppressionsDto {
   maxDays: number;
 }
 
-/** The admin page section: active rules with their match counts, and suggestions from the last 90 days of dismissals. */
-export async function listSuppressions(deps: CoreDeps): Promise<Result<SuppressionsDto>> {
+/**
+ * Security: the dismissals this caller may see as evidence. Only work items they can browse, and only dismissed threats
+ * they could see in that work item's panel (every citation's source readable, the same rule as the panel). A threat
+ * that can no longer be found (its review purged) is left out. Any failed check leaves the dismissal out.
+ */
+async function visibleDismissals(deps: CoreDeps, accountId: string, rows: readonly DismissalRow[]): Promise<Result<DismissalRow[]>> {
+  if (rows.length === 0) return ok([]);
+  const browsable = await deps.jira.browsable(accountId, [...new Set(rows.map((r) => r.issueId))]);
+  if (!browsable.ok) return browsable;
+  const can = new Set(browsable.value);
+  const candidates = rows.filter((r) => can.has(r.issueId)).slice(0, MAX_DISMISSALS_CHECKED);
+  const cache = newScopeCache();
+  const seen = new Set<string>();
+  for (const issueId of new Set(candidates.map((r) => r.issueId))) {
+    const wanted = new Set(candidates.filter((r) => r.issueId === issueId).map((r) => r.threatId));
+    const history = await deps.reviews.history(issueId);
+    if (!history.ok) return history;
+    for (const rev of [...history.value].reverse()) {
+      if (wanted.size === 0) break;
+      const threats = await deps.reviews.threats(rev.id);
+      if (!threats.ok) return threats;
+      const mine = threats.value.filter((t) => wanted.has(t.id));
+      if (mine.length === 0) continue;
+      const facts = await deps.reviews.facts(rev.id);
+      if (!facts.ok) return facts;
+      const scoped = await scopeForViewer(deps, accountId, issueId, facts.value, mine, cache);
+      for (const t of mine) wanted.delete(t.id);
+      for (const t of scoped.threats) seen.add(`${issueId}|${t.id}`);
+    }
+  }
+  return ok(candidates.filter((r) => seen.has(`${r.issueId}|${r.threatId}`)));
+}
+
+/**
+ * The admin page section: active rules with their match counts, and suggestions from the last 90 days of dismissals
+ * that the caller may see (see visibleDismissals).
+ */
+export async function listSuppressions(deps: CoreDeps, accountId: string): Promise<Result<SuppressionsDto>> {
   const now = deps.clock.now();
   const rules = await deps.suppressions.list(['active'], MAX_RULES_READ);
   if (!rules.ok) return rules;
@@ -178,9 +217,11 @@ export async function listSuppressions(deps: CoreDeps): Promise<Result<Suppressi
   ]);
   if (!counts.ok) return counts;
   if (!dismissals.ok) return dismissals;
+  const visible = await visibleDismissals(deps, accountId, dismissals.value);
+  if (!visible.ok) return visible;
   return ok({
     rules: live.map((r) => ({ ...r, matches: counts.value[r.id] ?? 0 })),
-    suggestions: suggestSuppressions(dismissals.value, live),
+    suggestions: suggestSuppressions(visible.value, live),
     maxDays: SUPPRESSION_MAX_DAYS,
   });
 }
