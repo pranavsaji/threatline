@@ -11,6 +11,8 @@ const issueOfReview = (reviewId: string): string | null => /^rev_(\d{1,18})_\d+$
 /** Jobs for one work item run one at a time (Forge concurrency key), so duplicate events cannot race a revision. */
 export function concurrencyKeyOf(job: ReviewJob): string | null {
   if (job.kind === 'gather' || job.kind === 'propagate' || job.kind === 'verdict' || job.kind === 'publish') return `issue-${job.issueId}`;
+  // One fan-out per incident at a time, so a created event and a label event for it cannot both queue its re-reviews.
+  if (job.kind === 'incident') return `incident-${job.issueId}`;
   if (job.kind === 'assemble') {
     const issue = issueOfReview(job.reviewId);
     return issue ? `issue-${issue}` : null;

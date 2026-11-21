@@ -1,5 +1,6 @@
 export * from './ports.js';
 export * from './policy.js';
+export * from './incidents.js';
 export * from './diffscore.js';
 export * from './context/index.js';
 export * from './threats/index.js';

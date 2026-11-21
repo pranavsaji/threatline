@@ -149,7 +149,8 @@ export type LedgerEventType =
   | 'review.sample_rejected'
   | 'key.rotated'
   | 'threat.triaged'
-  | 'threat.triage_failed';
+  | 'threat.triage_failed'
+  | 'review.reopened_by_incident';
 
 export interface LedgerInsert {
   seq: number;

@@ -1,6 +1,6 @@
-import { contextHash, normalizeFact, type ClockPort, type ContextGatherer, type GatherOptions, type IssueRepo, type RawFact, type ReviewRepo } from '@threatline/core';
+import { contextHash, DEFAULT_INCIDENT_POLICY, isIncident, normalizeFact, type ClockPort, type ContextGatherer, type GatherOptions, type IssueRepo, type RawFact, type ReviewRepo } from '@threatline/core';
 import { sha256Hex } from '@threatline/crypto';
-import { ok, type ContextBundle, type ContextFact, type Result } from '@threatline/shared';
+import { ok, type ContextBundle, type ContextFact, type IncidentPolicy, type Result } from '@threatline/shared';
 import type { ConfluenceClient } from './confluence.js';
 import type { JiraClient, JiraIssue } from './jira.js';
 
@@ -14,11 +14,12 @@ export interface RestGathererDeps {
   cloudId: string;
   /** Site base URL ("https://acme.atlassian.net"), so Jira sources get absolute links; relative ones break in the panel iframe. */
   siteUrl?: () => Promise<string>;
+  /** What counts as an incident (the site policy's rule; the default when absent or unreadable). */
+  incidentRule?: () => Promise<Pick<IncidentPolicy, 'labels' | 'issueTypes'>>;
 }
 
 const MAX_PAGES = 10;
 const MAX_CHILDREN = 20;
-const INCIDENT_TYPES = new Set(['incident', 'bug']);
 
 /** Content-derived version: a fact's version changes exactly when its text changes, so duplicate events keep the hash. */
 const versionOf = (...parts: string[]) => sha256Hex(parts.join('\u0000')).slice(0, 16);
@@ -40,6 +41,26 @@ const hostOf = (url: string): string | null => {
     return null;
   }
 };
+
+/**
+ * The incidents search for a work item: recent work items in its project, linked to it or on its components, that the
+ * incident rule may match (labels, or work types the project has: Jira refuses a JQL naming a type it does not know).
+ * Null when the rule names nothing to search for.
+ */
+async function incidentQuery(jira: JiraClient, issue: JiraIssue, rule: Pick<IncidentPolicy, 'labels' | 'issueTypes'>, reasons: string[]): Promise<string | null> {
+  let types: string[] = [];
+  if (rule.issueTypes.length > 0) {
+    const p = await jira.projectInfo(issue.project.key);
+    if (p.ok) {
+      const wanted = new Set(rule.issueTypes.map((t) => t.toLowerCase()));
+      types = [...new Set(p.value.issueTypes.filter((t) => wanted.has(t.name.toLowerCase())).map((t) => t.name))];
+    } else reasons.push('incident_types_unavailable');
+  }
+  const match = [...(rule.labels.length ? [`labels in (${rule.labels.map(jqlString).join(', ')})`] : []), ...(types.length ? [`issuetype in (${types.map(jqlString).join(', ')})`] : [])];
+  if (match.length === 0) return null;
+  const scope = `issue in linkedIssues(${jqlString(issue.key)})${issue.components.length ? ` OR component in (${issue.components.map(jqlString).join(', ')})` : ''}`;
+  return `project = ${jqlString(issue.project.key)} AND ${match.length > 1 ? `(${match.join(' OR ')})` : match[0]} AND created >= -90d AND (${scope}) ORDER BY created DESC`;
+}
 
 /**
  * CE-1 over REST, as the app. Trusted: key, type, status, project, components, fix versions, earlier reviews.
@@ -105,16 +126,15 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
         );
       }
 
-      const incidentJql = `project = ${jqlString(issue.project.key)} AND labels = incident AND created >= -90d AND (issue in linkedIssues(${jqlString(issue.key)})${
-        issue.components.length ? ` OR component in (${issue.components.map(jqlString).join(', ')})` : ''
-      }) ORDER BY created DESC`;
+      const rule = d.incidentRule ? await d.incidentRule().catch(() => DEFAULT_INCIDENT_POLICY) : DEFAULT_INCIDENT_POLICY;
+      const incidentJql = await incidentQuery(d.jira, issue, rule, reasons);
 
       const [parent, children, comments, links, incidents, history] = await Promise.all([
         issue.parent ? d.jira.issue(issue.parent.id) : Promise.resolve(null),
         d.jira.children(issue.id),
         d.jira.comments(issue.id),
         d.jira.remoteLinks(issue.id),
-        d.jira.search(incidentJql, ['summary', 'description', 'issuetype', 'labels', 'project', 'status', 'created'], 20),
+        incidentJql ? d.jira.search(incidentJql, ['summary', 'description', 'issuetype', 'labels', 'project', 'status', 'created'], 20) : Promise.resolve(ok([])),
         d.reviews.history(issue.id),
       ]);
 
@@ -144,7 +164,8 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
       } else reasons.push('comments_unavailable');
 
       if (incidents.ok) {
-        const candidates = incidents.value.filter((i) => INCIDENT_TYPES.has(i.issueType.name.toLowerCase()) && i.labels.includes('incident'));
+        // The search is only a pre-filter: what counts is the rule, applied to what Jira returned.
+        const candidates = incidents.value.filter((i) => i.id !== issue.id && isIncident({ labels: i.labels, issueType: i.issueType.name }, rule));
         if (!actor && candidates.length > 0) reasons.push('incidents_unverified');
         const visible = actor ? await Promise.all(candidates.map((i) => d.jira.canBrowse(actor, i.id))) : [];
         for (const [n, i] of candidates.entries()) {

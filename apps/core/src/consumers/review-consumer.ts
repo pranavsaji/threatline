@@ -9,6 +9,9 @@ import { ReviewJobSchema, type ReviewJob } from '../jobs/types.js';
 import { monthOf, pauseReasons } from '../services/budget.js';
 import { contextKey, refreshVerdict } from '../services/verdict-service.js';
 import { isPublished, publishThreatModel } from '../services/confluence-page.js';
+import { REOPENED_STAGE, reopenForIncident } from '../services/incident-reopen.js';
+import { opsAlert } from '../services/ops-alert.js';
+import type { IncidentCause } from '../jobs/types.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -112,11 +115,12 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
   if (prev && prev.contextHash === b.contextHash) {
     const unstarted = await isUnstarted(deps, prev);
     if (!unstarted.ok) return unstarted;
-    if (unstarted.value) return startReview(deps, prev, b, policy.value, job.reason);
+    if (unstarted.value) return startReview(deps, prev, b, policy.value, job.reason, job.incident);
   }
-  // New revisions: first review; explicit re-run; a create whose content differs. Edits and page changes only mark the
-  // review out of date (verdict review_stale with a one-click re-run), so no agent run is left waiting for nobody.
-  const createNew = !prev || job.reason === 'rerun' || (job.reason === 'created' && prev.contextHash !== b.contextHash);
+  // New revisions: first review; explicit re-run; a create, or an incident on its components, whose content differs.
+  // Edits and page changes only mark the review out of date (verdict review_stale with a one-click re-run), so no agent
+  // run is left waiting for nobody. An incident whose review already includes it changes nothing.
+  const createNew = !prev || job.reason === 'rerun' || ((job.reason === 'created' || job.reason === 'incident') && prev.contextHash !== b.contextHash);
   if (!createNew) {
     const v = await refreshVerdict(deps, job.issueId);
     if (!v.ok) return v;
@@ -137,6 +141,19 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
     if (!r.ok) return r;
     reserved = r.value;
     paused = !r.value;
+  }
+  // An incident re-review that the budget stopped is not started: the review it would replace stays (now out of date,
+  // so the gate still blocks until it is re-run), rather than becoming a paused revision. The admin is told.
+  if (paused && job.reason === 'incident' && prev) {
+    log('review.incident_paused', { issueId: job.issueId });
+    if (job.incident)
+      await opsAlert(
+        deps,
+        `alert:incident-budget:${job.incident.id}`,
+        `Threatline: incident ${job.incident.key} could not re-review ${b.issueKey} because reviews are paused at this month's review budget (or the site's Rovo credits). Raise the budget on the Threatline admin page (Budgets), then re-run it from the work item's panel.`,
+      );
+    const v = await refreshVerdict(deps, job.issueId);
+    return v.ok ? voidOk() : v;
   }
   const revision = (prev?.revision ?? 0) + 1;
   // Rules-only mode (no Rovo on the site): the review is settled from the rule-based checks; no AI, no budget.
@@ -175,14 +192,14 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
       if (existing.value && existing.value.contextHash === b.contextHash) {
         const unstarted = await isUnstarted(deps, existing.value);
         if (!unstarted.ok) return unstarted;
-        if (unstarted.value) return startReview(deps, existing.value, b, policy.value, job.reason);
+        if (unstarted.value) return startReview(deps, existing.value, b, policy.value, job.reason, job.incident);
       }
       await refreshVerdict(deps, job.issueId);
       return voidOk();
     }
     return created;
   }
-  return startReview(deps, review, b, policy.value, job.reason);
+  return startReview(deps, review, b, policy.value, job.reason, job.incident);
 }
 
 /**
@@ -205,8 +222,13 @@ async function isUnstarted(deps: CoreDeps, review: Review): Promise<Result<boole
  * provisional assembly, the engine's first stage, then the marker that it started. Every step is idempotent, so a
  * retried gather runs them again safely.
  */
-async function startReview(deps: CoreDeps, review: Review, b: ContextBundle, policy: SitePolicy, reason: string): Promise<Result<void>> {
+async function startReview(deps: CoreDeps, review: Review, b: ContextBundle, policy: SitePolicy, reason: string, incident?: IncidentCause): Promise<Result<void>> {
   const now = deps.clock.now();
+  // Why this revision exists, for the panel's history (docs/INCIDENTS.md).
+  if (incident) {
+    const s = await deps.reviews.saveStage(review.id, REOPENED_STAGE, 'done', incident, undefined, now.toISOString());
+    if (!s.ok) return s;
+  }
   const paused = review.status === 'failed' && review.failureReason === 'budget';
   const rulesOnly = !paused && review.modelIds.includes(RULES_ONLY_MODEL);
   // Threatline Engine: Threatline runs the review itself on Forge LLMs (no Rovo, no Automation rule).
@@ -377,6 +399,8 @@ export async function handleJob(deps: CoreDeps, job: ReviewJob): Promise<Result<
     }
     case 'engine':
       return engineJob(deps, job);
+    case 'incident':
+      return reopenForIncident(deps, job);
     case 'migrate': {
       const m = await deps.migrate();
       if (!m.ok) return m;

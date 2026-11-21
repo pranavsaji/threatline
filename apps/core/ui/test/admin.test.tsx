@@ -309,7 +309,7 @@ describe('Admin page layout (Task 30)', () => {
     render(<AdminPage api={mockAdminApi()} />);
     const nav = await screen.findByRole('navigation', { name: 'Admin sections' });
     expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual([
-      'Setup checklist', 'Projects and transitions', 'Severity policy', 'Roles', 'Review mode', 'Budgets', 'Warn-only mode', 'Notifications', 'Recent runs', 'Signing keys', 'Risk ledger', 'Data retention', 'Demo data',
+      'Setup checklist', 'Projects and transitions', 'Severity policy', 'Roles', 'Review mode', 'Budgets', 'Incidents', 'Warn-only mode', 'Notifications', 'Recent runs', 'Signing keys', 'Risk ledger', 'Data retention', 'Demo data',
     ]);
   });
 
