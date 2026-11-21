@@ -26,7 +26,7 @@ export function triageable(review: Review | null): Result<Review> {
 }
 
 /** Keeps one requirement row per accepted / needs-human threat, in step with its severity. */
-async function syncRequirement(deps: CoreDeps, issue: JiraIssue, t: Threat): Promise<Result<void>> {
+export async function syncRequirement(deps: CoreDeps, issue: JiraIssue, t: Threat): Promise<Result<void>> {
   const reqs = await deps.requirements.forIssue(issue.id);
   if (!reqs.ok) return reqs;
   const existing = reqs.value.find((r) => r.threatId === t.id);
@@ -107,7 +107,11 @@ async function saveTriage(
   visible: ReadonlySet<string>,
 ): Promise<Result<Threat[]>> {
   const feedback = (action: 'dismiss' | 'accept' | 'edit', extra: { reason?: DismissReason; note?: string } = {}) =>
-    deps.feedback.record({ threatId: t.id, component: t.component, title: t.title, stride: t.stride, actor, action, ...extra });
+    deps.feedback.record({
+      threatId: t.id, component: t.component, title: t.title, stride: t.stride, actor, action, ...extra,
+      // Where and when: dismissals on several work items of a project suggest a team suppression rule.
+      issueId: issue.id, issueKey: issue.key, projectKey: issue.project.key, at: deps.clock.now().toISOString(),
+    });
   const update = async (id: string, patch: Partial<Threat>) => deps.reviews.updateThreat(id, patch);
   const changed: Threat[] = [];
 

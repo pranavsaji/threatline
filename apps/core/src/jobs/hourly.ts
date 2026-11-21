@@ -3,6 +3,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { expireAcceptances } from '../services/acceptance-service.js';
 import { OPS_CONFIG_KEY, opsAlert } from '../services/ops-alert.js';
+import { expireRules } from '../services/suppression-service.js';
 
 export { OPS_CONFIG_KEY };
 const STATUSES: ReviewStatus[] = ['queued', 'gathering', 'awaiting_agent', 'modeling', 'ready', 'failed', 'agent_timeout'];
@@ -10,13 +11,16 @@ const FAILURE_RATE = 0.2;
 const WINDOW_LIMIT = 500;
 
 /**
- * Hourly: expire overdue risk acceptances (RL-5); then, if more than 20% of the reviews created in the last hour failed
+ * Hourly: expire overdue risk acceptances (RL-5) and team suppression rules; then, if more than 20% of the reviews created in the last hour failed
  * or timed out, comment once on the configured ops work item, mentioning its admins.
  */
 export async function hourly(deps: CoreDeps): Promise<void> {
   const expired = await expireAcceptances(deps, deps.clock.now());
   if (!expired.ok) log('hourly.expiry_failed', { code: expired.error.code });
   else if (expired.value.expired > 0) log('hourly.expired', { acceptances: expired.value.expired });
+  const rules = await expireRules(deps, deps.clock.now()).catch(() => null);
+  if (!rules || !rules.ok) log('hourly.suppression_expiry_failed', { code: rules ? rules.error.code : 'internal' });
+  else if (rules.value.expired > 0) log('hourly.expired', { suppressions: rules.value.expired });
   await failRateAlert(deps);
 }
 

@@ -9,6 +9,7 @@ import { postureDrill, postureGet, releaseReport } from './posture.js';
 import { complianceExport, postureControlDrill, postureControls } from './compliance.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
 import { inboxDecide, inboxList } from './inbox.js';
+import { suppressionsCreate, suppressionsList, suppressionsRevoke, suppressionsUnhide } from './suppressions.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
@@ -68,5 +69,9 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),
     'inbox.list': (deps, v, payload) => inboxList(deps, { accountId: v.accountId }, payload),
     'inbox.decide': (deps, v, payload) => inboxDecide(deps, { accountId: v.accountId }, payload),
+    'suppressions.list': (deps, v) => suppressionsList(deps, { accountId: v.accountId }),
+    'suppressions.create': (deps, v, payload) => suppressionsCreate(deps, { accountId: v.accountId }, payload),
+    'suppressions.revoke': (deps, v, payload) => suppressionsRevoke(deps, { accountId: v.accountId }, payload),
+    'suppressions.unhide': (deps, v, payload) => suppressionsUnhide(deps, v, payload),
   };
 }

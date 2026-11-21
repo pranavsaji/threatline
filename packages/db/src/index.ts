@@ -6,3 +6,4 @@ export * from './repos/requirements.js';
 export * from './repos/ledger.js';
 export * from './repos/misc.js';
 export * from './repos/retention.js';
+export * from './repos/suppressions.js';

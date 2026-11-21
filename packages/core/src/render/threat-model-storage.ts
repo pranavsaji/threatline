@@ -32,7 +32,7 @@ const STRIDE: Record<Threat['stride'], string> = {
   ElevationOfPrivilege: 'Elevation of privilege',
 };
 const STATUS: Record<Requirement['status'], string> = { Open: 'Open', InProgress: 'In progress', Verified: 'Verified', AcceptedRisk: 'Accepted risk', NotApplicable: 'Not applicable' };
-const THREAT_STATE: Record<Threat['state'], string> = { proposed: 'Proposed', accepted: 'Accepted', dismissed: 'Dismissed', needs_human: 'Needs a champion', covered: 'Covered by a more specific threat' };
+const THREAT_STATE: Record<Threat['state'], string> = { proposed: 'Proposed', accepted: 'Accepted', dismissed: 'Dismissed', needs_human: 'Needs a champion', covered: 'Covered by a more specific threat', suppressed: 'Hidden by a team rule' };
 const VERDICT: Record<'pass' | 'block' | 'warn', string> = { pass: 'Ready for Done', block: 'Blocks Done and merge', warn: 'Warn-only' };
 
 /** Escapes text for Confluence storage (XHTML): every value from Jira, the model or a person goes through this. */
@@ -56,7 +56,7 @@ export function renderThreatModel(d: ThreatModelDto): string {
     out.push(macro('info', `<p>This page shows revision ${d.review.revision}. The work item has revision ${d.latestRevision}, which is still in progress or did not finish. Open the ${link(d.panelUrl, 'Threatline panel')} for the latest state.</p>`, 'Out of date'));
 
   const open = d.requirements.filter((r) => r.status === 'Open' || r.status === 'InProgress').length;
-  const active = d.threats.filter((t) => t.state !== 'dismissed' && t.state !== 'covered');
+  const active = d.threats.filter((t) => t.state !== 'dismissed' && t.state !== 'covered' && t.state !== 'suppressed');
   out.push('<h2>Summary</h2>');
   out.push(
     macro(

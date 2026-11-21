@@ -3,6 +3,7 @@ import type {
   AttestationRepo,
   AttestationRow,
   DiscardedThreat,
+  DismissalRow,
   FeedbackRepo,
   FeedbackRow,
   IssueRepo,
@@ -234,6 +235,15 @@ export function memoryFeedbackRepo(): FeedbackRepo & { _rows: FeedbackRow[] } {
     async record(f) {
       rows.push(clone(f));
       return ok(undefined);
+    },
+    async dismissalsSince(sinceIso, limit) {
+      const n = Math.max(0, Math.min(2000, Math.floor(limit)));
+      const out: DismissalRow[] = [];
+      for (const r of [...rows].reverse()) {
+        if (r.action !== 'dismiss' || !r.reason || !r.issueId || !r.issueKey || !r.projectKey || !r.at || r.at < sinceIso) continue;
+        out.push({ threatId: r.threatId, component: r.component, title: r.title, stride: r.stride, actor: r.actor, reason: r.reason, issueId: r.issueId, issueKey: r.issueKey, projectKey: r.projectKey, at: r.at });
+      }
+      return ok(out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, n));
     },
   };
 }

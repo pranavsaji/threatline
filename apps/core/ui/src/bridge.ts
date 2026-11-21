@@ -1,4 +1,4 @@
-import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
+import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto, Stride, SuppressionRule, SuppressionsDto } from './types.js';
 
 import type { ControlsPostureDto } from './types.js';
 
@@ -60,6 +60,8 @@ export interface PanelApi {
   createRequirements(threatIds: string[]): Promise<CreatedRequirements | ApiError>;
   setStatus(requirementId: string, status: RequirementStatus, evidence?: Pick<Evidence, 'kind' | 'ref'>): Promise<Requirement | ApiError>;
   triage(input: TriageInput): Promise<Threat[] | ApiError>;
+  /** Champions: show a team rule's hidden threats on this work item again (ledgered). */
+  unhide(ruleId: string): Promise<Threat[] | ApiError>;
   confirm(reviewId: string, kind: 'review' | 'budget'): Promise<{ seq: number } | ApiError>;
   publish(): Promise<{ pageId: string; url: string; created: boolean } | ApiError>;
   requestAcceptance(input: AcceptanceInput): Promise<{ acceptanceId: string; needsApprover: 'none' | 'tech_lead' | 'champion'; entryHash: string } | ApiError>;
@@ -94,6 +96,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     createRequirements: (threatIds) => invoke('requirements.create', { threatIds }),
     setStatus: (requirementId, status, evidence) => invoke('requirements.setStatus', { requirementId, status, ...(evidence ? { evidence } : {}) }),
     triage: (input) => invoke('threats.triage', input),
+    unhide: (ruleId) => invoke('suppressions.unhide', { ruleId }),
     confirm: (reviewId, kind) => invoke('review.confirm', { reviewId, kind }),
     publish: () => invoke('confluence.publish'),
     requestAcceptance: (input) => invoke('acceptance.request', { ...input }),
@@ -153,6 +156,20 @@ export interface AdminApi {
   treeHead(): Promise<TreeHeadInfo | ApiError>;
   /** Compliance evidence: the controls summary (indicative) for a project and date range, as CSV and JSON. */
   exportControls(projectKey: string, from: string, to: string): Promise<{ csv: string; json: string } | ApiError>;
+  /** Team suppression rules (champions and admins): active rules with match counts, and suggestions. */
+  suppressions(): Promise<SuppressionsDto | ApiError>;
+  createSuppression(input: SuppressionInput): Promise<SuppressionRule | ApiError>;
+  revokeSuppression(ruleId: string, reason: string): Promise<SuppressionRule | ApiError>;
+}
+
+export interface SuppressionInput {
+  projectKey: string;
+  stride: Stride;
+  title: string;
+  component?: string;
+  reason: string;
+  expiryDays: number;
+  evidence?: string[];
 }
 
 export interface TreeHeadInfo {
@@ -188,6 +205,9 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     ledgerProof: (seq) => invoke('ledger.proof', { seq }),
     treeHead: () => invoke('ledger.treeHead'),
     exportControls: (projectKey, from, to) => invoke('compliance.export', { projectKey, from, to }),
+    suppressions: () => invoke('suppressions.list'),
+    createSuppression: (input) => invoke('suppressions.create', { ...input }),
+    revokeSuppression: (ruleId, reason) => invoke('suppressions.revoke', { ruleId, reason }),
   };
 }
 

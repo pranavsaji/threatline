@@ -41,8 +41,10 @@ export type Exposure = z.infer<typeof ExposureSchema>;
 /**
  * `covered`: a generic rule-based threat that a trusted, more specific AI threat (`coveredBy`) already covers. It does
  * not count and has no requirement of its own; it becomes `accepted` again if that AI threat is dismissed.
+ * `suppressed`: a below-threshold threat hidden by a project's team suppression rule (`suppression.ruleId`). Like
+ * `covered`, it does not count and has no requirement; a champion can unhide it on one work item.
  */
-export const ThreatStateSchema = z.enum(['proposed', 'accepted', 'dismissed', 'needs_human', 'covered']);
+export const ThreatStateSchema = z.enum(['proposed', 'accepted', 'dismissed', 'needs_human', 'covered', 'suppressed']);
 export type ThreatState = z.infer<typeof ThreatStateSchema>;
 
 export const DismissReasonSchema = z.enum(['false_positive', 'not_applicable', 'duplicate', 'already_mitigated']);

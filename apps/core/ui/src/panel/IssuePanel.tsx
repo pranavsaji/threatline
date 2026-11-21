@@ -22,6 +22,7 @@ import { AcceptancesTab } from './AcceptancesTab.js';
 import { ThreatTriage } from './ThreatEditor.js';
 import { ThreatModelPage } from './ThreatModelPage.js';
 import { reopenedText } from './reopened.js';
+import { UnhideThreat } from './UnhideThreat.js';
 
 const STILL_STARTING = 'The review is still starting. Refresh the panel in a minute or two to see it.';
 const NEEDS_EDIT = 'Someone with edit permission on this work item can re-run the review.';
@@ -311,7 +312,17 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                       return isError(r) ? null : r;
                     }}
                   >
-                    {champion && settled && t.state !== 'dismissed' && (
+                    {champion && settled && t.state === 'suppressed' && (
+                      <UnhideThreat
+                        threat={t}
+                        api={api}
+                        onDone={() => {
+                          setMore(null);
+                          void load();
+                        }}
+                      />
+                    )}
+                    {champion && settled && t.state !== 'dismissed' && t.state !== 'suppressed' && (
                       <ThreatTriage
                         threat={t}
                         others={threats.filter((o) => o.id !== t.id && o.state !== 'dismissed')}
