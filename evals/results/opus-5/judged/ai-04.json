@@ -1,0 +1,47 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Describes general instruction hijacking across all functions; c1 covers only forwarding exploitation. Broader harm scope.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicates c1: both describe team-level mailbox access gained after hijacking agent. Same attack and harm.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct Repudiation threat: inability to attribute actions post-incident. Specific harm beyond data exfiltration in c1.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes persistent summary storage across emails not stated in design. Each email could be triaged independently.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Generic tool misuse duplicates c1/x1 concepts. No specific tool, attack, or distinct harm beyond hijacking.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Assumes sender-based trust or prioritization not in design. Spoofing gains nothing without authentication mechanisms.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"Flooding public inbox exhausts model budget and delays leads. Specific to unauthenticated internet-facing design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Anyone on the internet can send an email that rewrites the agent's instructions"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent acts with the whole sales team's mailbox authority with no per-action limits"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No way to tell which emails the agent sent and why"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Poisoned summaries and stored context corrupt later triage decisions"
+    },
+    {
+      "id": "x5",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x6",
+      "stride": "Spoofing",
+      "title": "Forged sender identity makes the agent trust an email as internal"
+    },
+    {
+      "id": "x7",
+      "stride": "DenialOfService",
+      "title": "Flooding the public inbox exhausts the agent's model budget and buries real leads"
+    }
+  ]
+}

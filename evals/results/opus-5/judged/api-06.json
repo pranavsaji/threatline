@@ -1,0 +1,32 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Token compromise separate from secret leak. No revocation for seven days is new.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Missing validation requirements material to JWT auth. Enables replay and algorithm attacks.\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Algorithm header manipulation already in x2. Same attack, duplicate.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Attribution impossible is new harm. Different from impersonation in c1.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Stolen token is usable for up to 7 days with no way to revoke it"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Algorithm and claim confusion: verifiers may accept tokens they should reject"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Attacker-controlled algorithm header could bypass signature checking"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No way to prove which service actually issued a token"
+    }
+  ]
+}

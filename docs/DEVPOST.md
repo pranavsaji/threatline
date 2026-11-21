@@ -33,9 +33,9 @@ Threatline makes security review part of "Done". One story shows all of it:
 
 **The AI cannot be talked into approving.** Text that tries to instruct the model is flagged, the threats resting on it
 wait for a security champion, the verifier never runs on flagged material, and code, not the model, computes the
-verdict. Measured offline on our eval set (recorded Claude Code runs on `claude-sonnet-4-5`, not yet on the Opus 5
-models the product uses): on the full 55-case set, 14 of 15 poisoned cases held and high-severity recall was 90.0%; on
-the 30-case subset CI replays, 6 of 6 held and high-severity recall was 91.9%.
+verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the product runs, through
+Threatline Engine's full path: all 15 of 15 poisoned cases held and high-severity recall was 91.7% (on
+`claude-sonnet-4-5`: 14 of 15 and 90.0%). Every run is recorded in the repository and replays offline.
 
 **Also:** a hash-chained, Merkle-logged risk ledger with offline inclusion proofs; MCP tools and a Rovo agent so coding
 agents (Claude Code, Cursor) see the same requirements; a posture dashboard and gadget; Confluence threat-model pages;
@@ -98,7 +98,7 @@ title, and upload it as public or unlisted.
 | 14 | Without a valid attestation the required check blocks the merge | Without a valid attestation, the required check stays red, and the merge is blocked. It checks again at merge time, and the same gate runs as a GitHub Action. |
 | 15 | An audit trail anyone can verify | Every acceptance, override and refusal lands in a hash-chained ledger, with signed Merkle tree heads. An auditor can download an inclusion proof, and check it offline. |
 | 16 | Coding agent over MCP | And coding agents see the same requirements. Through Threatline's M.C.P. server, Claude Code or Cursor fetch exactly what the gate will check, write the fix, and mark the requirement verified with their pull request. |
-| 17 | Results and tagline | Threatline. On our full eval set of fifty-five cases: ninety percent recall on high-severity threats, and fourteen of fifteen poisoned design docs held. Build with context. Ship with confidence. |
+| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: ninety-two percent recall on high-severity threats, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
 
 ## Additional info (judges only): ready-to-paste answers
 

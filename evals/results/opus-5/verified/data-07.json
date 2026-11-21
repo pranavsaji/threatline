@@ -1,0 +1,10 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Log access to payment/auth bodies supported; concrete insider authorization-bypass and escalation path described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence explicitly cites logging login request bodies; concrete cleartext credential harvesting attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Full response body logging supported; distinct token replay/account takeover attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"1-year retention quoted; concrete amplification of breach window, distinct from live-read threats.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Full-body logging quoted; concrete attacker-driven log flooding degrading service and hiding events.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

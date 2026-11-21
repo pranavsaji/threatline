@@ -1,0 +1,32 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; both identify missing signature validation leading to forged assertions granting admin access.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; c1 already identifies issuer not verified, same harm: unauthorized admin access.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Valid distinct threat: session fixation/CSRF where attacker hijacks victim's session, not assertion forgery.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Valid distinct threat: XXE in XML parser exposes files/services, not elevation via forged assertions.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Forged SAML assertion accepted because signature is not fully validated"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Unsolicited IdP-initiated response logs a victim into the attacker's session"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "XML parsing of the assertion exposes internal files and services"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design describes queries only; mutations not mentioned so cannot assume they exist\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate: c2 already covers aliases; batching is minor variation; enumeration covered by c1\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Hidden mutations reachable because the endpoint is shared and public"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Aliased and batched queries defeat per-request limits"
+    }
+  ]
+}

@@ -91,7 +91,7 @@ Everything above runs against fixture data in a local preview, no Atlassian site
 ```bash
 pnpm install
 pnpm --filter @threatline/core-ui dev --port 5179   # then open http://localhost:5179/?state=ready (or ?view=admin, ?view=posture)
-pnpm test                                        # 1,050+ tests, including accessibility checks
+pnpm test                                        # 1,250+ tests, including accessibility checks
 pnpm threatline sign-demo                           # sign an attestation, then show that one changed character fails
 pnpm threatline eval --llm recorded --subset 30     # replay the recorded eval offline
 ```

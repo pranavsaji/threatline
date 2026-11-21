@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Shared service credential enables any analyst to access data beyond personal grants via natural language.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; both describe SQL executing without prior approval and inability to prevent harm.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design only describes LLM reading analyst's direct question, not stored content or other injection sources.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Shared service account prevents attribution of queries to individual analysts, enabling repudiation and insider misuse.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"LLM-generated queries can produce expensive operations with no stated limits, exhausting shared analytics database resources.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service credentials give every analyst the database's full reach"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Showing the SQL only after execution removes the human check the design relies on"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Every query looks like it came from the service account"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Model-generated queries exhaust the analytics database"
+    }
+  ]
+}

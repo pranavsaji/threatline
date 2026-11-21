@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms server trusts client-supplied purchased flag; concrete self-grant attack with revenue loss.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

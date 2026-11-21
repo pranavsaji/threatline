@@ -1,0 +1,37 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Covers data exfiltration through pipeline operations including accidental scenarios distinct from c1's adversarial compromise.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Tampering with tables already covered by c1's full control and destroy any table harm.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Availability and DoS impact distinct from c1's focus on data confidentiality and integrity compromise.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Credential theft from CI configs is different attack vector from c1's pipeline code execution.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Non repudiation and attribution harm distinct from c1 shared identity prevents forensic investigation.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Admin rights let the pipeline read production data it was never meant to touch"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Pipeline credentials can silently alter or drop unrelated production schemas"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "An admin-level ETL job can take production databases offline"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "Anyone holding the shared service account secret becomes a production database admin"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Shared admin identity makes database changes untraceable to a person or job"
+    }
+  ]
+}

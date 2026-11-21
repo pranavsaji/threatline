@@ -1,0 +1,32 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design implies authentication exists; contradicts c1 assumption\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Attacks payment execution, not invoice download feature\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate of c1; bulk harvesting already described\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Distinct threat; logging material for breach notification duties\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Download endpoint may serve invoices without proving who is asking"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Sequential invoice ids let an attacker harvest the whole invoice history in bulk"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of who downloaded which invoice, so a data-scraping incident cannot be scoped"
+    }
+  ]
+}

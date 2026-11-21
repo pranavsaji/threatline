@@ -1,0 +1,42 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Weak link tokens enable enumeration attack; distinct from already-counted legitimate link sharing and S3 bypass.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Malicious user uploads dangerous content served unsafely to anonymous viewers; XSS and phishing follow from design.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design says 'Users upload' suggesting authentication; threat assumes unauthenticated uploads not supported by design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of x1: same enumeration attack, same method, same harm, just different wording.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Anonymous viewing by design means no audit trail; repudiation harm material to this unauthenticated-access feature.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene about encryption and contracts; no specific problem identified with S3 usage in this design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Guessable or enumerable link tokens let attackers find other people's files"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Malicious uploads served back to viewers as active content"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated uploads let an attacker fill storage and run up S3 and bandwidth cost"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Guessable share link identifiers let an attacker enumerate other people's documents"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No record of who viewed or uploaded a document"
+    },
+    {
+      "id": "x6",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    }
+  ]
+}

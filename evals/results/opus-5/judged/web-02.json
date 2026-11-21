@@ -1,0 +1,37 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Specific DoS attack via unlimited comment posting; follows from design lacking rate limits.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Specific info disclosure via remote images in comments; follows from design allowing images.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific phishing via allowed links; different from XSS (c1), uses legitimate links maliciously.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific CSRF attack on posting/deleting; follows from design not mentioning CSRF protection.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Specific attack via unauditable deletions; material to feature, not generic log-everything hygiene.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Automated comment flooding defaces product pages and buries moderators"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Comment links used for phishing and brand impersonation"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Cross-site request forgery posts or deletes comments as the victim"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Moderator delete action usable by ordinary customers"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Moderator deletions leave no record of who removed what"
+    }
+  ]
+}

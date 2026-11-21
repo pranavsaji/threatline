@@ -1,0 +1,27 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design doesn't specify partner isolation or authentication mapping; cross-partner spoofing is plausible without these controls.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"References validation step between upload and read, contradicting c1's statement that no validation exists.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Design lacks audit trail linking files to orders; material for multi-partner order disputes and rollbacks.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "One partner can drop files that import as another partner's orders"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Parser reads a file while it is still being written or after it is swapped"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No way to prove which partner submitted a disputed order file"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct from c2: deletion for complete recovery denial differs from tampering; both follow from shared write access.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Reporting team bucket access enables local restore of full database, bypassing in-application filters for restricted data.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Shared access without individual logs prevents exfiltration attribution; material because unencrypted exposure depends on identifying accessor.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Deleting or overwriting backups removes the ability to recover"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Sharing the backup bucket bypasses in-application access controls on the database"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No way to tell which reporting user copied a backup"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states ETL service account has full admin on every production database; concrete lateral-escalation attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unrestricted admin read across all production DBs supported by quotes; distinct harm of out-of-scope data exposure.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Broad rights intentionally kept for new tables; concrete unauthorized ALTER/DROP tampering on unrelated schemas.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Admin privileges on every production DB support availability attack; distinct outage harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Long-lived shared credential implied by service account; concrete leak-then-impersonate attack, distinct harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Single shared admin identity across all DBs supports attribution/audit-tampering concern distinct from prior threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

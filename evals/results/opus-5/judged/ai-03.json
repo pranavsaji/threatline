@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Shell access and hijack enable host takeover; clearly stated in design capabilities.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"CI systems not mentioned; attack on external component.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Shared token prevents attribution to requester; follows from singular token.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Too generic; doesn't name specific tool, arguments, or concrete harm.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Hidden changes in branches survive review; reasonable inference from workflow.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Poisoned repository files affect all runs; agent reads repository per design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shell access lets the agent run anything the host account can run"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Pushed branch runs attacker code in CI before any human reads the diff"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Commits made by a shared agent identity cannot be traced to a requester"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Developers trust a plausible agent fix and merge the hidden change"
+    },
+    {
+      "id": "x6",
+      "stride": "Tampering",
+      "title": "Poisoned files in the repository steer every future agent run"
+    }
+  ]
+}

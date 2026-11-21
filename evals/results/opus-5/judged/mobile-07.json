@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same MITM attack, same harm (credential and token theft from interception)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct threat: configuration tampering enabling cert bypass in production, not covered by c1\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct harm: response tampering (integrity) versus c1's data theft (confidentiality) from same attack\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Any TLS certificate is accepted, so an attacker on the network can impersonate the server"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "The insecure flag ships to production inside the release build and can be switched on"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Intercepted responses can be rewritten to change what the app does and shows"
+    }
+  ]
+}

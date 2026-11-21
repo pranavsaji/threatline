@@ -1,0 +1,37 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Targets other customers' orders, distinct from c1. Follows from accepting any order id without ownership check.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Arbitrary status values corrupt state, distinct from c1's paid-only attack. State machine harm differs from fraud.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Non-repudiation gap, distinct from c1 attack itself. Forensics and dispute harm differs from direct fraud.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"DoS via resource exhaustion. Different attack category and harm than authentication/fraud threats.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Information disclosure via enumeration. Plausible attack on public endpoint that processes order identifiers.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Attacker supplies any order id and controls another customer's order"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Arbitrary status values can move an order backwards through its lifecycle"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No way to prove whether a paid order was really paid"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated public endpoint writes to the orders database on every request"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Public endpoint responses let attackers enumerate valid order ids"
+    }
+  ]
+}

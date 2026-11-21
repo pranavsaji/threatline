@@ -1,0 +1,10 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms URL fetch inside VPC next to metadata service; concrete SSRF credential theft.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack mechanism (redirect/DNS rebinding) bypassing URL validation; supported by fetcher evidence.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states databases adjacent in VPC; internal network pivot/mapping distinct from metadata theft.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Resize behaviour in design; decompression bomb exhausting resources is concrete DoS.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Attacker-controlled image bytes decoded by service; decoder exploitation foothold in VPC is concrete.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

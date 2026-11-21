@@ -1,0 +1,10 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows client-side discount computation; concrete attack on code stacking/expiry bypass, distinct harm to promo budget.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows server charges browser-supplied final price; concrete price tampering attack with revenue loss.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence supports charge amount originating from browser; repudiation/no authoritative pricing record is a distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms public endpoint with nested customer profile queries; concrete unauthenticated data-harvesting attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Evidence mentions no mutations; threat speculates they 'typically' exist, not supported by design.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Nested query capability on public endpoint supported; concrete resource-exhaustion attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Introspection in production explicitly quoted; concrete schema disclosure attack.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same resource-exhaustion attack and availability harm as T3 via batching variant.\",\"duplicateOf\":\"T3\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public endpoint error probing plausibly leaks schema internals; concrete reconnaissance attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

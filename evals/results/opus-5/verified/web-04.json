@@ -1,0 +1,10 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows sequential ids and PII-bearing PDF endpoint; concrete IDOR attack described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: unauthenticated access to endpoint, not authorization bypass by logged-in user.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T1's enumeration of sequential ids harvesting all invoice PII.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct caching/proxy exposure of PDF containing PII; endpoint and content supported by evidence.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Lack of download audit logging tied to this endpoint and mass-scrape scoping; distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

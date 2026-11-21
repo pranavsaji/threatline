@@ -1,0 +1,37 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design states immediate login after reset; mailbox access enabling session creation follows from this.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Password setting in design; lack of strength checks enables credential stuffing on internet-facing login.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Email input on public page enables account enumeration; response differences reveal customer list.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Login implies sessions; not revoking them lets attackers persist or victims stay locked out.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Token in link leaks via browser history, logs, and referrer headers to third parties.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Automatic login after reset with no second factor or identity re-check"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "New password set on the public page is not checked for strength or known breaches"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Reset form can be used to find out which email addresses have accounts"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Existing sessions and tokens are not revoked when the password is reset"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Token travels in the URL and leaks through referrers, logs and history"
+    }
+  ]
+}

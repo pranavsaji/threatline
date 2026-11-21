@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design grants credit on code redemption with no atomicity/one-time control; replay/race inflating ledger is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Quote confirms email-only sign-up plus dual credit; self-referral farming is a distinct, concrete abuse.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Credit amount/recipient origin unspecified; client-controlled values tampering is a concrete separate attack on the redemption API.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Credit grants are money; absence of grant-to-referral audit linkage prevents clawback and dispute resolution here.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Per-user referral codes exist; enumeration via validity oracle to harvest accounts is concrete and distinct.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

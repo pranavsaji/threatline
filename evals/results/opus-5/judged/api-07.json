@@ -1,0 +1,22 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design does not state that error messages are returned to callers\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Shared resources, pooling not in design; injected DoS covered by c1/c2\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Database error text reveals schema and confirms injection points"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unbounded free-text search lets a caller force very expensive database queries"
+    }
+  ]
+}

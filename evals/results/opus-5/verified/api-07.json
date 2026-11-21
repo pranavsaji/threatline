@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states free-text query concatenated into SQL against products database; concrete injection attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct injection path: sort identifier cannot be parameterized; explicitly in design evidence.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Design says nothing about error responses or returning driver messages; generic hygiene inference.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Search endpoint accepting unbounded free-text against shared products database supports expensive-query resource exhaustion attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

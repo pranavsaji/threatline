@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has reset token in link; weak token forgery attack is concrete and supported.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Immediate login after link click is quoted; mailbox-access-to-session attack is distinct from token guessing.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public page where user sets new password is quoted; weak password acceptance concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Email-based reset request on internet-facing page supports account enumeration.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unauthenticated reset request supports email flooding/quota exhaustion; distinct harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design silent on session revocation; attacker retains session after victim reset — concrete.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Token carried in link/URL supported; referrer and log leakage is a distinct attack path.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

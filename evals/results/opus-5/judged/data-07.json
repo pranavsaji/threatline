@@ -1,0 +1,37 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Passwords are credentials already covered by c1; same attack and harm\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Tokens explicitly mentioned in c1; same attack and harm\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct data retention threat; c1 doesn't address duration\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Payment tampering threat, not logging feature threat\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Distinct DoS through log storage exhaustion; not in c1\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Passwords written in clear text into the log system"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Session tokens and API keys in logged bodies allow account takeover by replay"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "One year of full-body retention makes any future log breach a mass data breach"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Unbounded body logging lets a caller exhaust log storage and blind monitoring"
+    }
+  ]
+}

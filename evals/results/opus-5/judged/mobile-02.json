@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: both exploit missing deep link auth to reach pre-filled payment screen\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Specific attack using malformed inputs causing refunds, overflow, or display corruption—distinct from c1 social engineering\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Logging deep link origins is material to investigating abuse; enables repeat fraud and false disputes\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Deep links aren't internet endpoints; each invocation requires a device, can't be remotely flooded\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Payment parameters in URLs leak through OS logging, browser history, analytics; enables payment profiling\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link reaches the payment screen without authentication or step-up"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Unvalidated to and amount values corrupt the payment request"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No record of where a deep-linked payment came from, so disputes cannot be resolved"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Payee and amount leak through link handling on the device"
+    }
+  ]
+}

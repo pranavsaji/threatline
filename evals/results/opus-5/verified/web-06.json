@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states no-login, never-expiring links; leaked link grants permanent full read.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Share link is sole secret per design; token enumeration harvests other users' documents.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design has upload endpoint and public viewer; active-content upload served to anonymous victims is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design has uploads and S3 storage with no authentication; cost/storage exhaustion attack is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design specifies S3 storage; direct object access bypassing link handler is a concrete attack.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Same enumeration attack and harvesting harm as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Anonymous viewing per design; lack of attribution after leak is a concrete distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Server trusting client flag purchased=true is the design flaw; attack is specific with endpoint, method, impact named.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Anyone can turn on premium by sending purchased=true without paying"
+    }
+  ]
+}

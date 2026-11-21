@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms any website can trigger pre-filled payment link; concrete request-forgery attack and financial harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design registers unverified custom scheme myapp://; malicious co-installed app hijacking scheme to phish is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Deep link opens payment screen with no stated auth/step-up; attack and harm distinct from T1's social-engineered confirm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Externally initiated payments with no origin record tied to this feature; blocks fraud triage.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Payee and amount carried as URL query params per design; interception/logging leak of payment relationships is concrete.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

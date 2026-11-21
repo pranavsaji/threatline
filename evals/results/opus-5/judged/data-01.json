@@ -1,0 +1,37 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":false,\n    \"reason\":\"Duplicates c1's harm (bulk PII exfiltration). Attack routes like backups, BI tools not in design.\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":false,\n    \"reason\":\"Assumes append-only or no-deletion-propagation implementation not stated in design; design silent on retention.\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":true,\n    \"reason\":\"Job credential with production database access follows from design; different threat surface than analyst access.\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":false,\n    \"reason\":\"Generic pipeline hygiene (integrity checks); design doesn't mention completeness verification or error handling.\"\n  },\n  {\n    \"id\":\"x5\",\n    \"valid\":false,\n    \"reason\":\"Generic hygiene (audit logging); design silent on query attribution, so not in scope.\"\n  }\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Whole customer table copied with no masking or data minimisation"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Deleted or opted-out customers keep living in the warehouse copy"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Export job credential grants full read of the production customers table"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Warehouse copy of customer data drifts from source with no integrity or completeness check"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No way to tell which analyst read which customers' personal data"
+    }
+  ]
+}

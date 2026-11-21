@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Assumes parameterized endpoint architecture not described in design; could be implemented differently\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Push inherently uses provider infrastructure; design puts sensitive data in payload sent to Apple/Google\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Assumes user accounts, device tokens, login/logout mechanisms not mentioned in design\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Notification send endpoint can be driven to target any order or any device"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Push providers receive customer order and address data in the payload"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Stale device token delivers one customer's order to a different person"
+    }
+  ]
+}

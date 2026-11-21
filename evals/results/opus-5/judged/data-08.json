@@ -1,0 +1,27 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Free SQL editor implies arbitrary SQL; DDL/DML/admin access follows if not read-only constrained.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design implies business user targeting; threat assumes auth absence not stated.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Threat assumes missing audit logs; design doesn't specify attribution mechanism.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shared high-privilege database account lets users run DDL/DML or administrative functions"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Dashboard with direct database reach has no stated authentication or authorisation model"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Queries and exported results cannot be attributed to a person"
+    }
+  ]
+}

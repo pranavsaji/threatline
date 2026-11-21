@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms map endpoint returns driver phone number to customers; concrete disclosure attack and harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows continuous 10s GPS with no stated start/stop or expiry; distinct attack on off-shift tracking.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

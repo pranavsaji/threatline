@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms no password re-entry and 30-day cookie; concrete session-theft takeover via email change.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Ambient cookie plus immediate no-password update supports a distinct CSRF attack on the settings endpoint.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Immediate email change with no verification step is in design; spoofed recovery identity is a distinct flaw.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Immediate silent change of contact data supports lack-of-notice/repudiation harm distinct from takeover itself.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"30-day session cookie is explicitly in design; prolonged stolen-session access is a concrete attack.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Speculative: design never states a user-supplied account identifier; threat invents the parameter it attacks.\"},{\"id\":\"T7\",\"keep\":false,\"reason\":\"Repeats T5's attack (holding long-lived cookie) and harm (access to victim's stored PII).\",\"duplicateOf\":\"T5\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
