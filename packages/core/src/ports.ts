@@ -100,6 +100,17 @@ export interface ReviewRepo {
   recent(limit: number, since?: string): Promise<Result<Review[]>>;
   /** The review's stage trace in time order, without checkpoints. */
   stages(reviewId: string): Promise<Result<StageTrace[]>>;
+  /**
+   * Scale (champion inbox): threats in state `needs_human` on each work item's latest review, most severe first, then
+   * oldest review first, at most `limit` (capped at 500). Indexed on the threat state.
+   */
+  needsHuman(limit: number): Promise<Result<NeedsHumanRow[]>>;
+}
+
+/** A threat waiting for a security champion, with the (latest) review it belongs to. */
+export interface NeedsHumanRow {
+  threat: Threat;
+  review: Review;
 }
 
 export interface StageTrace {
@@ -136,7 +147,9 @@ export type LedgerEventType =
   | 'reviews.resumed'
   | 'review.sample'
   | 'review.sample_rejected'
-  | 'key.rotated';
+  | 'key.rotated'
+  | 'threat.triaged'
+  | 'threat.triage_failed';
 
 export interface LedgerInsert {
   seq: number;

@@ -8,6 +8,7 @@ import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledge
 import { postureDrill, postureGet, releaseReport } from './posture.js';
 import { complianceExport, postureControlDrill, postureControls } from './compliance.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
+import { inboxDecide, inboxList } from './inbox.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
@@ -65,5 +66,7 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'keys.public': (deps, v) => keysPublic(deps, { accountId: v.accountId }),
     'keys.rotate': (deps, v) => keysRotate(deps, { accountId: v.accountId }),
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),
+    'inbox.list': (deps, v, payload) => inboxList(deps, { accountId: v.accountId }, payload),
+    'inbox.decide': (deps, v, payload) => inboxDecide(deps, { accountId: v.accountId }, payload),
   };
 }

@@ -8,7 +8,8 @@ import { useFocusReturn, useInlineForm } from '../components/inline-form.js';
 import { useInFlight } from '../components/in-flight.js';
 
 type Action = 'accept' | 'dismiss' | 'edit' | 'merge' | 'split';
-const REASONS = [
+/** Dismissal reason codes, as the panel and the champion inbox offer them. */
+export const DISMISS_REASONS = [
   ['false_positive', 'False positive'],
   ['not_applicable', 'Not applicable'],
   ['duplicate', 'Duplicate'],
@@ -91,7 +92,7 @@ export function ThreatEditor({ threat, others, api, onDone, onCancel }: { threat
       ])}
       {action === 'dismiss' && (
         <>
-          {select('Reason', reason, setReason, [['', 'Choose a reason…'], ...REASONS])}
+          {select('Reason', reason, setReason, [['', 'Choose a reason…'], ...DISMISS_REASONS])}
           <label style={label} htmlFor={`${id}-note`}>
             Note (optional)
           </label>

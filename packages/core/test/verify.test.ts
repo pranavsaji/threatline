@@ -78,6 +78,8 @@ describe('applyVerification (deterministic: the verifier asks, code decides)', (
     const highTwin = threat({ id: 'thr_hightwin', title: 'IDOR on export', severity: 'High', likelihood: 4, impact: 4 });
     const r2 = applyVerification([refund, highTwin], [{ threatId: 'thr_refund', keep: true, reason: 'ok' }, { threatId: 'thr_hightwin', keep: false, reason: 'same', duplicateOf: 'thr_refund' }], { injectionSuspected: false, blockAtOrAbove: 'High' });
     expect(r2.threats.find((t) => t.id === 'thr_hightwin')!.state).toBe('needs_human');
+    // Champion inbox: the champion sees which threat it repeats, so a cluster can be decided at once.
+    expect(r2.threats.find((t) => t.id === 'thr_hightwin')!.verification).toEqual({ keep: false, reason: 'same', duplicateOf: 'thr_refund' });
     // A cover the verifier rejected covers nothing: the usual rule applies (a Medium is dismissed).
     const r3 = applyVerification([refund, twin], [{ threatId: 'thr_refund', keep: false, reason: 'no' }, { threatId: 'thr_twin', keep: false, reason: 'same', duplicateOf: 'thr_refund' }], { injectionSuspected: false, blockAtOrAbove: 'High' });
     expect(r3.threats.find((t) => t.id === 'thr_twin')!.state).toBe('dismissed');

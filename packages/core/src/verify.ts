@@ -71,7 +71,9 @@ export function applyVerification(
     else if (t.citations.some((c) => opts.taintedFacts?.has(c.factId))) u = { ...t, verification };
     // Security: the verifier reads untrusted quotes, so it may never remove anything that would gate Done or merge,
     // not even by calling it a duplicate (fixing the cover might not fix it). A champion decides, seeing the reason.
-    else if (severityRank(t.severity) >= severityRank(opts.blockAtOrAbove ?? 'High')) u = { ...t, state: 'needs_human', verification };
+    // The champion inbox groups it with the threat it repeats (`duplicateOf`), so both can be decided together.
+    else if (severityRank(t.severity) >= severityRank(opts.blockAtOrAbove ?? 'High'))
+      u = { ...t, state: 'needs_human', verification: { ...verification, ...(cover && cover.id !== t.id ? { duplicateOf: cover.id } : {}) } };
     // A below-threshold duplicate stands back under the threat it repeats, when that one was kept, is in force, is at
     // least as severe and rests on clean sources.
     else if (cover && byId.get(cover.id)?.keep === true && cover.state === 'accepted' && severityRank(cover.severity) >= severityRank(t.severity) && !cover.citations.some((c) => opts.taintedFacts?.has(c.factId)))

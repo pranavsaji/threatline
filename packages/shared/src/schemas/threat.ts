@@ -30,7 +30,15 @@ export const ThreatSchema = z
     state: ThreatStateSchema,
     dismissReason: DismissReasonSchema.optional(),
     /** Threatline Engine's verifier on an AI threat: whether the quoted evidence supports it, and why (stage 4). */
-    verification: z.object({ keep: z.boolean(), reason: z.string().max(300) }).strict().optional(),
+    verification: z
+      .object({
+        keep: z.boolean(),
+        reason: z.string().max(300),
+        /** A doubted threat sent to a champion that the verifier said repeats this other threat (same review). */
+        duplicateOf: z.string().min(1).max(120).optional(),
+      })
+      .strict()
+      .optional(),
     /** For a `covered` rule-based threat: the id of the AI threat in the same review that covers it. */
     coveredBy: z.string().min(1).optional(),
     origin: z.enum(['baseline', 'agent', 'pipeline']),

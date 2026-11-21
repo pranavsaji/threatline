@@ -1,7 +1,7 @@
 import '@atlaskit/css-reset';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { adminApiOver, forgeAdminApi, forgeApi, forgePostureApi, panelApiOver, postureApiOver, type AdminApi, type PanelApi, type PostureApi } from './bridge.js';
+import { adminApiOver, forgeAdminApi, forgeApi, forgeInboxApi, forgePostureApi, inboxApiOver, panelApiOver, postureApiOver, type AdminApi, type InboxApi, type PanelApi, type PostureApi } from './bridge.js';
 import { Router } from './router.js';
 import { enableTheme } from './theme.js';
 
@@ -13,11 +13,13 @@ async function start() {
   let api: PanelApi;
   let admin: AdminApi;
   let posture: PostureApi;
+  let inbox: InboxApi;
   let moduleKey = 'threatline-panel';
   if (inForge) {
     api = await forgeApi();
     admin = await forgeAdminApi();
     posture = await forgePostureApi();
+    inbox = await forgeInboxApi();
     const { view } = await import('@forge/bridge');
     moduleKey = ((await view.getContext()) as { moduleKey?: string }).moduleKey ?? moduleKey;
   } else {
@@ -29,11 +31,13 @@ async function start() {
       api = panelApiOver(invoke);
       admin = adminApiOver(invoke);
       posture = postureApiOver(invoke);
+      inbox = inboxApiOver(invoke);
     } else {
       const mock = await import('./mock-bridge.js');
       api = mock.mockApi();
       admin = mock.mockAdminApi();
       posture = mock.mockPostureApi();
+      inbox = mock.mockInboxApi();
     }
     const view = params.get('view');
     if (view === 'admin') moduleKey = 'threatline-admin';
@@ -42,7 +46,7 @@ async function start() {
   }
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <Router moduleKey={moduleKey} api={api} admin={admin} posture={posture} />
+      <Router moduleKey={moduleKey} api={api} admin={admin} posture={posture} inbox={inbox} />
     </StrictMode>,
   );
 }

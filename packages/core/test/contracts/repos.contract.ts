@@ -106,6 +106,32 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect(one.ok && one.value.map((x) => x.id)).toEqual(['rev_c']);
     });
 
+    it('reviews (scale): needsHuman lists needs-human threats on each work item’s latest review, most severe then oldest first, bounded', async () => {
+      const r = await f.reviews();
+      // Work item 1: revision 1 (superseded) and revision 2 (latest), each with a needs-human threat.
+      await r.create(review({ id: 'rev_1a', issueId: '1', issueKey: 'A-1', revision: 1, status: 'ready', createdAt: '2026-11-10T00:00:00.000Z' }));
+      await r.create(review({ id: 'rev_1b', issueId: '1', issueKey: 'A-1', revision: 2, status: 'ready', createdAt: '2026-11-12T00:00:00.000Z' }));
+      await r.create(review({ id: 'rev_2', issueId: '2', issueKey: 'A-2', revision: 1, status: 'ready', createdAt: '2026-11-11T00:00:00.000Z' }));
+      await r.create(review({ id: 'rev_3', issueId: '3', issueKey: 'A-3', revision: 1, status: 'ready', createdAt: '2026-11-09T00:00:00.000Z' }));
+      await r.saveThreats('rev_1a', [threat({ id: 'thr_old', reviewId: 'rev_1a', state: 'needs_human' })], []);
+      await r.saveThreats('rev_1b', [threat({ id: 'thr_1h', reviewId: 'rev_1b', state: 'needs_human', severity: 'High' }), threat({ id: 'thr_1a', reviewId: 'rev_1b', state: 'accepted' })], []);
+      await r.saveThreats('rev_2', [threat({ id: 'thr_2c', reviewId: 'rev_2', state: 'needs_human', severity: 'Critical' }), threat({ id: 'thr_2h', reviewId: 'rev_2', state: 'needs_human', severity: 'High' })], []);
+      await r.saveThreats('rev_3', [threat({ id: 'thr_3m', reviewId: 'rev_3', state: 'needs_human', severity: 'Medium' }), threat({ id: 'thr_3d', reviewId: 'rev_3', state: 'dismissed', dismissReason: 'false_positive' })], []);
+      const all = await r.needsHuman(50);
+      expect(all.ok && all.value.map((x) => [x.threat.id, x.review.id])).toEqual([
+        ['thr_2c', 'rev_2'],
+        ['thr_2h', 'rev_2'],
+        ['thr_1h', 'rev_1b'],
+        ['thr_3m', 'rev_3'],
+      ]);
+      const two = await r.needsHuman(2);
+      expect(two.ok && two.value.map((x) => x.threat.id)).toEqual(['thr_2c', 'thr_2h']);
+      // A decision moves the threat out of the list (the state column is kept in step with the stored threat).
+      await r.updateThreat('thr_2c', { state: 'accepted' });
+      const after = await r.needsHuman(50);
+      expect(after.ok && after.value.map((x) => x.threat.id)).toEqual(['thr_2h', 'thr_1h', 'thr_3m']);
+    });
+
     it('reviews: updateWhere writes only while the stored review still matches (compare-and-set)', async () => {
       const r = await f.reviews();
       await r.create(review({ samplesReceived: 2 }));

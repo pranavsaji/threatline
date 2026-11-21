@@ -1,8 +1,9 @@
-import type { AdminApi, PanelApi, PostureApi } from './bridge.js';
+import type { AdminApi, InboxApi, PanelApi, PostureApi } from './bridge.js';
 import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
 import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
 import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
+import { INBOX_FIXTURE } from './inbox/fixtures.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -96,5 +97,23 @@ export function mockPostureApi(state = new URLSearchParams(window.location.searc
     release: async (fixVersion) => RELEASE_FIXTURE(fixVersion),
     controls: async () => (empty ? { ...structuredClone(CONTROLS_FIXTURE), issuesCounted: 0, frameworks: CONTROLS_FIXTURE.frameworks.map((f) => ({ ...f, controls: [] })) } : structuredClone(CONTROLS_FIXTURE)),
     controlDrill: async () => structuredClone(DRILL_FIXTURE),
+  };
+}
+
+/**
+ * Local preview of the champion inbox (`?view=posture`, then the Champion inbox tab). `?inbox=empty` shows the empty
+ * state, `?inbox=forbidden` a viewer who is not a champion (no tab). Decisions remove the rows they decide.
+ */
+export function mockInboxApi(state = typeof window === 'undefined' ? 'ready' : (new URLSearchParams(window.location.search).get('inbox') ?? 'ready')): InboxApi {
+  const dto = structuredClone(INBOX_FIXTURE);
+  if (state === 'empty') Object.assign(dto, { clusters: [], total: 0, hidden: 0 });
+  return {
+    list: async () => (state === 'forbidden' ? { error: 'forbidden' as const, message: 'Only security champions and Jira admins can open the champion inbox.' } : structuredClone(dto)),
+    decide: async (input) => {
+      const keys = new Set(input.items.map((i) => `${i.issueId}|${i.threatId}`));
+      dto.clusters = dto.clusters.map((c) => ({ ...c, rows: c.rows.filter((r) => !keys.has(`${r.issueId}|${r.threatId}`)) })).filter((c) => c.rows.length > 0);
+      dto.total = dto.clusters.reduce((n, c) => n + c.rows.length, 0);
+      return { results: input.items.map((i) => ({ ...i, ok: true as const, state: input.decision === 'confirm' ? 'accepted' : 'dismissed' })), decided: input.items.length, failed: 0 };
+    },
   };
 }
