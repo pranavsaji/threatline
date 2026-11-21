@@ -136,7 +136,8 @@ export type LedgerEventType =
   | 'reviews.resumed'
   | 'review.sample'
   | 'review.sample_rejected'
-  | 'key.rotated';
+  | 'key.rotated'
+  | 'review.reopened_by_incident';
 
 export interface LedgerInsert {
   seq: number;

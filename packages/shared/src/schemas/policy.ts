@@ -1,6 +1,24 @@
 import { z } from 'zod';
 import { SeveritySchema } from './enums.js';
 
+/**
+ * Incidents reopen reviews (docs/INCIDENTS.md): a work item is an incident when it has one of `labels` (exact) or its
+ * work type is one of `issueTypes` (any case). When one appears on a component, the open reviewed work on that
+ * component (or linked to it) is re-reviewed with it as context, at most `maxItems` per incident.
+ */
+export const IncidentPolicySchema = z
+  .object({
+    enabled: z.boolean(),
+    labels: z.array(z.string().regex(/^\S{1,255}$/, 'A Jira label has no spaces.')).max(10),
+    issueTypes: z.array(z.string().trim().min(1).max(255)).max(10),
+    maxItems: z.number().int().min(1).max(50),
+    /** Comment on the incident listing the work items re-reviewed (plain text; never repeats the incident's text). */
+    comment: z.boolean(),
+  })
+  .strict()
+  .refine((p) => !p.enabled || p.labels.length + p.issueTypes.length > 0, { message: 'Name at least one incident label or work type.', path: ['labels'] });
+export type IncidentPolicy = z.infer<typeof IncidentPolicySchema>;
+
 export const SitePolicySchema = z
   .object({
     blockAtOrAbove: SeveritySchema,
@@ -34,6 +52,8 @@ export const SitePolicySchema = z
         reviewsPerMonth: z.number().int().min(1),
       })
       .strict(),
+    /** Absent on sites saved before it existed: read it with incidentPolicyOf (defaults). */
+    incidents: IncidentPolicySchema.optional(),
   })
   .strict();
 export type SitePolicy = z.infer<typeof SitePolicySchema>;

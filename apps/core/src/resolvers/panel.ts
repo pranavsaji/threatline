@@ -11,6 +11,7 @@ import { rolesOf } from '../services/roles.js';
 import { readVerdict, refreshVerdict, verdictKey } from '../services/verdict-service.js';
 import { newScopeCache, scopeForViewer, type ScopeCache } from '../services/viewer-scope.js';
 import { PAGE_KEY } from '../services/confluence-page.js';
+import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
 import type { ApiError } from './errors.js';
 
 export const PAGE_SIZE = 50;
@@ -56,7 +57,8 @@ export interface PanelDto {
   viewerAccountId: string;
   /** What the accept-risk form needs to cap expiry and preview the approver (RL-2). */
   acceptancePolicy: { maxExpiryDays: { Critical: number; default: number }; techLeadMaxSeverity: Severity; championGroup: string; techLeadGroup: string };
-  history: Array<{ revision: number; createdAt: string; riskScore: number; status: Review['status']; added: number; removed: number }>;
+  /** `reopenedBy`: an incident caused this revision (docs/INCIDENTS.md); its key is null for a viewer who cannot open it. */
+  history: Array<{ revision: number; createdAt: string; riskScore: number; status: Review['status']; added: number; removed: number; reopenedBy?: ReopenedBy }>;
   samples: { received: number; expected: number };
   roles: Role[];
   /** The published Confluence threat-model page, if any (RQ-5). */
@@ -201,11 +203,13 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const scopedRevisions = await Promise.all(revisions.map((r) => scopedReview(deps, v, r.id, cache)));
   if (scopedRevisions.some((x) => x === null)) return { error: 'unavailable' };
   const threatSets = scopedRevisions.map((x) => x!.threats);
+  const causes = await reopenedBy(deps, v.accountId, revisions.map((r) => r.id));
   const hist = revisions.map((r, i) => {
     const cur = threatSets[i] ?? [];
     const prev = i > 0 ? (threatSets[i - 1] ?? []) : [];
     const d = threatDiff(prev, cur);
-    return { revision: r.revision, createdAt: r.createdAt, riskScore: viewerScore(r.riskScore, scopedRevisions[i]!), status: r.status, added: d.added.length, removed: d.removed.length };
+    const cause = causes[i];
+    return { revision: r.revision, createdAt: r.createdAt, riskScore: viewerScore(r.riskScore, scopedRevisions[i]!), status: r.status, added: d.added.length, removed: d.removed.length, ...(cause ? { reopenedBy: cause } : {}) };
   });
 
   // Fail closed: a requirement is shown only when its threat is visible to this viewer in the latest review or in one

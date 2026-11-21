@@ -11,6 +11,7 @@ import { Projects } from './Projects.js';
 import { SeverityPolicy } from './SeverityPolicy.js';
 import { Roles } from './Roles.js';
 import { Budgets } from './Budgets.js';
+import { Incidents } from './Incidents.js';
 import { ReviewMode } from './ReviewMode.js';
 import { WarnOnly } from './WarnOnly.js';
 import { Notifications } from './Notifications.js';
@@ -24,6 +25,7 @@ const SECTIONS = [
   { id: 'roles', title: 'Roles', needsPolicy: true },
   { id: 'review-mode', title: 'Review mode', needsPolicy: true },
   { id: 'budgets', title: 'Budgets', needsPolicy: true },
+  { id: 'incidents', title: 'Incidents', needsPolicy: true },
   { id: 'warn-only', title: 'Warn-only mode', needsPolicy: true },
   { id: 'notifications', title: 'Notifications', needsPolicy: true },
   { id: 'runs', title: 'Recent runs', needsPolicy: false },
@@ -88,6 +90,7 @@ export function AdminPage({ api }: { api: AdminApi }) {
           {at('roles', <Roles key={`r-${dto!.saved}`} {...p} />)}
           {at('review-mode', <ReviewMode {...p} recentAuthors={dto?.recentReviewAuthors ?? []} />)}
           {at('budgets', <Budgets {...p} />)}
+          {at('incidents', <Incidents key={`i-${dto!.saved}`} {...p} />)}
           {at('warn-only', <WarnOnly api={api} policy={p.policy} onChanged={onSaved} />)}
           {at('notifications', <Notifications api={api} ops={dto!.ops} digest={dto!.digest} />)}
         </>
