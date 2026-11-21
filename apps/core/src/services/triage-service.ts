@@ -59,6 +59,11 @@ export async function applyTriage(
     });
   const update = async (id: string, patch: Partial<Threat>) => deps.reviews.updateThreat(id, patch);
   const changed: Threat[] = [];
+  // A threat a team rule hides is triaged only after a champion unhides it here (that is ledgered): an edit could
+  // otherwise raise it to a blocking severity while it stays hidden.
+  const hiddenBy = (x: Threat) => (x.state === 'suppressed' ? `“${x.title}” is hidden by a team rule (${x.suppression?.ruleId ?? 'unknown'}). Unhide it here first.` : null);
+  const refused = hiddenBy(t) ?? (op.op === 'merge' ? hiddenBy(all.find((x) => x.id === op.intoThreatId) ?? t) : null);
+  if (refused) return err(appError('validation', refused));
 
   switch (op.op) {
     case 'accept': {

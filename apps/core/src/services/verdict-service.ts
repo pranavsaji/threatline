@@ -182,7 +182,14 @@ async function ownVerdict(
   } catch {
     current = null;
   }
+  // Security: a stored suppression counts only while its rule is still active. A failed lookup trusts none of them.
+  let activeSuppressions: ReadonlySet<string> | undefined;
+  if (threats.ok && threats.value.some((t) => t.state === 'suppressed')) {
+    const active = await deps.suppressions.activeFor(issue.project.key, now.toISOString());
+    activeSuppressions = new Set(active.ok ? active.value.map((r) => r.id) : []);
+  }
   const verdict = computeVerdict({
+    ...(activeSuppressions ? { activeSuppressions } : {}),
     issueId: issue.id,
     review,
     currentContextHash: current,

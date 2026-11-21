@@ -5,6 +5,7 @@ import {
   assembleReview,
   computeVerdict,
   contextHash,
+  gateThreats,
   DEFAULT_SITE_POLICY,
   normalizeFact,
   requirementsFor,
@@ -177,5 +178,42 @@ describe('suggestSuppressions', () => {
     expect(suggestSuppressions(rows, [])[0]?.component).toBeUndefined();
     expect(suggestSuppressions(rows, [{ projectKey: 'PAY', stride: 'DenialOfService', title: 'Reset endpoint flooding' }])).toEqual([]);
     expect(suggestSuppressions(rows, [{ projectKey: 'OPS', stride: 'DenialOfService', title: 'Reset endpoint flooding' }])).toHaveLength(1);
+  });
+});
+
+describe('the gate never trusts a stale suppression (fail closed)', () => {
+  const t = (o: Partial<Threat> = {}): Threat => ({
+    id: 'thr_s', reviewId: 'rev_1', stride: 'InformationDisclosure', title: transcriptLeak.title, scenario: 's', component: 'c', likelihood: 3, impact: 3, severity: 'Medium',
+    votes: 3, samples: 3, grounding: 'supported', confidence: 1, state: 'suppressed', origin: 'agent', citations: [{ factId: 'f', quote: 'q' }], mappings: [], plainLanguage: 'p',
+    suppression: { ruleId: 'sup_1', reason: 'r', expiresAt: '2027-02-13T00:00:00.000Z', outcome: 'hidden', restoreTo: 'accepted' }, ...o,
+  });
+  const gate = (x: Threat, o: Partial<Parameters<typeof gateThreats>[1]> = {}) => gateThreats([x], { blockAtOrAbove: 'High', now: NOW, ...o })[0]!;
+
+  it('a valid suppression stands: below the threshold, before expiry, rule active', () => {
+    expect(gate(t()).state).toBe('suppressed');
+    expect(gate(t(), { activeRuleIds: new Set(['sup_1']) }).state).toBe('suppressed');
+  });
+
+  it('counts as its earlier state when its severity reached the threshold, the threshold was lowered, it expired or its rule is no longer active', () => {
+    expect(gate(t({ severity: 'High' })).state).toBe('accepted');
+    expect(gate(t(), { blockAtOrAbove: 'Medium' }).state).toBe('accepted');
+    expect(gate(t({ suppression: { ...t().suppression!, expiresAt: '2026-11-14T00:00:00.000Z' } })).state).toBe('accepted');
+    expect(gate(t(), { activeRuleIds: new Set() }).state).toBe('accepted');
+    expect(gate(t({ suppression: { ...t().suppression!, restoreTo: 'needs_human' } }), { activeRuleIds: new Set() }).state).toBe('needs_human');
+    expect(gate(t({ suppression: undefined })).state).toBe('accepted');
+  });
+
+  it('computeVerdict: a suppressed threat now at the threshold blocks Done (with no requirement yet it counts as open)', () => {
+    const verdict = (threats: Threat[], o: { blockAtOrAbove?: 'Medium' | 'High'; activeSuppressions?: ReadonlySet<string> } = {}) =>
+      computeVerdict({
+        issueId: '10001', review: { ...review, status: 'ready' }, currentContextHash: 'h', threats, requirements: [], acceptances: [], policy: { ...DEFAULT_SITE_POLICY, blockAtOrAbove: o.blockAtOrAbove ?? 'High' },
+        projectKey: 'PROJ', championConfirmations: [], breakGlass: [], budgetPaused: false, injectionSuspected: false, now: NOW, panelUrl: 'https://x/p',
+        ...(o.activeSuppressions ? { activeSuppressions: o.activeSuppressions } : {}),
+      });
+    expect(verdict([t()]).state).toBe('pass');
+    expect(verdict([t({ severity: 'High' })]).state).toBe('block');
+    expect(verdict([t()], { blockAtOrAbove: 'Medium' }).state).toBe('block');
+    expect(verdict([t({ severity: 'High', suppression: { ...t().suppression!, restoreTo: 'needs_human' } })]).reasons.map((r) => r.code)).toContain('needs_human');
+    expect(verdict([t()], { activeSuppressions: new Set() }).state).toBe('pass');
   });
 });

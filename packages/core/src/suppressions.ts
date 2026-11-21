@@ -78,6 +78,26 @@ export function applySuppressions(
   return hidden;
 }
 
+/**
+ * Security, at the gate: a stored suppression is trusted only while it still holds. A `suppressed` threat counts as the
+ * state it had (`restoreTo`) once its severity is at or above the current blocking threshold (triage, a re-score, a
+ * lowered policy), once its rule's expiry has passed, or (when the caller knows the active rules) once its rule is no
+ * longer active. A suppressed threat with no rule recorded is never trusted. Pure; nothing is stored.
+ */
+export function gateThreats<T extends Threat>(threats: readonly T[], o: { blockAtOrAbove: Severity; now: Date; activeRuleIds?: ReadonlySet<string> }): T[] {
+  return threats.map((t) => {
+    if (t.state !== 'suppressed') return t;
+    const s = t.suppression;
+    const holds =
+      s !== undefined &&
+      s.outcome === 'hidden' &&
+      severityRank(t.severity) < severityRank(o.blockAtOrAbove) &&
+      new Date(s.expiresAt).getTime() > o.now.getTime() &&
+      (o.activeRuleIds === undefined || o.activeRuleIds.has(s.ruleId));
+    return holds ? t : { ...t, state: s?.restoreTo ?? 'accepted' };
+  });
+}
+
 /** A champion unhid it on this work item: the state it had before the rule hid it. */
 export function unhidden(t: Threat): Threat {
   if (t.state !== 'suppressed' || !t.suppression) return t;

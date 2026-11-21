@@ -10,6 +10,7 @@ import {
   type Verdict,
 } from '@threatline/shared';
 import { warnOnlyUntil } from './policy.js';
+import { gateThreats } from './suppressions.js';
 
 /** "1 threat", "2 threats": counts in messages read as words, never "threat(s)". */
 export const count = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? '' : 's'}`;
@@ -31,6 +32,11 @@ export interface VerdictInput {
   injectionSuspected: boolean;
   now: Date;
   panelUrl: string;
+  /**
+   * The project's active suppression rule ids, when known. A suppressed threat whose rule is not among them counts as
+   * the state it had. Without it, suppressions are still checked against the threshold and their expiry.
+   */
+  activeSuppressions?: ReadonlySet<string>;
 }
 
 const IN_PROGRESS = new Set(['awaiting_agent', 'queued', 'gathering', 'modeling']);
@@ -86,7 +92,9 @@ export function computeVerdict(i: VerdictInput): Verdict {
       );
 
     const atThreshold = (t: Threat) => severityRank(t.severity) >= threshold;
-    const humanOpen = i.threats.filter((t) => t.state === 'needs_human' && atThreshold(t));
+    // A stored suppression counts only while it still holds (below the current threshold, not expired, rule active).
+    const threats = gateThreats(i.threats, { blockAtOrAbove: i.policy.blockAtOrAbove, now: i.now, ...(i.activeSuppressions ? { activeRuleIds: i.activeSuppressions } : {}) });
+    const humanOpen = threats.filter((t) => t.state === 'needs_human' && atThreshold(t));
     const reviewConfirmed = confirmed('review');
     if (humanOpen.length > 0 && !reviewConfirmed) {
       const injected = i.injectionSuspected && humanOpen.some((t) => t.origin === 'agent');
@@ -100,7 +108,7 @@ export function computeVerdict(i: VerdictInput): Verdict {
       for (const t of humanOpen) bump(t.severity);
     }
 
-    const mustResolve = i.threats.filter((t) => atThreshold(t) && (t.state === 'accepted' || (t.state === 'needs_human' && reviewConfirmed)));
+    const mustResolve = threats.filter((t) => atThreshold(t) && (t.state === 'accepted' || (t.state === 'needs_human' && reviewConfirmed)));
     const open: Array<{ id: string; severity: Severity }> = [];
     const outgrown: Array<{ name: string; accepted: Severity; now: Severity }> = [];
     for (const t of mustResolve) {

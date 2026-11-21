@@ -37,7 +37,7 @@ async function manager(deps: CoreDeps, accountId: string): Promise<ApiError | nu
 export async function suppressionsList(deps: CoreDeps, a: { accountId: string }): Promise<SuppressionsDto | ApiError> {
   const denied = await manager(deps, a.accountId);
   if (denied) return denied;
-  const r = await listSuppressions(deps);
+  const r = await listSuppressions(deps, a.accountId);
   return r.ok ? r.value : apiError(r.error);
 }
 
