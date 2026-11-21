@@ -4,6 +4,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { readVerdict } from './verdict-service.js';
 import { citesOnlyTheWorkItem } from './viewer-scope.js';
+import { buildDiagram } from './diagram-service.js';
 
 /** KVS record of a work item's published threat-model page. Its presence turns on re-publishing (RQ-6). */
 export const PAGE_KEY = (issueId: string) => `page:${issueId}`;
@@ -82,6 +83,17 @@ export async function publishThreatModel(deps: CoreDeps, issueId: string): Promi
   const panelUrl = `${site}/browse/${issue.value.key}`;
   const title = `Threat model: ${issue.value.key} ${issue.value.summary}`.slice(0, MAX_TITLE);
 
+  // The page's readers are the parent page's readers: threats citing anything else are shown without text, and the
+  // architecture sketch (extracted from every source) only when every source is the work item's or that parent page's.
+  const redactedThreatIds = threats.value.filter((t) => !citesOnlyTheWorkItem(t, facts.value, issueId, [parentId.value!])).map((t) => t.id);
+  const redacted = new Set(redactedThreatIds);
+  const allSourcesOpen = citesOnlyTheWorkItem({ citations: facts.value.map((f) => ({ factId: f.id, quote: '' })) }, facts.value, issueId, [parentId.value]);
+  const diagram = await buildDiagram(deps, ready.id, {
+    threats: threats.value.filter((t) => !redacted.has(t.id)),
+    requirements: requirements.value,
+    sketchVisible: allSourcesOpen,
+  });
+
   const record = await readRecord(deps, issueId);
   let existing = record ? await deps.confluence.page(record.pageId) : null;
   if (existing && !existing.ok && existing.error.code !== 'not_found') return existing;
@@ -101,7 +113,9 @@ export async function publishThreatModel(deps: CoreDeps, issueId: string): Promi
       history: history.value.slice(-10).map((r) => ({ revision: r.revision, createdAt: r.createdAt, riskScore: r.riskScore, status: r.status })),
       panelUrl,
       ownerNotes,
-      redactedThreatIds: threats.value.filter((t) => !citesOnlyTheWorkItem(t, facts.value, issueId, [parentId.value!])).map((t) => t.id),
+      redactedThreatIds,
+      diagram,
+      diagramPartial: diagram.sketchHidden,
     });
 
   if (existing?.ok) {

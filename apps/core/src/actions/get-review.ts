@@ -1,3 +1,4 @@
+import { diagramText } from '@threatline/core';
 import type { Review, Severity, Stride, Verdict } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
@@ -29,8 +30,13 @@ export interface GetReviewResult {
   threats: ReviewThreatDto[];
   threatsTotal: number;
   hiddenThreats: number;
+  /** The data-flow diagram as compact text (elements, numbered flows, trust boundaries), scoped like the threats. */
+  dataFlowDiagram: string | null;
   truncated: boolean;
 }
+
+const DIAGRAM_CHARS = 6000;
+const SKETCH_HIDDEN = 'Parts of the architecture come from sources you cannot open, so only the elements your visible threats name are shown.';
 
 /** GET (Agent, MCP): the latest review as this caller may see it — verdict, risk score, partial flag, cited threats. */
 export async function getReview(payload: ActionPayload & Record<string, unknown>, deps: CoreDeps): Promise<GetReviewResult | ActionError> {
@@ -53,6 +59,9 @@ export async function getReview(payload: ActionPayload & Record<string, unknown>
     citations: t.citations.slice(0, 3).map((c) => ({ source: facts.get(c.factId)?.title ?? 'Work item', url: facts.get(c.factId)?.url ?? '', quote: c.quote })),
   }));
   const v = panel.verdict;
+  const refs = new Map(threats.map((t) => [t.id, t.ref]));
+  const d = panel.diagram;
+  const dataFlowDiagram = d ? `${d.sketchHidden ? `${SKETCH_HIDDEN}\n` : ''}${diagramText(d, (id) => refs.get(id), DIAGRAM_CHARS)}` : null;
   log('action.get_review', { issueId: who.viewer.issueId, threats: threats.length });
   return fitJson(
     {
@@ -68,6 +77,7 @@ export async function getReview(payload: ActionPayload & Record<string, unknown>
       threats,
       threatsTotal: panel.threatsTotal,
       hiddenThreats: panel.hiddenThreats,
+      dataFlowDiagram,
     },
     ['threats'],
   ) as GetReviewResult;

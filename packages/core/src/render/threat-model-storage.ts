@@ -1,5 +1,6 @@
 import type { Acceptance, ArchitectureSketch, Requirement, Review, Threat } from '@threatline/shared';
 import { count } from '../verdict.js';
+import type { DiagramModel } from '../diagram.js';
 
 export interface ThreatModelDto {
   issueKey: string;
@@ -9,6 +10,10 @@ export interface ThreatModelDto {
   latestRevision: number;
   verdict: { state: 'pass' | 'block' | 'warn'; message: string } | null;
   sketch?: ArchitectureSketch;
+  /** The data-flow diagram, built from what this page's readers may see (rendered as tables: storage holds no SVG). */
+  diagram?: DiagramModel;
+  /** The architecture sketch was left out because it rests on sources this page's readers may not open. */
+  diagramPartial?: boolean;
   threats: Threat[];
   requirements: Requirement[];
   acceptances: Acceptance[];
@@ -71,6 +76,8 @@ export function renderThreatModel(d: ThreatModelDto): string {
       'Threatline security review',
     ),
   );
+
+  if (d.diagram && d.diagram.nodes.length > 0) out.push(...renderDiagram(d.diagram, d.diagramPartial === true, d.panelUrl));
 
   if (d.sketch) {
     const s = d.sketch;
@@ -155,6 +162,43 @@ export function renderThreatModel(d: ThreatModelDto): string {
   out.push(OWNER_NOTES);
   out.push(d.ownerNotes || DEFAULT_OWNER_NOTES);
   return out.join('');
+}
+
+const KIND: Record<DiagramModel['nodes'][number]['kind'], string> = { external: 'External entity', process: 'Process', store: 'Data store' };
+
+/**
+ * The data-flow diagram as storage: Confluence storage cannot carry inline SVG safely, and an image attachment needs a
+ * file-write scope Threatline does not ask for, so the diagram is three tables (elements, flows, trust boundaries).
+ */
+function renderDiagram(m: DiagramModel, partial: boolean, panelUrl: string): string[] {
+  const name = new Map(m.nodes.map((n) => [n.id, n.name]));
+  const boundary = new Map(m.boundaries.map((b) => [b.id, b.name]));
+  const out = ['<h2>Data-flow diagram</h2>', `<p>${esc(m.summary)} The drawn diagram is in the ${link(panelUrl, 'Threatline panel')} (Diagram tab).</p>`];
+  if (partial)
+    out.push(macro('note', '<p>Parts of the architecture come from sources not everyone who can read this page can open, so only the elements its threats name are listed here.</p>'));
+  out.push('<h3>Elements</h3>');
+  out.push(
+    table(
+      ['Element', 'Type', 'Trust boundary', 'Open threats', 'Highest open severity'],
+      m.nodes.map((n) => [esc(n.name), esc(KIND[n.kind]), esc(n.boundaryId ? (boundary.get(n.boundaryId) ?? '') : '—'), String(n.openCount), esc(n.maxSeverity ?? '—')]),
+    ),
+  );
+  out.push('<h3>Data flows</h3>');
+  out.push(
+    m.edges.length === 0
+      ? '<p>No data flows were extracted.</p>'
+      : table(
+          ['#', 'From', 'To', 'Data', 'Crosses a trust boundary'],
+          m.edges.map((e) => [String(e.n), esc(name.get(e.from) ?? ''), esc(name.get(e.to) ?? ''), esc(e.data || '—'), e.crossesBoundary ? 'Yes' : 'No']),
+        ),
+  );
+  out.push('<h3>Trust boundaries</h3>');
+  const rows = [
+    ...m.boundaries.map((b) => [esc(b.implied ? `${b.name} (implied)` : b.name), esc(b.nodeIds.map((id) => name.get(id) ?? '').join(', '))]),
+    ...m.unplacedBoundaries.map((b) => [esc(b), 'Not tied to an element']),
+  ];
+  out.push(rows.length === 0 ? '<p>No trust boundaries were extracted.</p>' : table(['Trust boundary', 'Elements inside'], rows));
+  return out;
 }
 
 const VOID = new Set(['br', 'hr', 'img', 'col', 'input', 'meta', 'link', 'area', 'base', 'wbr', 'source', 'track', 'param', 'embed']);

@@ -6,3 +6,4 @@ export type { ReleaseReadinessResult } from '../../src/actions/release-readiness
 export type { AdminPolicyDto, OpsConfig, DigestConfig, RunDto, RunStage, UsageDto } from '../../src/resolvers/admin.js';
 export type { SitePolicy } from '@threatline/shared';
 export type { DataClass, Exposure } from '@threatline/shared';
+export type { DiagramDto } from '../../src/services/diagram-service.js';
