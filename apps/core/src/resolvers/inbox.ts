@@ -6,7 +6,7 @@ import { isChampionOrAdmin } from '../services/roles.js';
 import { buildInbox, decideInboxItem, INBOX_DECIDE_MAX, INBOX_PAGE, INBOX_PAGE_MAX, inboxPage, type Inbox, type InboxDecision } from '../services/inbox-service.js';
 import { apiError, type ApiError, type ApiErrorCode } from './errors.js';
 
-export type { InboxCluster, InboxReasonCode, InboxRow } from '../services/inbox-service.js';
+export type { InboxCluster, InboxRow } from '../services/inbox-service.js';
 
 /** The global page's viewer: identity from the Forge context only. */
 export interface InboxViewer {

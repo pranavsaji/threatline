@@ -1,4 +1,4 @@
-import type { AcceptanceState, AdminPolicyDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
+import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
 
 /** Calls a resolver by key: Forge's invoke inside Atlassian, or the local end-to-end harness (e2e/local). */
 export type Invoke = <T>(key: string, payload?: Record<string, unknown>) => Promise<T>;
@@ -202,6 +202,29 @@ export function postureApiOver(invoke: Invoke): PostureApi {
     get: (project) => invoke('posture.get', project ? { project } : {}),
     drill: (q) => invoke('posture.drill', { ...q }),
     release: (fixVersion) => invoke('release.report', { fixVersion }),
+  };
+}
+
+/** A champion's decision on threats waiting in the inbox: confirm (accept), or dismiss with a reason code. */
+export type InboxDecisionInput =
+  | { decision: 'confirm'; items: Array<{ issueId: string; threatId: string }> }
+  | { decision: 'dismiss'; reason: string; note?: string; items: Array<{ issueId: string; threatId: string }> };
+
+/** The champion inbox on the global page (champions and Jira admins; the server checks every call). */
+export interface InboxApi {
+  list(cursor?: number): Promise<InboxDto | ApiError>;
+  /** At most 25 items per call; each is decided, authorised and ledgered on its own. */
+  decide(input: InboxDecisionInput): Promise<InboxDecideDto | ApiError>;
+}
+
+export async function forgeInboxApi(): Promise<InboxApi> {
+  return inboxApiOver(await bridgeInvoke());
+}
+
+export function inboxApiOver(invoke: Invoke): InboxApi {
+  return {
+    list: (cursor) => invoke('inbox.list', cursor ? { cursor } : {}),
+    decide: (input) => invoke('inbox.decide', { ...input }),
   };
 }
 
