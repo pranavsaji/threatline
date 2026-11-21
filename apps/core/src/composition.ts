@@ -1,4 +1,5 @@
 import { forgeLlm } from './adapters/forge-llm.js';
+import { DEFAULT_INCIDENT_POLICY, incidentPolicyOf } from '@threatline/core';
 import api, { route } from '@forge/api';
 import { sqlAttestationRepo, sqlTreeHeadRepo, sqlFeedbackRepo, sqlIssueRepo, sqlLedgerRepo, sqlRequirementRepo, sqlReviewRepo, sqlUsageRepo } from '@threatline/db';
 import type { CoreDeps } from './deps.js';
@@ -10,7 +11,7 @@ import { forgeSqlExecutor } from './adapters/forge-sql.js';
 import { jiraClient } from './adapters/jira.js';
 import { defaultsFromEnv, forgeKvs, kvsConfigStore, type KvsPort } from './adapters/kvs-config.js';
 import { restGatherer } from './adapters/rest-gatherer.js';
-import { sqlRetention } from '@threatline/db';
+import { sqlRetention, sqlSuppressionRepo } from '@threatline/db';
 import { kvsSigningKeys } from './adapters/signing-keys.js';
 import { jiraVerdictSink } from './adapters/verdict-sink.js';
 
@@ -52,6 +53,12 @@ export function composeCore(ctx?: ForgeContext): CoreDeps {
   const jira = jiraClient('app');
   const confluence = confluenceClient('app');
   const state = forgeKvs();
+  const config = kvsConfigStore(state, defaultsFromEnv(process.env));
+  // The gatherer reads incidents by the site's incident rule, so every gather (the queue's and the agent's) agrees.
+  const incidentRule = async () => {
+    const p = await config.site();
+    return p.ok ? incidentPolicyOf(p.value) : DEFAULT_INCIDENT_POLICY;
+  };
   return {
     reviews,
     requirements: sqlRequirementRepo(x),
@@ -61,13 +68,14 @@ export function composeCore(ctx?: ForgeContext): CoreDeps {
     usage: sqlUsageRepo(x),
     attestations: sqlAttestationRepo(x),
     treeHeads: sqlTreeHeadRepo(x),
+    suppressions: sqlSuppressionRepo(x),
     keys: kvsSigningKeys(systemClock, state),
     llm: forgeLlm(),
     jira,
     confluence,
-    gatherer: restGatherer({ jira, confluence, reviews, issues, clock: systemClock, cloudId: cloudIdOf(ctx), siteUrl: siteUrl(state) }),
+    gatherer: restGatherer({ jira, confluence, reviews, issues, clock: systemClock, cloudId: cloudIdOf(ctx), siteUrl: siteUrl(state), incidentRule }),
     verdicts: jiraVerdictSink(jira),
-    config: kvsConfigStore(state, defaultsFromEnv(process.env)),
+    config,
     state,
     retention: sqlRetention(x),
     queue: forgeQueue(),

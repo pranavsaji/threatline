@@ -5,17 +5,20 @@ import type { AdminPolicyDto, ApiError, SitePolicy } from '../types.js';
 import { DemoData } from './DemoData.js';
 import { LedgerVerify } from './LedgerVerify.js';
 import { Keys } from './Keys.js';
+import { CiVerification } from './CiVerification.js';
 import { SetupChecklist } from './SetupChecklist.js';
 import { FirstRun } from './FirstRun.js';
 import { Projects } from './Projects.js';
 import { SeverityPolicy } from './SeverityPolicy.js';
 import { Roles } from './Roles.js';
 import { Budgets } from './Budgets.js';
+import { Incidents } from './Incidents.js';
 import { ReviewMode } from './ReviewMode.js';
 import { WarnOnly } from './WarnOnly.js';
 import { Notifications } from './Notifications.js';
 import { Runs } from './Runs.js';
 import { DataRetention } from './DataRetention.js';
+import { Suppressions } from './Suppressions.js';
 
 const SECTIONS = [
   { id: 'setup', title: 'Setup checklist', needsPolicy: false },
@@ -24,10 +27,13 @@ const SECTIONS = [
   { id: 'roles', title: 'Roles', needsPolicy: true },
   { id: 'review-mode', title: 'Review mode', needsPolicy: true },
   { id: 'budgets', title: 'Budgets', needsPolicy: true },
+  { id: 'incidents', title: 'Incidents', needsPolicy: true },
   { id: 'warn-only', title: 'Warn-only mode', needsPolicy: true },
   { id: 'notifications', title: 'Notifications', needsPolicy: true },
+  { id: 'suppressions', title: 'Suppressions', needsPolicy: false },
   { id: 'runs', title: 'Recent runs', needsPolicy: false },
   { id: 'keys', title: 'Signing keys', needsPolicy: false },
+  { id: 'ci', title: 'CI verification', needsPolicy: false },
   { id: 'ledger', title: 'Risk ledger', needsPolicy: false },
   { id: 'retention', title: 'Data retention', needsPolicy: false },
   { id: 'demo', title: 'Demo data', needsPolicy: false },
@@ -88,12 +94,15 @@ export function AdminPage({ api }: { api: AdminApi }) {
           {at('roles', <Roles key={`r-${dto!.saved}`} {...p} />)}
           {at('review-mode', <ReviewMode {...p} recentAuthors={dto?.recentReviewAuthors ?? []} />)}
           {at('budgets', <Budgets {...p} />)}
+          {at('incidents', <Incidents key={`i-${dto!.saved}`} {...p} />)}
           {at('warn-only', <WarnOnly api={api} policy={p.policy} onChanged={onSaved} />)}
           {at('notifications', <Notifications api={api} ops={dto!.ops} digest={dto!.digest} />)}
         </>
       )}
+      {at('suppressions', <Suppressions api={api} />)}
       {at('runs', <Runs api={api} />)}
       {at('keys', <Keys api={api} />)}
+      {at('ci', <CiVerification api={api.ci} />)}
       {at('ledger', <LedgerVerify api={api} />)}
       {at('retention', <DataRetention api={api} />)}
       {at('demo', <DemoData api={api} />)}

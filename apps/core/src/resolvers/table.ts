@@ -6,7 +6,11 @@ import { adminGetPolicy, adminInstallGate, adminProjectStatuses, adminPurgeProje
 import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverride } from './acceptances.js';
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
+import { complianceExport, postureControlDrill, postureControls } from './compliance.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
+import { inboxDecide, inboxList } from './inbox.js';
+import { suppressionsCreate, suppressionsList, suppressionsRevoke, suppressionsUnhide } from './suppressions.js';
+import { ciCreateToken, ciRevokeToken, ciTokens } from './ci.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
@@ -19,7 +23,7 @@ export type ResolverFn = (deps: CoreDeps, v: ResolverViewer, payload: Record<str
  * Every Custom UI resolver, by key. Forge registers this table (resolvers/index.ts); the local end-to-end harness
  * (e2e/local) serves the same table over in-memory deps, so the journeys exercise exactly these functions.
  */
-export function resolverTable(env: { enricher: () => Enricher; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null }): Record<string, ResolverFn> {
+export function resolverTable(env: { enricher: () => Enricher; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null; ciTriggerUrl?: () => Promise<string> }): Record<string, ResolverFn> {
   return {
     'panel.get': (deps, v) => panelGet(deps, v),
     'panel.threats': (deps, v, payload) => panelThreats(deps, v, payload as { cursor?: unknown }),
@@ -55,11 +59,23 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'override.breakglass': (deps, v, payload) => breakGlassOverride(deps, v, payload),
     'ledger.verify': (deps, v) => ledgerVerify(deps, { accountId: v.accountId }),
     'ledger.export': (deps, v, payload) => ledgerExport(deps, { accountId: v.accountId }, payload),
+    'compliance.export': (deps, v, payload) => complianceExport(deps, { accountId: v.accountId }, payload),
+    'posture.controls': (deps, v, payload) => postureControls(deps, { accountId: v.accountId }, payload as { project?: unknown }),
+    'posture.controlDrill': (deps, v, payload) => postureControlDrill(deps, { accountId: v.accountId }, payload),
     'ledger.proof': (deps, v, payload) => ledgerProof(deps, { accountId: v.accountId }, payload),
     'ledger.treeHead': (deps, v) => ledgerTreeHead(deps, { accountId: v.accountId }),
     'attestation.copy': (deps, v, payload) => attestationCopy(deps, v, payload),
     'keys.public': (deps, v) => keysPublic(deps, { accountId: v.accountId }),
     'keys.rotate': (deps, v) => keysRotate(deps, { accountId: v.accountId }),
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),
+    'inbox.list': (deps, v, payload) => inboxList(deps, { accountId: v.accountId }, payload),
+    'inbox.decide': (deps, v, payload) => inboxDecide(deps, { accountId: v.accountId }, payload),
+    'suppressions.list': (deps, v) => suppressionsList(deps, { accountId: v.accountId }),
+    'suppressions.create': (deps, v, payload) => suppressionsCreate(deps, { accountId: v.accountId }, payload),
+    'suppressions.revoke': (deps, v, payload) => suppressionsRevoke(deps, { accountId: v.accountId }, payload),
+    'suppressions.unhide': (deps, v, payload) => suppressionsUnhide(deps, v, payload),
+    'ci.tokens': (deps, v) => ciTokens(deps, { accountId: v.accountId }, { triggerUrl: env.ciTriggerUrl ?? (async () => Promise.reject(new Error('no web trigger here'))) }),
+    'ci.createToken': (deps, v, payload) => ciCreateToken(deps, { accountId: v.accountId }, payload),
+    'ci.revokeToken': (deps, v, payload) => ciRevokeToken(deps, { accountId: v.accountId }, payload),
   };
 }

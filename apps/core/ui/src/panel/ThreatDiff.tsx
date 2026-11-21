@@ -7,7 +7,7 @@ import { SeverityLozenge } from '../components/SeverityLozenge.js';
 import { box, field } from './form-styles.js';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-const STATE: Record<string, string> = { accepted: 'accepted', needs_human: 'needs a champion', dismissed: 'dismissed', proposed: 'proposed' };
+const STATE: Record<string, string> = { accepted: 'accepted', needs_human: 'needs a champion', dismissed: 'dismissed', proposed: 'proposed', suppressed: 'hidden by a team rule' };
 
 function Item({ t }: { t: ThreatBrief }) {
   return (

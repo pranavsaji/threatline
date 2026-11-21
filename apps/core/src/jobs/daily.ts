@@ -2,10 +2,11 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { publishWeeklyDigest } from '../services/digest.js';
 import { publishTreeHead } from '../services/transparency.js';
+import { remindRules } from '../services/suppression-service.js';
 
 export const RETENTION_DAYS = 400;
 
-/** Daily: posture snapshot, purge reviews older than 400 days (the ledger is never purged), the Monday digest (PR-4) and the signed ledger tree head (R5). */
+/** Daily: posture snapshot, purge reviews older than 400 days (the ledger is never purged), the Monday digest (PR-4), the signed ledger tree head (R5) and the monthly suppression-rule reminder. */
 export async function daily(deps: CoreDeps): Promise<void> {
   const now = deps.clock.now();
   const snap = await deps.retention.snapshotPosture(now.toISOString().slice(0, 10));
@@ -19,4 +20,7 @@ export async function daily(deps: CoreDeps): Promise<void> {
   // R5: sign today's tree head over the ledger and publish it next to the digest.
   const head = await publishTreeHead(deps).catch(() => null);
   if (!head || !head.ok) log('daily.tree_head_failed', { code: head ? head.error.code : 'internal' });
+  // Once a month: the active team suppression rules, for re-approval, on the ops work item.
+  const reminder = await remindRules(deps, now).catch(() => null);
+  if (!reminder || !reminder.ok) log('daily.suppression_reminder_failed', { code: reminder ? reminder.error.code : 'internal' });
 }

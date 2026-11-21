@@ -102,7 +102,8 @@ describe('Marketplace readiness (Task 33)', () => {
    * developer.atlassian.com on 2026-11-18 (both Preview); the rest per docs/research/forge-api-notes.md. A new module
    * fails this test until its status is checked and added.
    */
-  const NOT_EAP = new Set(['sql', 'trigger', 'consumer', 'scheduledTrigger', 'jira:issuePanel', 'jira:adminPage', 'jira:globalPage', 'jira:dashboardGadget', 'jira:workflowValidator', 'jira:entityProperty', 'action', 'rovo:skill', 'rovo:mcp', 'rovo:agent', 'function', 'llm']);
+  const NOT_EAP = new Set(['sql', 'trigger', 'consumer', 'scheduledTrigger', 'jira:issuePanel', 'jira:adminPage', 'jira:globalPage', 'jira:dashboardGadget', 'jira:workflowValidator', 'jira:entityProperty', 'action', 'rovo:skill', 'rovo:mcp', 'rovo:agent', 'function', 'llm', 'webtrigger']);
+  // `webtrigger` (CI verification, docs/CI_VERIFICATION.md): a long-standing GA Forge module, no scope needed.
   // `llm` (Forge LLMs, Threatline Engine): generally available; checked 2026-11-20 (Atlassian community: "Forge LLMs GA").
   it('uses no EAP module, so no separate production manifest is needed', () => {
     const unknown = Object.keys(m.modules).filter((k) => !NOT_EAP.has(k));

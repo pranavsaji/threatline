@@ -1,4 +1,5 @@
 import { InvocationError, InvocationErrorCode } from '@forge/events';
+import { log } from './adapters/log.js';
 import { getReviewContext } from './actions/get-review-context.js';
 import { submitThreatModel } from './actions/submit-threat-model.js';
 import { withCaller } from './actions/common.js';
@@ -21,6 +22,8 @@ import { onInstallJobs } from './triggers/on-install.js';
 import { onIssueChange } from './triggers/on-issue-change.js';
 import { onPageChange } from './triggers/on-page-change.js';
 import { validateTransition } from './validators/validate-transition.js';
+import { ciVerify, type WebTriggerRequestLike } from './webtriggers/ci-verify.js';
+import { toStaticOutput } from './webtriggers/ci-static.js';
 
 /** Forge entry points for triggers, the job queue and scheduled jobs. Each builds its dependencies per invocation. */
 export async function issueEventHandler(event: unknown, ctx: ForgeContext): Promise<void> {
@@ -44,6 +47,14 @@ export async function jobConsumerHandler(event: { body?: unknown; retryContext?:
 
 /** jira:workflowValidator `threatline-gate`: reads the verdict from app storage (never the user-editable property). */
 export const validateTransitionHandler = async (args: { issue?: { key?: string; id?: string } }, ctx: ForgeContext) => validateTransition(composeCore(ctx), args);
+
+/** webtrigger `ci-verify`: CI reports passing tests; authenticated by a per-site CI token, never by a user. */
+/** Static web trigger (Runs on Atlassian): the full answer is mapped to one of the fixed outputs in manifest.yml. */
+export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => toStaticOutput(await ciVerify(composeCore(ctx), request).catch((e: unknown) => {
+    // A thrown error must still answer with a declared output, never a Forge 500.
+    log('ci.verify_threw', { message: e instanceof Error ? e.message.slice(0, 200) : 'unknown' });
+    return { statusCode: 503, headers: {}, body: '' };
+  }));
 
 export const sweeperHandler = async (_e: unknown, ctx: ForgeContext) => sweep(composeCore(ctx));
 export const hourlyHandler = async (_e: unknown, ctx: ForgeContext) => hourly(composeCore(ctx));

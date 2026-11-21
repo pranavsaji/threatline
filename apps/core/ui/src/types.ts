@@ -2,7 +2,13 @@ export type { PanelDto, FactDto, ThreatExplanation, ThreatDiffDto, ThreatBrief, 
 export type { ApiError } from '../../src/resolvers/errors.js';
 export type { Threat, Requirement, RequirementStatus, Severity, Stride, Citation, Evidence, Acceptance, AcceptanceState } from '@threatline/shared';
 export type { PostureDto, DrillDto } from '../../src/resolvers/posture.js';
+export type { ControlsPostureDto } from '../../src/resolvers/compliance.js';
 export type { ReleaseReadinessResult } from '../../src/actions/release-readiness.js';
 export type { AdminPolicyDto, OpsConfig, DigestConfig, RunDto, RunStage, UsageDto } from '../../src/resolvers/admin.js';
 export type { SitePolicy } from '@threatline/shared';
 export type { DataClass, Exposure } from '@threatline/shared';
+export type { InboxDto, InboxCluster, InboxRow, InboxDecideDto, InboxItemResult } from '../../src/resolvers/inbox.js';
+export type { SuppressionsDto, SuppressionRuleDto } from '../../src/services/suppression-service.js';
+export type { SuppressionRule } from '@threatline/shared';
+export type { DiagramDto } from '../../src/services/diagram-service.js';
+export type { CiTokenInfo, CiTokensDto } from '../../src/resolvers/ci.js';

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { XMLValidator } from 'fast-xml-parser';
 import type { Acceptance, Requirement, Review, Threat } from '@threatline/shared';
 import { DEFAULT_OWNER_NOTES, extractOwnerNotes, renderThreatModel, type ThreatModelDto } from '../src/render/threat-model-storage.js';
+import { layoutDiagram } from '../src/diagram.js';
 
 const review: Review = {
   id: 'rev_10042_2', issueId: '10042', issueKey: 'PAY-7', revision: 2, status: 'ready', contextHash: 'h', riskScore: 72, partial: false,
@@ -100,6 +101,47 @@ describe('renderThreatModel (RQ-5)', () => {
     expect(out).toContain('<h2>Architecture sketch</h2>');
     expect(out).toContain('refund &lt;amount&gt;');
     expect(valid(out)).toBe(true);
+  });
+});
+
+describe('renderThreatModel: data-flow diagram as tables (no inline SVG, no attachment)', () => {
+  const diagram = layoutDiagram({
+    sketch: {
+      externalServices: ['Customer <browser>'],
+      components: ['Refund API'],
+      dataStores: ['Orders DB'],
+      trustBoundaries: ['Public internet to Refund API', 'Partner VPN'],
+      flows: [
+        { from: 'Customer <browser>', to: 'Refund API', data: 'refund "request" & card' },
+        { from: 'Refund API', to: 'Orders DB', data: 'order lookup' },
+      ],
+    },
+    threats: [{ id: 'thr_1', title: 'Forged refund webhooks 1', component: 'refund api', severity: 'High', state: 'accepted' }],
+  });
+
+  it('lists elements, data flows (crossing a boundary or not) and trust boundaries, escaped and well-formed', () => {
+    const out = renderThreatModel(dto({ diagram }));
+    expect(valid(out)).toBe(true);
+    expect(out).toContain('<h2>Data-flow diagram</h2>');
+    expect(out).toContain('<h3>Data flows</h3>');
+    expect(out).toContain('<h3>Trust boundaries</h3>');
+    expect(out).toContain('Customer &lt;browser&gt;');
+    expect(out).toContain('refund &quot;request&quot; &amp; card');
+    expect(out).not.toContain('<svg');
+    expect(out).not.toContain('<browser>');
+    // From, to, data, crosses: the first flow crosses into the boundary, the second leaves it.
+    expect(out).toMatch(/<td>1<\/td><td>Customer &lt;browser&gt;<\/td><td>Refund API<\/td><td>refund &quot;request&quot; &amp; card<\/td><td>Yes<\/td>/);
+    expect(out).toContain('<td>Partner VPN</td><td>Not tied to an element</td>');
+    expect(out).toMatch(/<td>Refund API<\/td><td>Process<\/td><td>Public internet to Refund API<\/td><td>1<\/td><td>High<\/td>/);
+    // The section sits before the threats and the owner notes survive it.
+    expect(out.indexOf('Data-flow diagram')).toBeLessThan(out.indexOf('<h2>Threats</h2>'));
+    expect(extractOwnerNotes(out)).toBe(DEFAULT_OWNER_NOTES);
+  });
+
+  it('says when parts of the architecture were left out for this page’s readers, and is skipped when there is nothing to draw', () => {
+    expect(renderThreatModel(dto({ diagram, diagramPartial: true }))).toMatch(/not everyone who can read this page can open/);
+    expect(renderThreatModel(dto({ diagram: layoutDiagram({ threats: [] }) }))).not.toContain('Data-flow diagram');
+    expect(renderThreatModel(dto())).not.toContain('Data-flow diagram');
   });
 });
 

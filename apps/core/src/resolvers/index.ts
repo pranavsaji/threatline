@@ -1,5 +1,5 @@
 import Resolver from '@forge/resolver';
-import { getAppContext } from '@forge/api';
+import { getAppContext, webTrigger } from '@forge/api';
 import queryKeys from '../../graph/query-keys.json';
 import { composeCore } from '../composition.js';
 import { forgeGraphRequest, graphEnricher } from '../adapters/graph-enricher.js';
@@ -23,6 +23,7 @@ const table = resolverTable({
     const keys = await kvsSigningKeys(systemClock).publicKeys();
     return keys.ok && Object.keys(keys.value).length > 0;
   },
+  ciTriggerUrl: () => webTrigger.getUrl('ci-verify'),
   gateExtensionKey: () => {
     try {
       const c = getAppContext();

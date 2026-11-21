@@ -3,6 +3,7 @@ import { appError, err, ok, type Citation, type DismissReason, type Mapping, typ
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
 import { isBudgetPaused } from './budget.js';
+import { log } from '../adapters/log.js';
 import { opsAlert } from './ops-alert.js';
 import { refreshVerdict } from './verdict-service.js';
 
@@ -25,7 +26,7 @@ export function triageable(review: Review | null): Result<Review> {
 }
 
 /** Keeps one requirement row per accepted / needs-human threat, in step with its severity. */
-async function syncRequirement(deps: CoreDeps, issue: JiraIssue, t: Threat): Promise<Result<void>> {
+export async function syncRequirement(deps: CoreDeps, issue: JiraIssue, t: Threat): Promise<Result<void>> {
   const reqs = await deps.requirements.forIssue(issue.id);
   if (!reqs.ok) return reqs;
   const existing = reqs.value.find((r) => r.threatId === t.id);
@@ -36,10 +37,30 @@ async function syncRequirement(deps: CoreDeps, issue: JiraIssue, t: Threat): Pro
 
 const uniq = <T>(xs: T[], key: (x: T) => string) => [...new Map(xs.map((x) => [key(x), x])).values()];
 
+/** What the ledger records about the operation itself (the reason code and note of a dismissal, the edited fields…). */
+function opDetails(op: TriageOp): Record<string, unknown> {
+  switch (op.op) {
+    case 'accept':
+      return {};
+    case 'dismiss':
+      return { reason: op.reason, ...(op.note ? { note: op.note } : {}) };
+    case 'edit':
+      return { patch: op.patch };
+    case 'merge':
+      return { intoThreatId: op.intoThreatId };
+    case 'split':
+      return { parts: op.parts.map((p) => p.title) };
+  }
+}
+
 /**
  * TM-7: a security champion accepts, dismisses (with a reason code, which feeds de-duplication of later reviews — TM-5),
  * edits, merges or splits a threat. `all` is every threat of the review; the caller has already checked that the champion
  * can see `t` (and the merge target). Returns the changed threats.
+ *
+ * Every decision is ledgered (`threat.triaged`) before anything is saved, so none is ever saved unrecorded; when the
+ * ledger cannot record it, nothing changes. When a save then fails, a `threat.triage_failed` entry says the recorded
+ * decision did not (fully) take effect. The issue panel and the champion inbox both decide through here.
  */
 export async function applyTriage(
   deps: CoreDeps,
@@ -51,8 +72,52 @@ export async function applyTriage(
   op: TriageOp,
   visible: ReadonlySet<string>,
 ): Promise<Result<Threat[]>> {
+  const refused = precheck(all, t, op, visible);
+  if (refused) return refused;
+  const ids = { issueId: issue.id, issueKey: issue.key, reviewId: review.id, threatId: t.id };
+  const row = await appendLedger(deps.ledger, deps.clock, 'threat.triaged', { ...ids, title: t.title, severity: t.severity, from: t.state, op: op.op, ...opDetails(op) }, actor);
+  if (!row.ok) return row;
+  const r = await saveTriage(deps, actor, issue, review, all, t, op, visible);
+  if (!r.ok) {
+    const undo = await appendLedger(deps.ledger, deps.clock, 'threat.triage_failed', { ...ids, failedEntryHash: row.value.entryHash, code: r.error.code }, actor);
+    if (!undo.ok) log('threat.triage_failed_unrecorded', { threatId: t.id, code: undo.error.code });
+  }
+  return r;
+}
+
+/** Refusals known before anything is written, so a refused decision leaves no ledger entry. */
+/** A threat a team rule hides is triaged only after a champion unhides it here (that is ledgered). */
+const hiddenBy = (x: Threat) => (x.state === 'suppressed' ? `“${x.title}” is hidden by a team rule (${x.suppression?.ruleId ?? 'unknown'}). Unhide it here first.` : null);
+
+function precheck(all: readonly Threat[], t: Threat, op: TriageOp, visible: ReadonlySet<string>): Result<never> | null {
+  // Refused before the ledger: an edit could otherwise raise a hidden threat to a blocking severity while it stays hidden.
+  const hidden = hiddenBy(t) ?? (op.op === 'merge' ? hiddenBy(all.find((x) => x.id === op.intoThreatId) ?? t) : null);
+  if (hidden) return err(appError('validation', hidden));
+  if (op.op === 'merge') {
+    const into = all.find((x) => x.id === op.intoThreatId);
+    if (!into || !visible.has(into.id) || into.id === t.id) return err(appError('not_found', 'merge target not found'));
+    if (into.state === 'dismissed') return err(appError('validation', 'Cannot merge into a dismissed threat.'));
+  }
+  if (op.op === 'split' && op.parts.some((_, i) => all.some((x) => x.id === `${t.id}_s${i + 1}`))) return err(appError('conflict', 'This threat was already split.'));
+  return null;
+}
+
+async function saveTriage(
+  deps: CoreDeps,
+  actor: string,
+  issue: JiraIssue,
+  review: Review,
+  all: readonly Threat[],
+  t: Threat,
+  op: TriageOp,
+  visible: ReadonlySet<string>,
+): Promise<Result<Threat[]>> {
   const feedback = (action: 'dismiss' | 'accept' | 'edit', extra: { reason?: DismissReason; note?: string } = {}) =>
-    deps.feedback.record({ threatId: t.id, component: t.component, title: t.title, stride: t.stride, actor, action, ...extra });
+    deps.feedback.record({
+      threatId: t.id, component: t.component, title: t.title, stride: t.stride, actor, action, ...extra,
+      // Where and when: dismissals on several work items of a project suggest a team suppression rule.
+      issueId: issue.id, issueKey: issue.key, projectKey: issue.project.key, at: deps.clock.now().toISOString(),
+    });
   const update = async (id: string, patch: Partial<Threat>) => deps.reviews.updateThreat(id, patch);
   const changed: Threat[] = [];
 
@@ -70,8 +135,10 @@ export async function applyTriage(
     case 'dismiss': {
       const u = await update(t.id, { state: 'dismissed', dismissReason: op.reason });
       if (!u.ok) return u;
+      // The dismissal is saved (and ledgered); the feedback row only feeds suppression suggestions, so a failure to
+      // write it must not report the decision as failed.
       const f = await feedback('dismiss', { reason: op.reason, ...(op.note ? { note: op.note } : {}) });
-      if (!f.ok) return f;
+      if (!f.ok) log('triage.feedback_failed', { threatId: t.id, code: f.error.code });
       changed.push({ ...t, state: 'dismissed', dismissReason: op.reason });
       break;
     }

@@ -5,6 +5,7 @@ import { errorText, isError, type AdminApi, type SeedResult } from '../bridge.js
 import type { ApiError } from '../types.js';
 import { box, errorText as errorStyle, field, label } from '../panel/form-styles.js';
 import { useInFlight } from '../components/in-flight.js';
+import { hint } from './policy-editor.js';
 
 /** Task 24: load the demo (epic, stories, design page with a poisoned paragraph, incidents) into a project and space. */
 export function DemoData({ api }: { api: AdminApi }) {
@@ -63,6 +64,11 @@ export function DemoData({ api }: { api: AdminApi }) {
             <a href={done.designPageUrl} target="_blank" rel="noreferrer" style={{ color: token('color.link') }}>
               Open the design page
             </a>
+          </p>
+        )}
+        {done && (
+          <p style={hint}>
+            Incidents reopen reviews: once the stories are reviewed, create a work item labelled incident on the support-agent component. The open stories are re-reviewed with it as context, and the panel says why.
           </p>
         )}
       </div>

@@ -4,6 +4,7 @@ import type {
   ContextFact,
   DismissReason,
   Requirement,
+  RequirementStatus,
   Result,
   Review,
   ReviewStatus,
@@ -100,6 +101,17 @@ export interface ReviewRepo {
   recent(limit: number, since?: string): Promise<Result<Review[]>>;
   /** The review's stage trace in time order, without checkpoints. */
   stages(reviewId: string): Promise<Result<StageTrace[]>>;
+  /**
+   * Scale (champion inbox): threats in state `needs_human` on each work item's latest review, most severe first, then
+   * oldest review first, at most `limit` (capped at 500). Indexed on the threat state.
+   */
+  needsHuman(limit: number): Promise<Result<NeedsHumanRow[]>>;
+}
+
+/** A threat waiting for a security champion, with the (latest) review it belongs to. */
+export interface NeedsHumanRow {
+  threat: Threat;
+  review: Review;
 }
 
 export interface StageTrace {
@@ -113,6 +125,11 @@ export interface RequirementRepo {
   forIssue(issueId: string): Promise<Result<Requirement[]>>;
   get(id: string): Promise<Result<Requirement | null>>;
   upsert(r: Requirement): Promise<Result<void>>;
+  /**
+   * Compare-and-set: saves `r` over an existing row only while that row's status is one of `expected`; ok(false) when it
+   * is not (or the row is gone), so a change made meanwhile is never overwritten.
+   */
+  upsertIf(r: Requirement, expected: readonly RequirementStatus[]): Promise<Result<boolean>>;
   /** Removes a requirement row nobody has started (used when its rule-based threat becomes covered). */
   remove(id: string): Promise<Result<void>>;
 }
@@ -136,7 +153,16 @@ export type LedgerEventType =
   | 'reviews.resumed'
   | 'review.sample'
   | 'review.sample_rejected'
-  | 'key.rotated';
+  | 'key.rotated'
+  | 'threat.triaged'
+  | 'threat.triage_failed'
+  | 'review.reopened_by_incident'
+  | 'suppression.created'
+  | 'suppression.revoked'
+  | 'suppression.expired'
+  | 'suppression.unhidden'
+  | 'ci_token.created'
+  | 'ci_token.revoked';
 
 export interface LedgerInsert {
   seq: number;
@@ -182,10 +208,19 @@ export interface FeedbackRow {
   action: 'dismiss' | 'accept' | 'edit';
   reason?: DismissReason;
   note?: string;
+  /** The work item and when (written from migration v7 on; older rows have none and feed no suppression suggestion). */
+  issueId?: string;
+  issueKey?: string;
+  projectKey?: string;
+  at?: string;
 }
+/** A dismissal with a reason, on a work item of a project: the evidence a suppression suggestion rests on. */
+export type DismissalRow = Required<Pick<FeedbackRow, 'threatId' | 'component' | 'title' | 'stride' | 'actor' | 'reason' | 'issueId' | 'issueKey' | 'projectKey' | 'at'>>;
 export interface FeedbackRepo {
   dismissedFor(component: string): Promise<Result<Array<{ title: string; stride: Stride; reason: DismissReason }>>>;
   record(f: FeedbackRow): Promise<Result<void>>;
+  /** Dismissals with a reason recorded at or after `sinceIso` on a known work item, newest first, at most `limit` (capped at 2000). */
+  dismissalsSince(sinceIso: string, limit: number): Promise<Result<DismissalRow[]>>;
 }
 
 export interface IssueRow {

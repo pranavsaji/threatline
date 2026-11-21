@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ts from 'typescript';
-import { dueDate, fixBy, SLA_DAYS, testScaffold, type Requirement } from '../src/index.js';
+import { dueDate, fixBy, requirementIdsIn, SLA_DAYS, testScaffold, type Requirement } from '../src/index.js';
 
 const req = (o: Partial<Requirement> = {}): Requirement => ({
   id: 'req_1a2b3c4d5e6f7a8b',
@@ -28,7 +28,7 @@ const parsesAsTs = (code: string) => {
 describe('testScaffold (feature: test skeletons from requirements)', () => {
   it('TypeScript: one describe per requirement, one test per Given/When/Then, tagged with the requirement id and ASVS', () => {
     const code = testScaffold(req(), 'typescript');
-    expect(code).toContain("describe('PAY-101 Mitigate: Forged refund webhooks', () => {");
+    expect(code).toContain("describe('PAY-101 Mitigate: Forged refund webhooks [req_1a2b3c4d5e6f7a8b]', () => {");
     expect(code.match(/\bit\('/g)).toHaveLength(2);
     expect(code).toContain('Threatline requirement req_1a2b3c4d5e6f7a8b');
     expect(code).toContain('ASVS V6.3.1');
@@ -38,13 +38,13 @@ describe('testScaffold (feature: test skeletons from requirements)', () => {
 
   it('Python (pytest) and Java (JUnit 5) skeletons use valid identifiers and fail until written', () => {
     const py = testScaffold(req(), 'python');
-    expect(py).toMatch(/^def test_[a-z0-9_]{1,80}\(\):$/m);
+    expect(py).toMatch(/^def test_req_1a2b3c4d5e6f7a8b_[a-z0-9_]{1,80}\(\):$/m);
     expect(py.match(/^def test_/gm)).toHaveLength(2);
     expect(py).toContain('raise NotImplementedError');
     const java = testScaffold(req(), 'java');
     expect(java).toMatch(/class Pay101SecurityTest \{/);
     expect(java.match(/@Test/g)).toHaveLength(2);
-    expect(java).toMatch(/void [a-z][A-Za-z0-9]{0,80}\(\) \{/);
+    expect(java).toMatch(/void req_1a2b3c4d5e6f7a8b_[a-z][A-Za-z0-9]{0,80}\(\) \{/);
     expect(java).toContain('fail("Write this test');
   });
 
@@ -78,6 +78,27 @@ describe('testScaffold: Java unicode escapes (commit security review)', () => {
     const lines = javaUnicode(java).split(/\r\n|\r|\n/);
     expect(lines.filter((l) => /System\.exit|Runtime\.getRuntime|int a = 1/.test(l)).every((l) => l.trim().startsWith('//') || /^\s*fail\(".*"\);$/.test(l))).toBe(true);
     for (const l of lines.filter((x) => x.includes('fail('))) expect(l).toMatch(/^\s*fail\("(?:[^"\\]|\\.)*"\);$/);
+  });
+});
+
+describe('testScaffold: the requirement id is in every test name (feature: verification from CI)', () => {
+  it('each generated test reports a name CI verification can read the requirement id from', () => {
+    // vitest/jest JUnit reports join the describe and it titles; pytest and surefire report the function or method name.
+    const code = testScaffold(req(), 'typescript');
+    expect(requirementIdsIn(/describe\('([^']*)'/.exec(code)![1]!)).toEqual(['req_1a2b3c4d5e6f7a8b']);
+    for (const lang of ['python', 'java'] as const) {
+      const names = [...testScaffold(req(), lang).matchAll(/(?:def|void) (\w+)\(/g)].map((m) => m[1]!);
+      expect(names, lang).toHaveLength(2);
+      for (const n of names) expect(requirementIdsIn(n), `${lang} ${n}`).toEqual(['req_1a2b3c4d5e6f7a8b']);
+    }
+  });
+
+  it('security: an id not in Threatline’s own format never reaches an identifier', () => {
+    const odd = req({ id: 'req_x(); import os #' });
+    expect(testScaffold(odd, 'python')).not.toMatch(/def test_req_x/);
+    expect(testScaffold(odd, 'java')).not.toMatch(/void req_x/);
+    expect(parsesAsTs(testScaffold(odd, 'typescript'))).toEqual([]);
+    expect(testScaffold(odd, 'typescript')).not.toContain('[req_x');
   });
 });
 

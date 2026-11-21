@@ -6,8 +6,9 @@ branding:
   color: red
 inputs:
   public-keys:
-    description: Threatline's public signing keys, one per line (Threatline admin → Signing keys → Copy public key). They are public; no secret is needed. After a key rotation, remove the old key or write "<key> until=<ISO date>" so it stops being trusted then.
-    required: true
+    description: Threatline's public signing keys, one per line (Threatline admin → Signing keys → Copy public key). They are public; no secret is needed. After a key rotation, remove the old key or write "<key> until=<ISO date>" so it stops being trusted then. Required unless merge-gate is false.
+    required: false
+    default: ''
   sensitive-paths:
     description: Extra sensitive path globs, one per line, added to Threatline's defaults (which include .github/workflows, .github/actions and .threatline). The base branch's .threatline/policy.yml can add more.
     required: false
@@ -28,11 +29,29 @@ inputs:
     description: Token used to read the pull request (read-only).
     required: false
     default: ${{ github.token }}
+  merge-gate:
+    description: true (default) runs the merge gate. false only reports test results (in a test workflow, see docs/CI_VERIFICATION.md).
+    required: false
+    default: 'true'
+  threatline-url:
+    description: CI verification. The web trigger URL from Threatline admin → CI verification. With threatline-token and junit, the step reports which requirement tests passed, and Threatline marks those requirements Verified.
+    required: false
+    default: ''
+  threatline-token:
+    description: CI verification. A Threatline CI token, from a secret (for example secrets.THREATLINE_CI_TOKEN). Never paste it into the workflow file.
+    required: false
+    default: ''
+  junit:
+    description: CI verification. JUnit XML files to read, as path globs relative to the workspace, one per line (for example reports/**/*.xml).
+    required: false
+    default: ''
 outputs:
   outcome:
     description: pass_attested, pass_not_sensitive, warn, fail_missing, fail_signature, fail_stale_commit, fail_expired, fail_other_repo, fail_other_issue or config_error.
   message:
     description: The message shown on the check.
+  ci-report:
+    description: reported, warning (Threatline could not be reached, or no work item was named) or failed, when CI verification is configured.
 runs:
   using: node24
   main: dist/index.mjs

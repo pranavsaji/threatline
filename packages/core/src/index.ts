@@ -1,5 +1,6 @@
 export * from './ports.js';
 export * from './policy.js';
+export * from './incidents.js';
 export * from './diffscore.js';
 export * from './context/index.js';
 export * from './threats/index.js';
@@ -20,3 +21,6 @@ export * from './render/threat-model-storage.js';
 export * from './transparency.js';
 export * from './merge-gate.js';
 export * from './verify.js';
+export * from './compliance.js';
+export * from './suppressions.js';
+export * from './diagram.js';

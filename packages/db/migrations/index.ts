@@ -90,4 +90,34 @@ export const MIGRATIONS: Migration[] = [
       `CREATE INDEX idx_ledger_type_time ON ledger (event_type, created_at)`,
     ],
   },
+  {
+    version: 7,
+    name: 'suppression_rules',
+    // Team learning: a project's suppression rules (immutable fields as JSON; status and who ended it as columns, so a
+    // revoke or expiry is one conditional UPDATE), the work items each rule hid a threat on or was unhidden on, and the
+    // work item and time of each dismissal (rows written before this have none and feed no suggestion).
+    statements: [
+      `CREATE TABLE IF NOT EXISTS suppression_rules (
+        id VARCHAR(40) PRIMARY KEY, project_key VARCHAR(40) NOT NULL, status VARCHAR(10) NOT NULL, created_at VARCHAR(30) NOT NULL,
+        expires_at VARCHAR(30) NOT NULL, ended_by VARCHAR(128), ended_at VARCHAR(30), end_reason VARCHAR(300), rule_json MEDIUMTEXT NOT NULL)`,
+      `CREATE INDEX idx_suppression_rules_project ON suppression_rules (project_key, status, expires_at)`,
+      `CREATE INDEX idx_suppression_rules_status ON suppression_rules (status, created_at)`,
+      `CREATE TABLE IF NOT EXISTS suppression_matches (
+        rule_id VARCHAR(40) NOT NULL, issue_id VARCHAR(40) NOT NULL, issue_key VARCHAR(40) NOT NULL, matched_at VARCHAR(30) NOT NULL,
+        unhidden_by VARCHAR(128), unhidden_at VARCHAR(30), PRIMARY KEY (rule_id, issue_id))`,
+      `CREATE INDEX idx_suppression_matches_issue ON suppression_matches (issue_id)`,
+      `ALTER TABLE feedback ADD COLUMN issue_id VARCHAR(40)`,
+      `ALTER TABLE feedback ADD COLUMN issue_key VARCHAR(40)`,
+      `ALTER TABLE feedback ADD COLUMN project_key VARCHAR(40)`,
+      `ALTER TABLE feedback ADD COLUMN created_at VARCHAR(30)`,
+      `CREATE INDEX idx_feedback_action_time ON feedback (action, created_at)`,
+    ],
+  },
+  {
+    version: 8,
+    name: 'threats_state_index',
+    // Scale: the champion inbox reads the threats waiting for a champion (state needs_human) across the site through
+    // this index instead of scanning every threat ever stored. Version 6 was never used (the Forge runner tracks steps by name, so the gap is harmless).
+    statements: [`CREATE INDEX idx_threats_state ON threats (state, severity)`],
+  },
 ];

@@ -168,6 +168,35 @@ describe('threats.triage (TM-7)', () => {
     const { t } = await settled();
     expect(await threatsTriage(t.deps, who, { threatId: 'thr_nope', op: 'accept' })).toMatchObject({ error: 'not_found' });
   });
+
+  it('every decision is ledgered (who, which threat, the change and the dismissal reason), before it is saved', async () => {
+    const { t, forged, leak, reviewId } = await settled();
+    await t.deps.reviews.updateThreat(forged.id, { state: 'needs_human' });
+    await threatsTriage(t.deps, who, { threatId: forged.id, op: 'accept' });
+    await threatsTriage(t.deps, who, { threatId: leak.id, op: 'dismiss', reason: 'already_mitigated', note: 'Logs are scrubbed' });
+    const rows = await t.deps.ledger.ofTypes(['threat.triaged']);
+    expect(rows.ok && rows.value.map((r) => ({ actor: r.actor, ...r.payload }))).toEqual([
+      { actor: 'acc-champ', issueId: ISSUE, issueKey: 'PAY-7', reviewId, threatId: forged.id, title: 'Forged refund webhooks', severity: forged.severity, from: 'needs_human', op: 'accept' },
+      { actor: 'acc-champ', issueId: ISSUE, issueKey: 'PAY-7', reviewId, threatId: leak.id, title: leak.title, severity: leak.severity, from: 'accepted', op: 'dismiss', reason: 'already_mitigated', note: 'Logs are scrubbed' },
+    ]);
+  });
+
+  it('a decision that could not be saved is marked failed in the ledger, so the ledger never shows a change that never happened', async () => {
+    const { t, forged } = await settled();
+    t.deps.reviews.updateThreat = async () => ({ ok: false, error: { code: 'internal', message: 'db down' } });
+    expect(await threatsTriage(t.deps, who, { threatId: forged.id, op: 'accept' })).toMatchObject({ error: 'unavailable' });
+    const recorded = await t.deps.ledger.ofTypes(['threat.triaged', 'threat.triage_failed']);
+    expect(recorded.ok && recorded.value.map((r) => r.eventType)).toEqual(['threat.triaged', 'threat.triage_failed']);
+    const [triaged, failed] = recorded.ok ? recorded.value : [];
+    expect(failed!.payload).toMatchObject({ threatId: forged.id, issueId: ISSUE, failedEntryHash: triaged!.entryHash, code: 'internal' });
+  });
+
+  it('nothing changes when the ledger cannot record the decision (fail closed)', async () => {
+    const { t, forged, all } = await settled();
+    t.deps.ledger.append = async () => ({ ok: false, error: { code: 'internal', message: 'ledger down' } });
+    expect(await threatsTriage(t.deps, who, { threatId: forged.id, op: 'dismiss', reason: 'false_positive' })).toMatchObject({ error: 'unavailable' });
+    expect((await all()).find((x) => x.id === forged.id)?.state).toBe('accepted');
+  });
 });
 
 describe('review.confirm', () => {

@@ -74,3 +74,5 @@ export function asvsSearch(keywords: string[], limit: number): AsvsReq[] {
   scored.sort((a, b) => b.score - a.score || a.r.level - b.r.level || a.idx - b.idx);
   return scored.slice(0, limit).map((x) => x.r);
 }
+
+export * from './compliance.js';

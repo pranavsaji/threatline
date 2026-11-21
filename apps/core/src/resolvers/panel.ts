@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ACCEPTANCE_EVENTS, rebuildAcceptances, reviewSignals, riskScore, threatDiff, whatIfScore, type DiscardedThreat, type Role } from '@threatline/core';
-import { cweById, getAsvs } from '@threatline/frameworks';
+import { cweById, getAsvs, type ControlRef } from '@threatline/frameworks';
+import { requirementControls } from '@threatline/core';
 import { DataClassSchema, ExposureSchema, severityRank, type Acceptance, type DataClass, type Exposure, type Severity, type ContextFact, type Requirement, type Review, type Threat, type Verdict } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
@@ -11,6 +12,8 @@ import { rolesOf } from '../services/roles.js';
 import { readVerdict, refreshVerdict, verdictKey } from '../services/verdict-service.js';
 import { newScopeCache, scopeForViewer, type ScopeCache } from '../services/viewer-scope.js';
 import { PAGE_KEY } from '../services/confluence-page.js';
+import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
+import { buildDiagram, type DiagramDto } from '../services/diagram-service.js';
 import type { ApiError } from './errors.js';
 
 export const PAGE_SIZE = 50;
@@ -49,6 +52,8 @@ export interface PanelDto {
   hiddenDiscarded: number;
   facts: FactDto[];
   requirements: Requirement[];
+  /** Per shown requirement, the compliance controls its ASVS ids map to (indicative, not an audit opinion). */
+  requirementControls?: Record<string, ControlRef[]>;
   hiddenRequirements: number;
   /** Risk acceptances for the requirements this viewer can see (RL-1). */
   acceptances: Acceptance[];
@@ -56,11 +61,14 @@ export interface PanelDto {
   viewerAccountId: string;
   /** What the accept-risk form needs to cap expiry and preview the approver (RL-2). */
   acceptancePolicy: { maxExpiryDays: { Critical: number; default: number }; techLeadMaxSeverity: Severity; championGroup: string; techLeadGroup: string };
-  history: Array<{ revision: number; createdAt: string; riskScore: number; status: Review['status']; added: number; removed: number }>;
+  /** `reopenedBy`: an incident caused this revision (docs/INCIDENTS.md); its key is null for a viewer who cannot open it. */
+  history: Array<{ revision: number; createdAt: string; riskScore: number; status: Review['status']; added: number; removed: number; reopenedBy?: ReopenedBy }>;
   samples: { received: number; expected: number };
   roles: Role[];
   /** The published Confluence threat-model page, if any (RQ-5). */
   threatModelPage: { url: string } | null;
+  /** The data-flow diagram of the latest review, scoped to this viewer (absent before the first review). */
+  diagram?: DiagramDto;
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited' };
@@ -181,6 +189,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   let discarded: DiscardedThreat[] = [];
   let hiddenDiscarded = 0;
   let score = review?.riskScore ?? 0;
+  let sketchVisible = false;
   if (review) {
     const scoped = await scopedReview(deps, v, review.id, cache);
     if (!scoped) return { error: 'unavailable' };
@@ -192,6 +201,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     const d = await deps.reviews.discarded(review.id);
     const all = d.ok ? d.value : [];
     // Discarded entries carry no citations, so they are shown only to a viewer who can see every source.
+    sketchVisible = scoped.hiddenFacts === 0;
     if (scoped.hiddenFacts === 0) discarded = all;
     else hiddenDiscarded = all.length;
   }
@@ -201,11 +211,13 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const scopedRevisions = await Promise.all(revisions.map((r) => scopedReview(deps, v, r.id, cache)));
   if (scopedRevisions.some((x) => x === null)) return { error: 'unavailable' };
   const threatSets = scopedRevisions.map((x) => x!.threats);
+  const causes = await reopenedBy(deps, v.accountId, revisions.map((r) => r.id));
   const hist = revisions.map((r, i) => {
     const cur = threatSets[i] ?? [];
     const prev = i > 0 ? (threatSets[i - 1] ?? []) : [];
     const d = threatDiff(prev, cur);
-    return { revision: r.revision, createdAt: r.createdAt, riskScore: viewerScore(r.riskScore, scopedRevisions[i]!), status: r.status, added: d.added.length, removed: d.removed.length };
+    const cause = causes[i];
+    return { revision: r.revision, createdAt: r.createdAt, riskScore: viewerScore(r.riskScore, scopedRevisions[i]!), status: r.status, added: d.added.length, removed: d.removed.length, ...(cause ? { reopenedBy: cause } : {}) };
   });
 
   // Fail closed: a requirement is shown only when its threat is visible to this viewer in the latest review or in one
@@ -219,6 +231,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const shownIds = new Set(shownRequirements.map((r) => r.id));
   const acceptances = rebuildAcceptances(ledger.value, deps.clock.now()).filter((a) => shownIds.has(a.requirementId));
   const p = policy.value;
+  const diagram = review ? await buildDiagram(deps, review.id, { threats, requirements: requirements.value, sketchVisible }) : undefined;
 
   return {
     issueId: v.issueId,
@@ -234,6 +247,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     hiddenDiscarded,
     facts,
     requirements: shownRequirements,
+    requirementControls: Object.fromEntries(shownRequirements.map((r) => [r.id, requirementControls(r)])),
     hiddenRequirements,
     acceptances,
     viewerAccountId: v.accountId,
@@ -242,6 +256,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     samples: { received: review?.samplesReceived ?? 0, expected: review?.samplesExpected ?? 0 },
     roles,
     threatModelPage: page && typeof page.url === 'string' ? { url: page.url } : null,
+    ...(diagram ? { diagram } : {}),
   };
 }
 

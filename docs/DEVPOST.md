@@ -37,9 +37,14 @@ verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the prod
 Threatline Engine's full path: all 15 of 15 poisoned cases held and high-severity recall was 91.7% (on
 `claude-sonnet-4-5`: 14 of 15 and 90.0%). Every run is recorded in the repository and replays offline.
 
-**Also:** a hash-chained, Merkle-logged risk ledger with offline inclusion proofs; MCP tools and a Rovo agent so coding
-agents (Claude Code, Cursor) see the same requirements; a posture dashboard and gadget; Confluence threat-model pages;
-break-glass overrides with written reasons; warn-only mode that expires after 14 days.
+**Also:** CI verification (tests named after a requirement pass in CI and close it, with the run as evidence);
+incidents that reopen the reviews of open work on the same component; a champion inbox across projects; a data-flow
+diagram of each review with its threats pinned to it; team suppression rules that can never hide a blocking threat;
+indicative SOC 2, ISO 27001 and PCI DSS control mapping; a hash-chained, Merkle-logged risk ledger with offline
+inclusion proofs; MCP tools and a Rovo agent so coding agents (Claude Code, Cursor) see the same requirements; a
+posture dashboard and gadget; Confluence threat-model pages; break-glass overrides with written reasons; warn-only mode
+that expires after 14 days. It stays eligible for Runs on Atlassian: no egress, and the CI endpoint is a static web
+trigger that can only answer with fixed messages.
 
 ## How we built it
 
@@ -71,7 +76,8 @@ verbatim quotes, coverage, the verifier) mattered more than adding threat types.
 
 ## What's next
 
-Marketplace listing, Jira Service Management incident feedback into reviews, and per-team policies.
+Marketplace listing, a check that a pull request really touches the code a requirement points to, Teamwork Graph
+memory of past incidents across the organisation, and fix suggestions proposed as pull requests.
 
 ## Demo video (3:08)
 

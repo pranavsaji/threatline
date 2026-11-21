@@ -8,14 +8,19 @@ import { fakeHttp, fixture, noSleep, type Reply } from './fake-http.js';
 const CLOUD = 'c0ffee';
 const ACTOR = { actorAccountId: 'acc-actor' };
 
-function setup(over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; siteUrl?: () => Promise<string> } = {}) {
+const PROJECT = JSON.stringify({ id: '10000', key: 'PAY', issueTypes: [{ id: '10001', name: 'Story' }, { id: '10004', name: 'Incident' }] });
+
+function setup(
+  over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; project?: Reply; siteUrl?: () => Promise<string>; incidentRule?: { labels: string[]; issueTypes: string[] } } = {},
+) {
   const jiraHttp = fakeHttp([
+    [/GET \/rest\/api\/3\/project\/PAY$/, over.project ?? { status: 200, body: PROJECT }],
     [/GET \/rest\/api\/3\/issue\/10042\?/, { status: 200, body: fixture('jira', 'issue') }],
     [/GET \/rest\/api\/3\/issue\/10040\?/, over.parent ?? { status: 200, body: fixture('jira', 'parent') }],
     [/GET \/rest\/api\/3\/issue\/10042\/comment/, over.comments ?? { status: 200, body: fixture('jira', 'comments') }],
     [/GET \/rest\/api\/3\/issue\/10042\/remotelink/, { status: 200, body: fixture('jira', 'remotelinks') }],
     [/POST \/rest\/api\/3\/search\/jql/, [{ status: 200, body: fixture('jira', 'search-page1') }, { status: 200, body: fixture('jira', 'search-page2') }], /"jql":"parent = 10042"/],
-    [/POST \/rest\/api\/3\/search\/jql/, over.incidents ?? { status: 200, body: fixture('jira', 'incidents') }, /labels = incident/],
+    [/POST \/rest\/api\/3\/search\/jql/, over.incidents ?? { status: 200, body: fixture('jira', 'incidents') }, /created >= -90d/],
     [/POST \/rest\/api\/3\/permissions\/check/, over.incidentBrowse ?? { status: 200, body: '{"projectPermissions":[{"permission":"BROWSE_PROJECTS","issues":[10050]}]}' }],
   ]);
   const confHttp = fakeHttp([
@@ -26,7 +31,7 @@ function setup(over: { page?: Reply; comments?: Reply; incidents?: Reply; parent
   const reviews = memoryReviewRepo();
   const issues = memoryIssueRepo();
   const clock = fixedClock('2026-11-15T12:00:00Z');
-  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}) });
+  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}), ...(over.incidentRule ? { incidentRule: async () => over.incidentRule! } : {}) });
   return { g, reviews, issues, jiraCalls: jiraHttp.calls, confCalls: confHttp.calls };
 }
 
@@ -148,11 +153,58 @@ describe('restGatherer', () => {
     expect(page?.injectionSuspected).toBe(true);
   });
 
-  it('the incidents JQL quotes component names and scopes to the project', async () => {
+  const incidentJql = (calls: Array<{ init?: { body?: string } | undefined }>) => {
+    const body = calls.map((c) => c.init?.body ?? '').find((b) => b.includes('created >= -90d'));
+    return body ? (JSON.parse(body) as { jql: string }).jql : undefined;
+  };
+
+  it('the incidents JQL follows the incident rule (label or work type), quotes names and scopes to the project', async () => {
     const { g, jiraCalls } = setup();
     await g.gather('10042', ACTOR);
-    const jql = jiraCalls.map((c) => c.init?.body ?? '').find((b) => b.includes('labels = incident'));
-    expect(JSON.parse(jql!).jql).toBe('project = "PAY" AND labels = incident AND created >= -90d AND (issue in linkedIssues("PAY-7") OR component in ("payments")) ORDER BY created DESC');
+    expect(incidentJql(jiraCalls)).toBe(
+      'project = "PAY" AND (labels in ("incident") OR issuetype in ("Incident")) AND created >= -90d AND (issue in linkedIssues("PAY-7") OR component in ("payments")) ORDER BY created DESC',
+    );
+  });
+
+  it('a work type the project does not have is left out of the JQL (Jira refuses a query naming an unknown type)', async () => {
+    const project = { status: 200, body: JSON.stringify({ id: '10000', key: 'PAY', issueTypes: [{ id: '10001', name: 'Story' }] }) };
+    const { g, jiraCalls } = setup({ project });
+    const r = await g.gather('10042', ACTOR);
+    expect(incidentJql(jiraCalls)).toContain('AND labels in ("incident") AND created');
+    expect(r.ok && r.value.partial).toBe(false);
+  });
+
+  it('if the project cannot be read, incidents are still found by label and the bundle says the type check was skipped', async () => {
+    const { g, jiraCalls } = setup({ project: { status: 500, body: '{}' } });
+    const r = await g.gather('10042', ACTOR);
+    expect(incidentJql(jiraCalls)).toContain('AND labels in ("incident") AND created');
+    expect(r.ok && r.value.partialReasons).toEqual(['incident_types_unavailable']);
+  });
+
+  it('a custom rule: label sev1 only (no project lookup); an Incident-type work item without the label is no longer an incident', async () => {
+    const { g, jiraCalls } = setup({ incidentRule: { labels: ['sev1'], issueTypes: [] } });
+    const r = await g.gather('10042', ACTOR);
+    expect(incidentJql(jiraCalls)).toContain('AND labels in ("sev1") AND created');
+    expect(jiraCalls.some((c) => c.path.startsWith('/rest/api/3/project/'))).toBe(false);
+    expect(r.ok && r.value.facts.some((f) => f.sourceType === 'incident')).toBe(false);
+  });
+
+  it('an Incident-type work item counts without the label; a near-miss label does not', async () => {
+    const body = JSON.stringify({
+      issues: [
+        { id: '10050', key: 'PAY-9', fields: { summary: 'Forged refund webhooks accepted', issuetype: { id: '10004', name: 'Incident' }, labels: [], project: { id: '10000', key: 'PAY' }, status: { name: 'Done' } } },
+        { id: '10052', key: 'PAY-14', fields: { summary: 'Typo', issuetype: { id: '10001', name: 'Story' }, labels: ['INCIDENT'], project: { id: '10000', key: 'PAY' }, status: { name: 'Done' } } },
+      ],
+    });
+    const r = await setup({ incidents: { status: 200, body } }).g.gather('10042', ACTOR);
+    expect(r.ok && r.value.facts.filter((f) => f.sourceType === 'incident').map((f) => f.title)).toEqual(['Incident PAY-9: Forged refund webhooks accepted']);
+  });
+
+  it('a rule with no labels and no work types gathers no incidents (and does not search for them)', async () => {
+    const { g, jiraCalls } = setup({ incidentRule: { labels: [], issueTypes: [] } });
+    const r = await g.gather('10042', ACTOR);
+    expect(incidentJql(jiraCalls)).toBeUndefined();
+    expect(r.ok && r.value.partial).toBe(false);
   });
 
   describe('security: content the triggering user cannot read is left out', () => {

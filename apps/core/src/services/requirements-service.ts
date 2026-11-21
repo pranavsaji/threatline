@@ -161,22 +161,53 @@ export async function threatVisible(deps: CoreDeps, v: Viewer, threatId: string)
 }
 
 /**
+ * For CI, which is no person: the requirement's threat is still in the latest review or one of the recent revisions
+ * (unscoped; CI only ever learns the outcome for an id it already named).
+ */
+async function threatCurrent(deps: CoreDeps, issueId: string, threatId: string): Promise<Result<boolean>> {
+  const history = await deps.reviews.history(issueId);
+  if (!history.ok) return history;
+  for (const r of history.value.slice(-HISTORY_REVISIONS).reverse()) {
+    const threats = await deps.reviews.threats(r.id);
+    if (!threats.ok) return threats;
+    if (threats.value.some((t) => t.id === threatId)) return ok(true);
+  }
+  return ok(false);
+}
+
+/** The only statuses CI may move to Verified. */
+const CI_FROM: readonly RequirementStatus[] = ['Open', 'InProgress'];
+
+/** A CI report as the actor (`ci:<token id>`): the commit and repository the tests ran on. */
+export interface CiActor {
+  tokenId: string;
+  commitSha: string;
+  repo: string;
+}
+
+/**
  * RQ-3 / RQ-4. Verified needs evidence, attested by the caller. Not applicable is a security champion's call. Accepted
  * risk only comes from an approved risk acceptance (ledgered), never from a status change. Every change is ledgered
- * here, for the panel and agents alike, before it is saved: if the ledger cannot record it, nothing changes.
+ * here, for the panel and agents alike, before it is saved: if the ledger cannot record it, nothing changes. CI
+ * (`opts.ci`, docs/CI_VERIFICATION.md) may only verify, with `ci` evidence; nobody else can give `ci` evidence.
  */
 export async function setRequirementStatus(
   deps: CoreDeps,
   v: Viewer,
   input: { requirementId: string; status: RequirementStatus; evidence?: { kind: Evidence['kind']; ref: string; note?: string } },
-  opts: { viaAgent?: boolean } = {},
+  opts: { viaAgent?: boolean; ci?: CiActor } = {},
 ): Promise<Result<{ requirement: Requirement; entryHash: string }>> {
   if (input.status === 'AcceptedRisk') return err(appError('validation', 'Request a risk acceptance in the Threatline panel instead.'));
+  const ci = opts.ci;
+  if ((input.evidence?.kind === 'ci') !== (ci !== undefined) || (ci && input.status !== 'Verified'))
+    return err(appError('validation', 'CI evidence comes only from a CI report, and a CI report can only verify.'));
   const got = await deps.requirements.get(input.requirementId);
   if (!got.ok) return got;
   const req = got.value;
   if (!req || req.issueId !== v.issueId) return err(appError('not_found', 'requirement not found'));
-  const visible = await threatVisible(deps, v, req.threatId);
+  // CI only ever moves an open requirement to Verified, judged on this fresh read; the save below is conditional on it.
+  if (ci && !CI_FROM.includes(req.status)) return err(appError('conflict', `The requirement is ${req.status}; CI does not change that.`, { status: req.status }));
+  const visible = ci ? await threatCurrent(deps, req.issueId, req.threatId) : await threatVisible(deps, v, req.threatId);
   if (!visible.ok) return visible;
   if (!visible.value) return err(appError('not_found', 'requirement not found'));
 
@@ -191,19 +222,31 @@ export async function setRequirementStatus(
   if (input.status === 'Verified') {
     const e = input.evidence;
     if (!e) return err(appError('validation', 'Verified needs evidence: a PR link, a test file path, a Confluence section, or a note.'));
-    if ((e.kind === 'pr' || e.kind === 'confluence') && !HTTPS(e.ref)) return err(appError('validation', 'A PR or Confluence link must start with https://.'));
-    next = { ...next, verifiedBy: v.accountId, verifiedAt: deps.clock.now().toISOString(), evidence: { kind: e.kind, ref: e.ref, ...(e.note ? { note: e.note } : {}), attester: v.accountId } };
+    if ((e.kind === 'pr' || e.kind === 'confluence' || e.kind === 'ci') && !HTTPS(e.ref)) return err(appError('validation', 'A PR, CI run or Confluence link must start with https://.'));
+    const where = ci ? { commitSha: ci.commitSha, repo: ci.repo } : {};
+    next = { ...next, verifiedBy: v.accountId, verifiedAt: deps.clock.now().toISOString(), evidence: { kind: e.kind, ref: e.ref, ...(e.note ? { note: e.note } : {}), ...where, attester: v.accountId } };
   }
   const e = next.evidence;
   const row = await appendLedger(
     deps.ledger,
     deps.clock,
     input.status === 'Verified' ? 'requirement.verified' : 'requirement.status_changed',
-    { requirementId: req.id, issueId: v.issueId, from: req.status, to: input.status, ...(e ? { evidenceKind: e.kind, evidence: e.ref, ...(e.note ? { note: e.note } : {}) } : {}), viaAgent: opts.viaAgent === true },
+    {
+      requirementId: req.id,
+      issueId: v.issueId,
+      from: req.status,
+      to: input.status,
+      ...(e ? { evidenceKind: e.kind, evidence: e.ref, ...(e.note ? { note: e.note } : {}) } : {}),
+      viaAgent: opts.viaAgent === true,
+      ...(ci ? { viaCi: true, ciTokenId: ci.tokenId, commitSha: ci.commitSha, repo: ci.repo } : {}),
+    },
     v.accountId,
   );
   if (!row.ok) return row;
-  const u = await deps.requirements.upsert(next);
+  // Security: CI's save is a compare-and-set on the status it read, so a risk accepted or a Not applicable set by a
+  // person meanwhile is never overwritten by a test run.
+  const saved = ci ? await deps.requirements.upsertIf(next, [req.status]) : await deps.requirements.upsert(next);
+  const u: Result<void> = !saved.ok ? saved : saved.value === false ? err(appError('conflict', 'The requirement changed meanwhile; CI did not change it.')) : ok(undefined);
   if (!u.ok) {
     // The change is recorded before it is saved, so it is never saved unrecorded. When the save then fails, a second
     // entry says the recorded change did not take effect, so the ledger never shows a change that never happened.

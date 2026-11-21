@@ -37,6 +37,18 @@ verifier): all 15 of 15 poisoned cases held and high-severity recall was 91.7% o
 
 ## Also in the box
 
+- **CI closes the loop.** Tests named after a requirement pass in CI (GitHub Action or Bitbucket Pipelines), and
+  Threatline marks it Verified with the run as evidence: no clicking ([CI verification](docs/CI_VERIFICATION.md)).
+- **Incidents reopen reviews.** An incident on a component re-reviews the open work there, so the next story touching
+  it cannot repeat the mistake; the panel names the incident ([incidents](docs/INCIDENTS.md)).
+- **One queue for champions.** Threats that need a person, across projects, grouped when the verifier thinks they
+  repeat each other, decided in bulk ([champion inbox](docs/CHAMPION_INBOX.md)).
+- **See the architecture.** Each review's components, data stores, flows and trust boundaries drawn as a data-flow
+  diagram with its threats pinned to them, in the panel, on Confluence and for coding agents ([diagram](docs/DIAGRAM.md)).
+- **Less noise, by team.** A false positive dismissed on three work items becomes a suggested project rule; a champion
+  approves it for up to 90 days, and it can never hide a threat that would block ([suppressions](docs/SUPPRESSIONS.md)).
+- **Audit-ready.** Requirements and evidence mapped (indicatively) to SOC 2, ISO 27001:2022 and PCI DSS v4.0 controls,
+  in the posture page and an exportable controls summary ([compliance](docs/COMPLIANCE.md)).
 - **A ledger you can audit.** Every acceptance, override and refusal goes into an append-only hash chain with daily
   signed Merkle tree heads published to Confluence; download an inclusion proof and check it offline with
   `node scripts/verify-ledger-proof.mjs` (Node built-ins only).

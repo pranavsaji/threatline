@@ -1,4 +1,14 @@
-import type { AcceptanceState, AdminPolicyDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
+import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto, Stride, SuppressionRule, SuppressionsDto } from './types.js';
+import { ciApiOver, type CiApi } from './admin/ci-api.js';
+
+import type { ControlsPostureDto } from './types.js';
+
+/** A compliance control on the posture page: framework id (SOC2, ISO27001, PCIDSS) and control id. */
+export interface ControlDrillQuery {
+  framework: string;
+  control: string;
+  project?: string;
+}
 
 /** Calls a resolver by key: Forge's invoke inside Atlassian, or the local end-to-end harness (e2e/local). */
 export type Invoke = <T>(key: string, payload?: Record<string, unknown>) => Promise<T>;
@@ -51,6 +61,8 @@ export interface PanelApi {
   createRequirements(threatIds: string[]): Promise<CreatedRequirements | ApiError>;
   setStatus(requirementId: string, status: RequirementStatus, evidence?: Pick<Evidence, 'kind' | 'ref'>): Promise<Requirement | ApiError>;
   triage(input: TriageInput): Promise<Threat[] | ApiError>;
+  /** Champions: show a team rule's hidden threats on this work item again (ledgered). */
+  unhide(ruleId: string): Promise<Threat[] | ApiError>;
   confirm(reviewId: string, kind: 'review' | 'budget'): Promise<{ seq: number } | ApiError>;
   publish(): Promise<{ pageId: string; url: string; created: boolean } | ApiError>;
   requestAcceptance(input: AcceptanceInput): Promise<{ acceptanceId: string; needsApprover: 'none' | 'tech_lead' | 'champion'; entryHash: string } | ApiError>;
@@ -85,6 +97,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     createRequirements: (threatIds) => invoke('requirements.create', { threatIds }),
     setStatus: (requirementId, status, evidence) => invoke('requirements.setStatus', { requirementId, status, ...(evidence ? { evidence } : {}) }),
     triage: (input) => invoke('threats.triage', input),
+    unhide: (ruleId) => invoke('suppressions.unhide', { ruleId }),
     confirm: (reviewId, kind) => invoke('review.confirm', { reviewId, kind }),
     publish: () => invoke('confluence.publish'),
     requestAcceptance: (input) => invoke('acceptance.request', { ...input }),
@@ -142,6 +155,24 @@ export interface AdminApi {
   /** R5: an inclusion proof (JSON) for one ledger entry against the current signed tree head. */
   ledgerProof(seq: number): Promise<{ json: string; seq: number; treeSize: number } | ApiError>;
   treeHead(): Promise<TreeHeadInfo | ApiError>;
+  /** Compliance evidence: the controls summary (indicative) for a project and date range, as CSV and JSON. */
+  exportControls(projectKey: string, from: string, to: string): Promise<{ csv: string; json: string } | ApiError>;
+  /** Team suppression rules (champions and admins): active rules with match counts, and suggestions. */
+  suppressions(): Promise<SuppressionsDto | ApiError>;
+  createSuppression(input: SuppressionInput): Promise<SuppressionRule | ApiError>;
+  revokeSuppression(ruleId: string, reason: string): Promise<SuppressionRule | ApiError>;
+  /** Verification from CI: the web trigger URL and the site's CI tokens. */
+  ci: CiApi;
+}
+
+export interface SuppressionInput {
+  projectKey: string;
+  stride: Stride;
+  title: string;
+  component?: string;
+  reason: string;
+  expiryDays: number;
+  evidence?: string[];
 }
 
 export interface TreeHeadInfo {
@@ -176,6 +207,11 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     installGate: () => invoke('admin.installGate'),
     ledgerProof: (seq) => invoke('ledger.proof', { seq }),
     treeHead: () => invoke('ledger.treeHead'),
+    exportControls: (projectKey, from, to) => invoke('compliance.export', { projectKey, from, to }),
+    suppressions: () => invoke('suppressions.list'),
+    createSuppression: (input) => invoke('suppressions.create', { ...input }),
+    revokeSuppression: (ruleId, reason) => invoke('suppressions.revoke', { ruleId, reason }),
+    ci: ciApiOver(invoke),
   };
 }
 
@@ -191,6 +227,9 @@ export interface PostureApi {
   get(project?: string): Promise<PostureDto | ApiError>;
   drill(q: DrillQuery): Promise<DrillDto | ApiError>;
   release(fixVersion: string): Promise<ReleaseReadinessResult | ApiError>;
+  /** Compliance controls (indicative) for the work items the viewer can browse. */
+  controls(project?: string): Promise<ControlsPostureDto | ApiError>;
+  controlDrill(q: ControlDrillQuery): Promise<DrillDto | ApiError>;
 }
 
 export async function forgePostureApi(): Promise<PostureApi> {
@@ -202,6 +241,31 @@ export function postureApiOver(invoke: Invoke): PostureApi {
     get: (project) => invoke('posture.get', project ? { project } : {}),
     drill: (q) => invoke('posture.drill', { ...q }),
     release: (fixVersion) => invoke('release.report', { fixVersion }),
+    controls: (project) => invoke('posture.controls', project ? { project } : {}),
+    controlDrill: (q) => invoke('posture.controlDrill', { ...q }),
+  };
+}
+
+/** A champion's decision on threats waiting in the inbox: confirm (accept), or dismiss with a reason code. */
+export type InboxDecisionInput =
+  | { decision: 'confirm'; items: Array<{ issueId: string; threatId: string }> }
+  | { decision: 'dismiss'; reason: string; note?: string; items: Array<{ issueId: string; threatId: string }> };
+
+/** The champion inbox on the global page (champions and Jira admins; the server checks every call). */
+export interface InboxApi {
+  list(cursor?: number): Promise<InboxDto | ApiError>;
+  /** At most 25 items per call; each is decided, authorised and ledgered on its own. */
+  decide(input: InboxDecisionInput): Promise<InboxDecideDto | ApiError>;
+}
+
+export async function forgeInboxApi(): Promise<InboxApi> {
+  return inboxApiOver(await bridgeInvoke());
+}
+
+export function inboxApiOver(invoke: Invoke): InboxApi {
+  return {
+    list: (cursor) => invoke('inbox.list', cursor ? { cursor } : {}),
+    decide: (input) => invoke('inbox.decide', { ...input }),
   };
 }
 

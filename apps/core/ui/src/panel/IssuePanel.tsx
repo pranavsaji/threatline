@@ -21,6 +21,9 @@ import { RequirementsTab } from './RequirementsTab.js';
 import { AcceptancesTab } from './AcceptancesTab.js';
 import { ThreatTriage } from './ThreatEditor.js';
 import { ThreatModelPage } from './ThreatModelPage.js';
+import { reopenedText } from './reopened.js';
+import { UnhideThreat } from './UnhideThreat.js';
+import { DiagramTab } from './DiagramTab.js';
 
 const STILL_STARTING = 'The review is still starting. Refresh the panel in a minute or two to see it.';
 const NEEDS_EDIT = 'Someone with edit permission on this work item can re-run the review.';
@@ -164,6 +167,9 @@ export function IssuePanel({ api }: { api: PanelApi }) {
   const humanReason = dto.verdict?.reasons.find((r) => r.code === 'needs_human' || r.code === 'injection_unconfirmed');
   const facts = new Map(dto.facts.map((f) => [f.id, f]));
   const threats = [...dto.threats, ...(more?.threats ?? [])];
+  // Why the current revision exists, when an incident reopened it (docs/INCIDENTS.md).
+  const latestHistory = dto.history.at(-1);
+  const reopened = latestHistory?.reopenedBy && latestHistory.revision === dto.review?.revision ? latestHistory.reopenedBy : null;
   const cursor = more ? more.cursor : dto.threatsCursor;
   const injected = dto.facts.filter((f) => f.injectionSuspected);
   /** Banner actions: disabled while a re-run or confirmation is in flight; no re-run for viewers who cannot edit. */
@@ -289,10 +295,12 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                 <Tab>Requirements ({dto.requirements.length})</Tab>
                 <Tab>Acceptances ({dto.acceptances.length})</Tab>
                 <Tab>History</Tab>
+                <Tab>Diagram</Tab>
               </TabList>
             </div>
             <TabPanel>
               <div style={{ display: 'grid', gap: 8, paddingTop: 8, width: '100%' }}>
+                {reopened && <p style={{ margin: 0, font: token('font.body.small'), color: token('color.text.subtle') }}>{reopenedText(reopened)}</p>}
                 {dto.history.length >= 2 && <ThreatDiff api={api} revisions={dto.history.map((h) => h.revision)} />}
                 {threats.length === 0 && <p style={{ color: token('color.text.subtle') }}>No threats yet.</p>}
                 {threats.map((t) => (
@@ -306,7 +314,17 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                       return isError(r) ? null : r;
                     }}
                   >
-                    {champion && settled && t.state !== 'dismissed' && (
+                    {champion && settled && t.state === 'suppressed' && (
+                      <UnhideThreat
+                        threat={t}
+                        api={api}
+                        onDone={() => {
+                          setMore(null);
+                          void load();
+                        }}
+                      />
+                    )}
+                    {champion && settled && t.state !== 'dismissed' && t.state !== 'suppressed' && (
                       <ThreatTriage
                         threat={t}
                         others={threats.filter((o) => o.id !== t.id && o.state !== 'dismissed')}
@@ -411,7 +429,15 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                     </tbody>
                   </table>
                 </div>
+                {dto.history.some((h) => h.reopenedBy) && (
+                  <ul aria-label="Why these revisions exist" style={{ margin: '8px 0 0', paddingLeft: 18, font: token('font.body.small') }}>
+                    {dto.history.flatMap((h) => (h.reopenedBy ? [<li key={h.revision}>{`Revision ${h.revision}: ${reopenedText(h.reopenedBy)}`}</li>] : []))}
+                  </ul>
+                )}
               </div>
+            </TabPanel>
+            <TabPanel>
+              <DiagramTab diagram={dto.diagram} />
             </TabPanel>
           </Tabs>
         </>

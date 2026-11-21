@@ -1,4 +1,6 @@
 import type { FactDto, PanelDto, Threat, ThreatDiffDto } from './types.js';
+import { REQUIREMENT_CONTROLS_FIXTURE } from './compliance-fixtures.js';
+import { DIAGRAM_FIXTURE } from './diagram-fixture.js';
 
 const now = '2026-11-16T05:31:25.000Z';
 const fact = (id: string, title: string, over: Partial<FactDto> = {}): FactDto => ({
@@ -19,10 +21,10 @@ const threat = (i: number, over: Partial<Threat>): Threat => ({
 });
 
 const UNSORTED: Threat[] = [
-  threat(1, {}),
-  threat(2, { stride: 'InformationDisclosure', title: 'Reset page reveals which emails have accounts', severity: 'Medium', votes: 2, plainLanguage: 'Anyone can learn which email addresses are customers.', citations: [{ factId: 'fact_body', quote: 'The reset page is public and accepts any email address.' }], mappings: [{ framework: 'CWE', refId: 'CWE-204' }] }),
-  threat(3, { stride: 'ElevationOfPrivilege', title: 'Account takeover by changing the email after sign-in', severity: 'Critical', votes: 3, plainLanguage: 'A stolen link lets an attacker lock the real owner out for good.', citations: [{ factId: 'fact_body', quote: 'After sign-in the customer can change the email address and phone number on the account.' }] }),
-  threat(4, { origin: 'baseline', stride: 'DenialOfService', title: 'Reset endpoint can be flooded', severity: 'Low', votes: 0, plainLanguage: 'Someone could send thousands of reset emails.', grounding: 'weak', state: 'needs_human', citations: [{ factId: 'fact_page', quote: 'The reset page is public' }] }),
+  threat(1, { component: 'Magic link service' }),
+  threat(2, { component: 'Reset API', stride: 'InformationDisclosure', title: 'Reset page reveals which emails have accounts', severity: 'Medium', votes: 2, plainLanguage: 'Anyone can learn which email addresses are customers.', citations: [{ factId: 'fact_body', quote: 'The reset page is public and accepts any email address.' }], mappings: [{ framework: 'CWE', refId: 'CWE-204' }] }),
+  threat(3, { component: 'Account settings', stride: 'ElevationOfPrivilege', title: 'Account takeover by changing the email after sign-in', severity: 'Critical', votes: 3, plainLanguage: 'A stolen link lets an attacker lock the real owner out for good.', citations: [{ factId: 'fact_body', quote: 'After sign-in the customer can change the email address and phone number on the account.' }] }),
+  threat(4, { component: 'reset-api', origin: 'baseline', stride: 'DenialOfService', title: 'Reset endpoint can be flooded', severity: 'Low', votes: 0, plainLanguage: 'Someone could send thousands of reset emails.', grounding: 'weak', state: 'needs_human', citations: [{ factId: 'fact_page', quote: 'The reset page is public' }] }),
 ];
 
 const RANK = { Critical: 4, High: 3, Medium: 2, Low: 1 } as const;
@@ -47,6 +49,9 @@ const base: PanelDto = {
   samples: { received: 3, expected: 3 },
   roles: ['viewer', 'developer'],
   threatModelPage: null,
+  requirementControls: REQUIREMENT_CONTROLS_FIXTURE,
+  // Generated from the layout (apps/core/test/services/diagram.test.ts keeps it in step: `pnpm vitest run -u`).
+  diagram: DIAGRAM_FIXTURE,
 };
 
 const withReview = (o: Partial<NonNullable<PanelDto['review']>>, rest: Partial<PanelDto> = {}): PanelDto => ({ ...base, review: { ...base.review!, ...o }, ...rest });
@@ -62,6 +67,8 @@ export const FIXTURES: Record<string, PanelDto> = {
   injection: { ...base, facts: FACTS.map((f) => (f.id === 'fact_page' ? { ...f, injectionSuspected: true, injectionReasons: ['ai_directive'] } : f)) },
   stale: { ...base, verdict: { ...base.verdict!, reasons: [...base.verdict!.reasons, { code: 'review_stale', message: 'The design or linked work changed since the last review.', action: { label: 'Re-run review', href: '?rerun=1' } }] } },
   revised: withReview({ revision: 2 }, { history: [{ revision: 1, createdAt: '2026-11-16T05:30:43.000Z', riskScore: 60, status: 'ready', added: 2, removed: 0 }, { revision: 2, createdAt: '2026-11-17T09:12:00.000Z', riskScore: 72, status: 'ready', added: 2, removed: 0 }] }),
+  /** An incident on the component reopened the review (docs/INCIDENTS.md). */
+  reopened: withReview({ revision: 2 }, { history: [{ revision: 1, createdAt: '2026-11-16T05:30:43.000Z', riskScore: 60, status: 'ready', added: 2, removed: 0 }, { revision: 2, createdAt: '2026-11-21T09:12:00.000Z', riskScore: 72, status: 'ready', added: 2, removed: 0, reopenedBy: { incidentKey: 'PAY-9', components: ['Payments API'], linked: false, at: '2026-11-21T09:11:00.000Z' } }] }),
   pass: { ...base, verdict: { ...base.verdict!, state: 'pass', blockingCount: 0, maxOpenSeverity: null, reasons: [] }, requirements: base.requirements.map((r) => ({ ...r, status: 'Verified' as const, verifiedBy: 'acc-dev', evidence: { kind: 'pr' as const, ref: 'https://bitbucket.org/acme/payments/pull-requests/42', attester: 'acc-dev' } })) },
 };
 

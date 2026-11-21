@@ -31,6 +31,7 @@ import { normalizeText } from './threats/text.js';
 import { riskScore } from './scoring.js';
 import { diffBundles, threatsToReevaluate } from './incremental.js';
 import { isFailedSample, type DiscardedThreat, type Sample } from './ports.js';
+import { applySuppressions, type ActiveSuppression } from './suppressions.js';
 
 export const AGENT_SCHEMA_MARKER = 'threatline.threatmodel.v1';
 const LEGACY_SCHEMA_MARKER = 'redline.threatmodel.v1';
@@ -143,6 +144,11 @@ export interface AssembleInput {
    * over with their votes, state and triage; agent output then only adds threats (or raises a carried one's severity).
    */
   prior?: { threats: readonly Threat[]; facts: ReadonlyArray<Pick<ContextFact, 'id' | 'sourceAri' | 'version'>> };
+  /**
+   * Team suppression rules of the work item's project, and those a champion unhid on this work item. None in the eval.
+   * Never applied under suspected injection, and never to a threat at or above the blocking threshold.
+   */
+  suppressions?: { rules: readonly ActiveSuppression[]; unhidden?: readonly string[] };
 }
 export interface AssembleOutput {
   threats: Threat[];
@@ -337,6 +343,9 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
 
   const carried = i.prior ? carryOver(threats, i.prior, facts, i.review.id, injectionSuspected, i.samples.length >= i.samplesExpected, i.policy) : new Set<string>();
 
+  // Team suppression rules, before coverage: a hidden AI threat covers nothing, and a hidden rule-based one is not covered.
+  applySuppressions(threats, i.suppressions?.rules ?? [], { blockAtOrAbove: i.policy.blockAtOrAbove, injectionSuspected, now: i.now, unhidden: new Set(i.suppressions?.unhidden ?? []) });
+
   // 3. Noise: a generic rule-based threat stands back (state `covered`) when a trusted AI threat (majority-voted,
   // quoted word for word, untouched by injection) of the same kind, on the same topic and at least as severe covers it.
   // It stays stored and comes back if that AI threat is dismissed. Its framework mappings move to the AI threat. Never
@@ -394,8 +403,9 @@ function carryOver(threats: Threat[], prior: NonNullable<AssembleInput['prior']>
   const { keep } = threatsToReevaluate([...prior.threats], prior.facts, diffBundles(prior.facts, facts));
   const matched = new Set<number>();
   for (const old of keep) {
-    // A covered rule-based threat is not a decision: coverage is worked out afresh for each revision.
-    if (old.state === 'covered') continue;
+    // A covered rule-based threat is not a decision: coverage is worked out afresh for each revision. Nor is a
+    // suppressed one: the project's rules are applied afresh too (a rule may have expired or been revoked).
+    if (old.state === 'covered' || old.state === 'suppressed') continue;
     if (!onlyUnchanged(old)) continue;
     const idx = threats.findIndex((t, n) => !matched.has(n) && onlyUnchanged(t) && similar(t, old, { ignoreComponent: true }));
     const fresh = idx >= 0 ? threats[idx] : undefined;

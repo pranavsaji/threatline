@@ -1,4 +1,5 @@
 import type { Requirement, Severity } from './schemas/index.js';
+import { isRequirementId } from './ci.js';
 
 /**
  * Developer tools derived from a requirement, with no model call: a test skeleton per Given/When/Then, and the date the
@@ -33,12 +34,18 @@ function header(r: Requirement, comment: string): string[] {
   const where = r.subtaskKey ? `${r.subtaskKey} (${r.issueKey})` : r.issueKey;
   return [
     `${comment} Threatline requirement ${r.id} for ${oneLine(where, 60)}${r.asvsIds.length ? ` · ASVS ${r.asvsIds.map((a) => oneLine(a, 20)).join(', ')}` : ''}`,
-    `${comment} Mark it Verified in the Threatline panel with this test file as evidence once it passes.`,
+    `${comment} Keep the requirement id in the test name: Threatline's CI report marks it Verified when the tests pass (or verify it in the panel).`,
   ];
 }
 
+/**
+ * Every test name carries the requirement id, so CI can report which requirements' tests passed (docs/CI_VERIFICATION.md):
+ * the describe title in TypeScript (JUnit reporters join it with the test title), the function or method name in Python
+ * and Java. Only an id in Threatline's own format is used; it is then safe in an identifier.
+ */
 export function testScaffold(r: Requirement, lang: TestLanguage): string {
   const key = r.subtaskKey ?? r.issueKey;
+  const tag = isRequirementId(r.id) ? r.id : null;
   if (lang === 'typescript') {
     const tests = r.criteria.flatMap((c) => [
       `  it(${singleQuoted(`${c.then} when ${c.when}`)}, () => {`,
@@ -48,10 +55,10 @@ export function testScaffold(r: Requirement, lang: TestLanguage): string {
       `    throw new Error('Write this test (Threatline ${r.id})');`,
       '  });',
     ]);
-    return [...header(r, '//'), `describe(${singleQuoted(`${key} ${r.title}`)}, () => {`, ...tests, '});', ''].join('\n');
+    return [...header(r, '//'), `describe(${singleQuoted(`${key} ${r.title}${tag ? ` [${tag}]` : ''}`)}, () => {`, ...tests, '});', ''].join('\n');
   }
   if (lang === 'python') {
-    const names = uniqueNames(r.criteria.map((c) => words(c.then).join('_').slice(0, 70)), 'requirement_');
+    const names = uniqueNames(r.criteria.map((c) => `${tag ? `${tag}_` : ''}${words(c.then).join('_').slice(0, 70)}`), tag ? `${tag}_requirement_` : 'requirement_');
     const tests = r.criteria.flatMap((c, i) => [
       '',
       `def test_${names[i]}():`,
@@ -64,8 +71,11 @@ export function testScaffold(r: Requirement, lang: TestLanguage): string {
   }
   const cls = `${words(key).map((w) => w[0]!.toUpperCase() + w.slice(1)).join('') || 'Threatline'}SecurityTest`;
   const names = uniqueNames(
-    r.criteria.map((c) => words(c.then).slice(0, 10).map((w, j) => (j === 0 ? w : w[0]!.toUpperCase() + w.slice(1))).join('').replace(/^[^a-z]+/, '').slice(0, 70)),
-    'requirement',
+    r.criteria.map((c) => {
+      const base = words(c.then).slice(0, 10).map((w, j) => (j === 0 ? w : w[0]!.toUpperCase() + w.slice(1))).join('').replace(/^[^a-z]+/, '').slice(0, 70);
+      return tag ? `${tag}_${base || 'requirement'}` : base;
+    }),
+    tag ? `${tag}_requirement` : 'requirement',
   );
   const tests = r.criteria.flatMap((c, i) => [
     '',
