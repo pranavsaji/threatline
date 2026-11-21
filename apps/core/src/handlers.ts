@@ -22,6 +22,7 @@ import { onIssueChange } from './triggers/on-issue-change.js';
 import { onPageChange } from './triggers/on-page-change.js';
 import { validateTransition } from './validators/validate-transition.js';
 import { ciVerify, type WebTriggerRequestLike } from './webtriggers/ci-verify.js';
+import { toStaticOutput } from './webtriggers/ci-static.js';
 
 /** Forge entry points for triggers, the job queue and scheduled jobs. Each builds its dependencies per invocation. */
 export async function issueEventHandler(event: unknown, ctx: ForgeContext): Promise<void> {
@@ -47,7 +48,8 @@ export async function jobConsumerHandler(event: { body?: unknown; retryContext?:
 export const validateTransitionHandler = async (args: { issue?: { key?: string; id?: string } }, ctx: ForgeContext) => validateTransition(composeCore(ctx), args);
 
 /** webtrigger `ci-verify`: CI reports passing tests; authenticated by a per-site CI token, never by a user. */
-export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => ciVerify(composeCore(ctx), request);
+/** Static web trigger (Runs on Atlassian): the full answer is mapped to one of the fixed outputs in manifest.yml. */
+export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => toStaticOutput(await ciVerify(composeCore(ctx), request));
 
 export const sweeperHandler = async (_e: unknown, ctx: ForgeContext) => sweep(composeCore(ctx));
 export const hourlyHandler = async (_e: unknown, ctx: ForgeContext) => hourly(composeCore(ctx));

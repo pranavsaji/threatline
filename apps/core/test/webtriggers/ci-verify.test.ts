@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ok, type Requirement } from '@threatline/shared';
+import { CI_STATIC_OUTPUTS, toStaticOutput } from '../../src/webtriggers/ci-static.js';
 import { CI_REPORTS_PER_HOUR, ciVerify, MAX_BODY_BYTES, type CiVerifyResponse } from '../../src/webtriggers/ci-verify.js';
 import { createCiToken } from '../../src/services/ci-tokens.js';
 import { requirementsSetStatus } from '../../src/resolvers/requirements.js';
 import { setRequirementStatus } from '../../src/services/requirements-service.js';
 import { readVerdict } from '../../src/services/verdict-service.js';
-import { jiraIssue } from '../support/core-deps.js';
+import { coreDeps, jiraIssue } from '../support/core-deps.js';
 import { ADMIN, DEV, ISSUE, reviewed } from '../support/reviewed.js';
 
 const SHA = 'ab'.repeat(20);
@@ -232,13 +233,43 @@ describe('CI web trigger: security', () => {
   });
 });
 
-describe('manifest: the ci-verify web trigger', () => {
-  it('is declared with a dynamic response and a handler that index.ts exports', async () => {
+describe('manifest: the ci-verify web trigger (static, Runs on Atlassian)', () => {
+  it('is static, its outputs are exactly the fixed answers in ci-static.ts, and index.ts exports the handler', async () => {
     const { readFileSync } = await import('node:fs');
     const { parse } = await import('yaml');
     const m = parse(readFileSync(new URL('../../manifest.yml', import.meta.url), 'utf8')) as { modules: Record<string, Array<Record<string, unknown>>> };
-    expect(m.modules.webtrigger?.find((w) => w.key === 'ci-verify')).toMatchObject({ function: 'ciVerifyFn', response: { type: 'dynamic' } });
+    const trigger = m.modules.webtrigger?.find((w) => w.key === 'ci-verify') as { function: string; response: { type: string; outputs: Array<Record<string, unknown>> } };
+    expect(trigger).toMatchObject({ function: 'ciVerifyFn', response: { type: 'static' } });
+    expect(trigger.response.outputs).toEqual(CI_STATIC_OUTPUTS.map((o) => ({ key: o.key, statusCode: o.statusCode, contentType: 'application/json', body: o.body })));
+    for (const o of CI_STATIC_OUTPUTS) expect(() => JSON.parse(o.body)).not.toThrow();
     expect(m.modules.function!.find((f) => f.key === 'ciVerifyFn')?.handler).toBe('index.ciVerifyHandler');
     expect(readFileSync(new URL('../../src/index.ts', import.meta.url), 'utf8')).toMatch(/\bciVerifyHandler\b/);
+  });
+});
+
+describe('static outputs: the full answer maps to a fixed one, never echoing request or work-item data', () => {
+  const res = (statusCode: number, body: unknown) => ({ statusCode, headers: {}, body: typeof body === 'string' ? body : JSON.stringify(body) });
+  it.each([
+    [res(200, { verdict: 'pass', results: [] }), 'recorded-pass'],
+    [res(200, { verdict: 'warn' }), 'recorded-warn'],
+    [res(200, { verdict: 'block' }), 'recorded-block'],
+    [res(200, 'not json'), 'unavailable'],
+    [res(200, { verdict: 'other' }), 'unavailable'],
+    [res(400, {}), 'bad-request'],
+    [res(401, {}), 'unauthorized'],
+    [res(403, {}), 'forbidden'],
+    [res(404, {}), 'not-found'],
+    [res(405, {}), 'method'],
+    [res(413, {}), 'too-large'],
+    [res(429, {}), 'rate-limited'],
+    [res(503, {}), 'unavailable'],
+    [res(500, {}), 'unavailable'],
+  ])('%o → %s', (r, key) => {
+    expect(toStaticOutput(r)).toEqual({ outputKey: key });
+  });
+
+  it('the handler answers with an outputKey only', async () => {
+    const out = toStaticOutput(await ciVerify(coreDeps().deps, { method: 'GET', headers: {}, body: '' }));
+    expect(out).toEqual({ outputKey: 'method' });
   });
 });

@@ -49,8 +49,54 @@ modules:
   webtrigger:
     - key: ci-verify
       function: ciVerifyFn
+      # Static (Runs on Atlassian): the function can only pick one of these fixed answers (apps/core/src/webtriggers/ci-static.ts).
       response:
-        type: dynamic
+        type: static
+        outputs:
+          - key: recorded-pass
+            statusCode: 200
+            contentType: application/json
+            body: "{\"result\":\"recorded\",\"verdict\":\"pass\",\"message\":\"Threatline recorded this CI run. Nothing blocks Done for this work item now.\"}"
+          - key: recorded-warn
+            statusCode: 200
+            contentType: application/json
+            body: "{\"result\":\"recorded\",\"verdict\":\"warn\",\"message\":\"Threatline recorded this CI run. The work item is in warn-only mode: Done warns but is not blocked.\"}"
+          - key: recorded-block
+            statusCode: 200
+            contentType: application/json
+            body: "{\"result\":\"recorded\",\"verdict\":\"block\",\"message\":\"Threatline recorded this CI run. Security requirements still block Done: see the work item's Threatline panel for which ones.\"}"
+          - key: bad-request
+            statusCode: 400
+            contentType: application/json
+            body: "{\"error\":\"validation\",\"message\":\"The report is not valid: send issueKey, repo, a 40-character commitSha, an https runUrl and results (see docs/CI_VERIFICATION.md).\"}"
+          - key: unauthorized
+            statusCode: 401
+            contentType: application/json
+            body: "{\"error\":\"unauthorized\",\"message\":\"Send Authorization: Bearer <CI token> (Threatline admin, CI verification).\"}"
+          - key: forbidden
+            statusCode: 403
+            contentType: application/json
+            body: "{\"error\":\"forbidden\",\"message\":\"This CI token cannot report for that project, or Threatline is not on for it.\"}"
+          - key: not-found
+            statusCode: 404
+            contentType: application/json
+            body: "{\"error\":\"not_found\",\"message\":\"That work item was not found.\"}"
+          - key: method
+            statusCode: 405
+            contentType: application/json
+            body: "{\"error\":\"method\",\"message\":\"POST a JSON report.\"}"
+          - key: too-large
+            statusCode: 413
+            contentType: application/json
+            body: "{\"error\":\"too_large\",\"message\":\"The report is larger than 256 KB. Send only tests whose names carry a requirement id.\"}"
+          - key: rate-limited
+            statusCode: 429
+            contentType: application/json
+            body: "{\"error\":\"rate_limited\",\"message\":\"A CI token can send 120 reports an hour. Try again after the hour.\"}"
+          - key: unavailable
+            statusCode: 503
+            contentType: application/json
+            body: "{\"error\":\"unavailable\",\"message\":\"Threatline could not record this report; nothing unrecorded was verified. Retry the job.\"}"
   jira:issuePanel:
     - key: threatline-panel
       resource: panel

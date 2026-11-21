@@ -247,7 +247,16 @@ async function runCiReport(i) {
   if (keys.length === 0) return warn("Threatline: the branch or pull request title names no Jira work item, so no requirement was reported.", lines);
   if (keys.length > MAX_KEYS) return fail(`Threatline: the branch and title name ${keys.length} work items; name at most ${MAX_KEYS}.`, lines);
   let verified = 0;
+  let detailed = false;
   const problems = [];
+  const local = /* @__PURE__ */ new Map();
+  for (const c of cases)
+    for (const id of requirementIdsIn(c.name)) {
+      const t = local.get(id) ?? { passed: 0, failed: 0, skipped: 0 };
+      t[c.status]++;
+      local.set(id, t);
+    }
+  const passing = [...local.values()].filter((t) => t.passed > 0 && t.failed === 0).length;
   for (const issueKey of keys) {
     const body = JSON.stringify({ issueKey, repo: i.repo, commitSha, runUrl: i.runUrl, results: cases });
     if (Buffer.byteLength(body, "utf8") > MAX_BODY_BYTES)
@@ -266,12 +275,13 @@ async function runCiReport(i) {
     } catch {
     }
     const serverMessage = typeof parsed.message === "string" ? ` ${parsed.message.slice(0, 300)}` : "";
+    if (Array.isArray(parsed.results)) detailed = true;
     if (Array.isArray(parsed.results))
       for (const r of parsed.results) {
         lines.push(resultLine(issueKey, r));
         if (r.outcome === "verified") verified++;
       }
-    if (typeof parsed.verdict === "string") lines.push(`${issueKey} verdict: ${parsed.verdict}`);
+    if (typeof parsed.verdict === "string") lines.push(`${issueKey} verdict: ${parsed.verdict}${!Array.isArray(parsed.results) && serverMessage ? ` (${serverMessage.trim()})` : ""}`);
     if (res.ok) continue;
     if (res.status === 429 || res.status >= 500) {
       problems.push(`${issueKey}: Threatline answered HTTP ${res.status}, so the report was not recorded.${serverMessage}`);
@@ -280,6 +290,11 @@ async function runCiReport(i) {
     return fail(`Threatline: the report for ${issueKey} was refused (HTTP ${res.status}).${serverMessage}`, lines);
   }
   if (problems.length > 0) return warn(`Threatline: ${problems.join("; ")} Nothing unrecorded was verified; re-run the job to retry.`, lines);
+  if (!detailed) {
+    for (const [id, t] of [...local.entries()].sort(([a], [b]) => a.localeCompare(b)))
+      lines.push(`${id}: ${t.failed > 0 ? "tests failed" : t.passed > 0 ? "tests passed" : "skipped"} (${t.passed} passed${t.failed ? `, ${t.failed} failed` : ""}${t.skipped ? `, ${t.skipped} skipped` : ""})`);
+    return { success: true, message: `Threatline: report recorded; ${passing} requirement${passing === 1 ? "" : "s"} had only passing tests in this run. Open requirements among them are now Verified (the work item's Threatline panel shows which).`, lines };
+  }
   return { success: true, message: `Threatline: ${verified} requirement${verified === 1 ? "" : "s"} verified from this run.`, lines };
 }
 function cliReportConfig(argv, env) {

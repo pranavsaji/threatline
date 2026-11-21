@@ -104,6 +104,16 @@ describe('runCiReport (feature: verification from CI)', () => {
     expect(JSON.stringify(r)).not.toContain(TOKEN);
   });
 
+  it('with Threatline\'s static answer (verdict only), summarises each requirement from the JUnit results', async () => {
+    const root = workspace({ 'reports/u.xml': suite(`<testcase name="${A} works"/><testcase name="${A} also works"/>`) });
+    const { f } = fakeFetch(() => answer(200, { result: 'recorded', verdict: 'block', message: 'Threatline recorded this CI run. Security requirements still block Done.' }));
+    const r = await runCiReport({ ...input(root), fetch: f });
+    expect(r.success).toBe(true);
+    expect(r.lines.join('\n')).toMatch(/PAY-7 verdict: block \(Threatline recorded this CI run/);
+    expect(r.lines.join('\n')).toMatch(/req_1a2b3c4d5e6f7a8b: tests passed \(2 passed\)/);
+    expect(r.message).toMatch(/report recorded; 1 requirement had only passing tests/);
+  });
+
   it('reports each named work item separately', async () => {
     const root = workspace({ 'reports/u.xml': suite(`<testcase name="${A}"/>`) });
     const { f, calls } = fakeFetch(verified);

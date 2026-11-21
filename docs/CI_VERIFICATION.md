@@ -131,41 +131,27 @@ Any other CI can run the same script with `THREATLINE_URL`, `THREATLINE_TOKEN`, 
 fields are refused. The script and the action send only the tests whose names carry a requirement id, and never drop a
 result to make a report fit: a report over 256 KB fails instead.
 
-The answer lists every requirement the report named, and the verdict the Done gate now sees:
+**The answer is one of a fixed set** (Runs on Atlassian): the web trigger is `static`, so Threatline can only answer
+with an output declared in `apps/core/manifest.yml` and never sends work-item or requirement data back out. What CI
+verified, per requirement, is in the work item's Threatline panel (Requirements: "CI run" evidence with the run link,
+repository and commit) and in the risk ledger (`requirement.verified` with `viaCi: true`). The action and the script
+print their own per-requirement summary from the JUnit results they sent.
 
-```json
-{
-  "issueKey": "PAY-7", "commitSha": "4f1c…", "verdict": "pass", "verified": 1, "ignoredTests": 0,
-  "results": [
-    { "requirementId": "req_1a2b3c4d5e6f7a8b", "outcome": "verified", "passed": 2, "failed": 0, "skipped": 0 },
-    { "requirementId": "req_0000ffff0000ffff", "outcome": "failed", "passed": 0, "failed": 1, "skipped": 0,
-      "message": "1 test(s) failed on this run, so it is not verified." }
-  ]
-}
-```
+| Output | HTTP | When |
+| --- | --- | --- |
+| `recorded-pass` / `recorded-warn` / `recorded-block` | 200 | Processed. The body's `verdict` is what the Done gate now sees for the work item. |
+| `bad-request` | 400 | Not JSON, or not the format above. |
+| `unauthorized` | 401 | Missing, malformed, wrong or revoked token. |
+| `forbidden` | 403 | The token is limited to other projects, or Threatline is not on for the work item's project. |
+| `not-found` | 404 | The work item does not exist. |
+| `method` / `too-large` | 405 / 413 | Not a POST / body over 256 KB. |
+| `rate-limited` | 429 | More than 120 reports in a clock hour for this token. |
+| `unavailable` | 503 | Threatline could not read or write its storage, or could not record a requirement; nothing unrecorded was verified. Retry. |
 
-| Outcome | Meaning |
-| --- | --- |
-| `verified` | Marked Verified now, with this run as evidence. |
-| `already_verified` | Was Verified already; nothing changed. |
-| `failed` | A test failed on this run; not verified. `stillVerified: true` if it was Verified before (it stays so). |
-| `skipped` | Only skipped tests; nothing proves it. |
-| `not_open` | An accepted risk or Not applicable (or it changed while the report ran); CI does not change it. |
-| `not_current` | Its threat is no longer in the latest review. |
-| `unknown` | No requirement has this id. |
-| `not_this_issue` | It belongs to another work item. |
-| `error` | Threatline could not record it; nothing changed (the answer is then HTTP 503). |
-
-| HTTP | When |
-| --- | --- |
-| 200 | Processed (see each outcome). |
-| 400 | Not JSON, or not the format above (the message names the field, never echoes a value). |
-| 401 | Missing, malformed, wrong or revoked token. |
-| 403 | The token is limited to other projects, or Threatline is not on for the work item's project. |
-| 404 | The work item does not exist. |
-| 405 / 413 | Not a POST / body over 256 KB. |
-| 429 | More than 120 reports in a clock hour for this token (`Retry-After`). |
-| 503 | Threatline could not read or write its storage; nothing unrecorded was verified. Retry. |
+Per requirement, Threatline verifies one only when at least one of its tests passed and none failed on that run, it is
+Open or In progress, its threat is in the latest review, and it belongs to the named work item (or is its sub-task).
+A failure never un-verifies a requirement verified earlier; reopen it in the panel if it is a regression. An accepted
+risk or Not applicable is never changed by CI.
 
 ## Security model
 
