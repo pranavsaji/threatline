@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ACCEPTANCE_EVENTS, rebuildAcceptances, reviewSignals, riskScore, threatDiff, whatIfScore, type DiscardedThreat, type Role } from '@threatline/core';
-import { cweById, getAsvs } from '@threatline/frameworks';
+import { cweById, getAsvs, type ControlRef } from '@threatline/frameworks';
+import { requirementControls } from '@threatline/core';
 import { DataClassSchema, ExposureSchema, severityRank, type Acceptance, type DataClass, type Exposure, type Severity, type ContextFact, type Requirement, type Review, type Threat, type Verdict } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
@@ -49,6 +50,8 @@ export interface PanelDto {
   hiddenDiscarded: number;
   facts: FactDto[];
   requirements: Requirement[];
+  /** Per shown requirement, the compliance controls its ASVS ids map to (indicative, not an audit opinion). */
+  requirementControls?: Record<string, ControlRef[]>;
   hiddenRequirements: number;
   /** Risk acceptances for the requirements this viewer can see (RL-1). */
   acceptances: Acceptance[];
@@ -234,6 +237,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     hiddenDiscarded,
     facts,
     requirements: shownRequirements,
+    requirementControls: Object.fromEntries(shownRequirements.map((r) => [r.id, requirementControls(r)])),
     hiddenRequirements,
     acceptances,
     viewerAccountId: v.accountId,

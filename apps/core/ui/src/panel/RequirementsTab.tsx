@@ -9,6 +9,7 @@ import type { PanelDto, Requirement, RequirementStatus } from '../types.js';
 import { AcceptRiskModal } from './AcceptRiskModal.js';
 import { CopyAttestation } from './CopyAttestation.js';
 import { EvidenceForm } from './EvidenceForm.js';
+import { ControlLozenges } from './ControlLozenges.js';
 import { FixBy, TestSkeletonCopy } from './RequirementTools.js';
 import { count } from '../text.js';
 import { useFocusReturn } from '../components/inline-form.js';
@@ -122,6 +123,7 @@ export function RequirementsTab({ dto, api, onChanged }: { dto: PanelDto; api: P
                 Given {c.given}, when {c.when}, then {c.then}.
               </span>
             ))}
+            <ControlLozenges controls={dto.requirementControls?.[r.id]} />
             <EvidenceLine r={r} />
             {(r.status === 'Open' || r.status === 'InProgress') && <TestSkeletonCopy requirement={r} />}
             {canEdit && r.status !== 'AcceptedRisk' && (

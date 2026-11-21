@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { verifyChain } from '@threatline/crypto';
 import { ok, type Verdict } from '@threatline/shared';
+import { controlsCell, csvCell, requirementControls } from '@threatline/core';
 import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverride } from '../../src/resolvers/acceptances.js';
 import { ledgerExport, ledgerVerify } from '../../src/resolvers/ledger.js';
 import { panelGet } from '../../src/resolvers/panel.js';
@@ -252,12 +253,18 @@ describe('ledger verification and evidence pack (RL-4, RL-7)', () => {
     const pack = await ledgerExport(t.deps, { accountId: ADMIN }, { projectKey: 'PAY', from: '2026-11-01', to: '2026-11-30' });
     if ('error' in pack) throw new Error('export failed');
     const lines = pack.csv.trim().split('\n');
-    expect(lines[0]).toBe('seq,created_at,event_type,actor,issue_key,requirement_id,acceptance_id,reason,payload_json,prev_hash,entry_hash');
+    expect(lines[0]).toBe('seq,created_at,event_type,actor,issue_key,requirement_id,acceptance_id,reason,payload_json,prev_hash,entry_hash,controls');
     expect(lines).toHaveLength(3);
     expect(lines[1]).toContain(`"'=HYPERLINK(""https://evil.example"") is our reason"`);
-    const json = JSON.parse(pack.json) as { projectKey: string; chain: unknown; head: { seq: number }; entries: Array<{ seq: number; prevHash: string; entryHash: string; eventType: string; actor: string; createdAt: string; payload: Record<string, unknown> }> };
+    // Compliance evidence (indicative): an entry about a requirement names the controls its ASVS ids map to.
+    const expected = controlsCell(requirementControls(req));
+    expect(expected).toMatch(/^SOC2 /);
+    expect(lines[1]!.endsWith(`,${csvCell(expected)}`)).toBe(true);
+    const json = JSON.parse(pack.json) as { projectKey: string; controlsNote: string; chain: unknown; head: { seq: number }; entries: Array<{ seq: number; prevHash: string; entryHash: string; eventType: string; actor: string; createdAt: string; payload: Record<string, unknown>; controls?: Array<{ framework: string; id: string; title: string }> }> };
     expect(json).toMatchObject({ projectKey: 'PAY', from: '2026-11-01', to: '2026-11-30', chain: { ok: true, length: 2 }, head: { seq: 2 } });
+    expect(json.controlsNote).toMatch(/indicative.*not an audit opinion/i);
     expect(json.entries.map((e) => e.eventType)).toEqual(['acceptance.requested', 'acceptance.approved']);
+    expect(json.entries[0]!.controls).toEqual(requirementControls(req));
     expect(verifyChain(json.entries)).toEqual({ ok: true, length: 2 });
 
     const none = await ledgerExport(t.deps, { accountId: ADMIN }, { projectKey: 'PAY', from: '2026-12-01', to: '2026-12-31' });

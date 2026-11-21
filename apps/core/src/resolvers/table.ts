@@ -6,6 +6,7 @@ import { adminGetPolicy, adminInstallGate, adminProjectStatuses, adminPurgeProje
 import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverride } from './acceptances.js';
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
+import { complianceExport, postureControlDrill, postureControls } from './compliance.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
 import type { CoreDeps } from '../deps.js';
 
@@ -55,6 +56,9 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'override.breakglass': (deps, v, payload) => breakGlassOverride(deps, v, payload),
     'ledger.verify': (deps, v) => ledgerVerify(deps, { accountId: v.accountId }),
     'ledger.export': (deps, v, payload) => ledgerExport(deps, { accountId: v.accountId }, payload),
+    'compliance.export': (deps, v, payload) => complianceExport(deps, { accountId: v.accountId }, payload),
+    'posture.controls': (deps, v, payload) => postureControls(deps, { accountId: v.accountId }, payload as { project?: unknown }),
+    'posture.controlDrill': (deps, v, payload) => postureControlDrill(deps, { accountId: v.accountId }, payload),
     'ledger.proof': (deps, v, payload) => ledgerProof(deps, { accountId: v.accountId }, payload),
     'ledger.treeHead': (deps, v) => ledgerTreeHead(deps, { accountId: v.accountId }),
     'attestation.copy': (deps, v, payload) => attestationCopy(deps, v, payload),

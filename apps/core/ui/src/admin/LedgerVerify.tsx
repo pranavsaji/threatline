@@ -5,6 +5,7 @@ import { errorText, isError, type AdminApi, type ChainVerdict } from '../bridge.
 import type { ApiError } from '../types.js';
 import { box, errorText as errorStyle, field, label } from '../panel/form-styles.js';
 import { TransparencyLog } from './TransparencyLog.js';
+import { ControlsSummaryExport } from './ControlsSummaryExport.js';
 
 const BROKEN: Record<Extract<ChainVerdict, { ok: false; treeSize?: never }>['reason'], string> = {
   hash_mismatch: 'an entry was changed after it was written',
@@ -139,6 +140,7 @@ export function LedgerVerify({ api }: { api: AdminApi }) {
           )}
         </div>
       </form>
+      <ControlsSummaryExport api={api} />
       <TransparencyLog api={api} />
     </section>
   );

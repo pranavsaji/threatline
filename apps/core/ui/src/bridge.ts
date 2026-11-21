@@ -1,5 +1,14 @@
 import type { AcceptanceState, AdminPolicyDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
 
+import type { ControlsPostureDto } from './types.js';
+
+/** A compliance control on the posture page: framework id (SOC2, ISO27001, PCIDSS) and control id. */
+export interface ControlDrillQuery {
+  framework: string;
+  control: string;
+  project?: string;
+}
+
 /** Calls a resolver by key: Forge's invoke inside Atlassian, or the local end-to-end harness (e2e/local). */
 export type Invoke = <T>(key: string, payload?: Record<string, unknown>) => Promise<T>;
 
@@ -142,6 +151,8 @@ export interface AdminApi {
   /** R5: an inclusion proof (JSON) for one ledger entry against the current signed tree head. */
   ledgerProof(seq: number): Promise<{ json: string; seq: number; treeSize: number } | ApiError>;
   treeHead(): Promise<TreeHeadInfo | ApiError>;
+  /** Compliance evidence: the controls summary (indicative) for a project and date range, as CSV and JSON. */
+  exportControls(projectKey: string, from: string, to: string): Promise<{ csv: string; json: string } | ApiError>;
 }
 
 export interface TreeHeadInfo {
@@ -176,6 +187,7 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     installGate: () => invoke('admin.installGate'),
     ledgerProof: (seq) => invoke('ledger.proof', { seq }),
     treeHead: () => invoke('ledger.treeHead'),
+    exportControls: (projectKey, from, to) => invoke('compliance.export', { projectKey, from, to }),
   };
 }
 
@@ -191,6 +203,9 @@ export interface PostureApi {
   get(project?: string): Promise<PostureDto | ApiError>;
   drill(q: DrillQuery): Promise<DrillDto | ApiError>;
   release(fixVersion: string): Promise<ReleaseReadinessResult | ApiError>;
+  /** Compliance controls (indicative) for the work items the viewer can browse. */
+  controls(project?: string): Promise<ControlsPostureDto | ApiError>;
+  controlDrill(q: ControlDrillQuery): Promise<DrillDto | ApiError>;
 }
 
 export async function forgePostureApi(): Promise<PostureApi> {
@@ -202,6 +217,8 @@ export function postureApiOver(invoke: Invoke): PostureApi {
     get: (project) => invoke('posture.get', project ? { project } : {}),
     drill: (q) => invoke('posture.drill', { ...q }),
     release: (fixVersion) => invoke('release.report', { fixVersion }),
+    controls: (project) => invoke('posture.controls', project ? { project } : {}),
+    controlDrill: (q) => invoke('posture.controlDrill', { ...q }),
   };
 }
 

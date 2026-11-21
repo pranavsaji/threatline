@@ -1,4 +1,5 @@
 import type { FactDto, PanelDto, Threat, ThreatDiffDto } from './types.js';
+import { REQUIREMENT_CONTROLS_FIXTURE } from './compliance-fixtures.js';
 
 const now = '2026-11-16T05:31:25.000Z';
 const fact = (id: string, title: string, over: Partial<FactDto> = {}): FactDto => ({
@@ -47,6 +48,7 @@ const base: PanelDto = {
   samples: { received: 3, expected: 3 },
   roles: ['viewer', 'developer'],
   threatModelPage: null,
+  requirementControls: REQUIREMENT_CONTROLS_FIXTURE,
 };
 
 const withReview = (o: Partial<NonNullable<PanelDto['review']>>, rest: Partial<PanelDto> = {}): PanelDto => ({ ...base, review: { ...base.review!, ...o }, ...rest });
