@@ -2,6 +2,7 @@ import type { AdminApi, PanelApi, PostureApi } from './bridge.js';
 import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
 import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
+import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -82,6 +83,7 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     keyCopied: async () => ({ ok: true }),
     verifyLedger: async () => ({ ok: true, length: 12 }),
     exportLedger: async (projectKey, from, to) => ({ csv: 'seq,created_at\n', json: JSON.stringify({ projectKey, from, to, entries: [] }) }),
+    exportControls: async (projectKey, from, to) => ({ csv: 'framework,control_id\n', json: JSON.stringify({ kind: 'threatline.controls-summary.v1', projectKey, from, to, frameworks: [] }) }),
     setupStatus: async () => ({ keys: true, sqlVersion: 3, validatorSeenOn: ['PAY'], automationRuleSeen: true, mcpEnabledHint: 'Rovo MCP: allow the clients your team uses in Atlassian Administration.', bitbucketKeyCopied: false }),
   };
 }
@@ -92,5 +94,7 @@ export function mockPostureApi(state = new URLSearchParams(window.location.searc
     get: async () => (empty ? { ...structuredClone(POSTURE_FIXTURE), projects: [], issuesCounted: 0, byTeamComponent: [], openBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 } } : structuredClone(POSTURE_FIXTURE)),
     drill: async () => structuredClone(DRILL_FIXTURE),
     release: async (fixVersion) => RELEASE_FIXTURE(fixVersion),
+    controls: async () => (empty ? { ...structuredClone(CONTROLS_FIXTURE), issuesCounted: 0, frameworks: CONTROLS_FIXTURE.frameworks.map((f) => ({ ...f, controls: [] })) } : structuredClone(CONTROLS_FIXTURE)),
+    controlDrill: async () => structuredClone(DRILL_FIXTURE),
   };
 }

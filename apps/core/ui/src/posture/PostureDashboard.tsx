@@ -8,6 +8,7 @@ import { TrendChart } from './TrendChart.js';
 import { DrillDown, type DrillView } from './DrillDown.js';
 import { Onboarding } from './Onboarding.js';
 import { ReleaseReport } from './ReleaseReport.js';
+import { ControlsView } from './ControlsView.js';
 
 const skeleton = (h: number, w: number | string = '100%') => (
   <div aria-hidden="true" style={{ height: h, width: w, borderRadius: 6, background: token('color.skeleton') }} />
@@ -110,6 +111,7 @@ export function PostureDashboard({ api, compact = false }: { api: PostureApi; co
                 </h2>
                 <TrendChart trend={dto.trend} shown={dto.trendShown} />
               </section>
+              <ControlsView api={api} project={project} />
             </>
           )}
         </>

@@ -8,7 +8,7 @@ import { requireAdmin, type Admin } from './admin.js';
 import { apiError, type ApiError } from './errors.js';
 
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'use YYYY-MM-DD').refine((d) => !Number.isNaN(new Date(`${d}T00:00:00Z`).getTime()), 'not a date');
-const ExportSchema = z
+export const ExportSchema = z
   .object({ projectKey: z.string().regex(/^[A-Z][A-Z0-9_]{0,254}$/, 'a Jira project key like PAY'), from: DATE, to: DATE })
   .refine((q) => q.from <= q.to, { message: 'the start date must be on or before the end date', path: ['from'] });
 
