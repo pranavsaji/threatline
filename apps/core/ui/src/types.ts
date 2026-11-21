@@ -11,3 +11,4 @@ export type { InboxDto, InboxCluster, InboxRow, InboxDecideDto, InboxItemResult 
 export type { SuppressionsDto, SuppressionRuleDto } from '../../src/services/suppression-service.js';
 export type { SuppressionRule } from '@threatline/shared';
 export type { DiagramDto } from '../../src/services/diagram-service.js';
+export type { CiTokenInfo, CiTokensDto } from '../../src/resolvers/ci.js';

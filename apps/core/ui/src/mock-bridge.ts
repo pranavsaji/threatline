@@ -5,6 +5,7 @@ import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtu
 import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
 import { INBOX_FIXTURE } from './inbox/fixtures.js';
 import { SUPPRESSIONS_FIXTURE } from './admin/suppressions-fixture.js';
+import { mockCiApi } from './admin/ci-api.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -104,6 +105,7 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     verifyLedger: async () => ({ ok: true, length: 12 }),
     exportLedger: async (projectKey, from, to) => ({ csv: 'seq,created_at\n', json: JSON.stringify({ projectKey, from, to, entries: [] }) }),
     exportControls: async (projectKey, from, to) => ({ csv: 'framework,control_id\n', json: JSON.stringify({ kind: 'threatline.controls-summary.v1', projectKey, from, to, frameworks: [] }) }),
+    ci: mockCiApi(),
     setupStatus: async () => ({ keys: true, sqlVersion: 3, validatorSeenOn: ['PAY'], automationRuleSeen: true, mcpEnabledHint: 'Rovo MCP: allow the clients your team uses in Atlassian Administration.', bitbucketKeyCopied: false }),
   };
 }

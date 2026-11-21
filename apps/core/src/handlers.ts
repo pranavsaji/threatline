@@ -21,6 +21,7 @@ import { onInstallJobs } from './triggers/on-install.js';
 import { onIssueChange } from './triggers/on-issue-change.js';
 import { onPageChange } from './triggers/on-page-change.js';
 import { validateTransition } from './validators/validate-transition.js';
+import { ciVerify, type WebTriggerRequestLike } from './webtriggers/ci-verify.js';
 
 /** Forge entry points for triggers, the job queue and scheduled jobs. Each builds its dependencies per invocation. */
 export async function issueEventHandler(event: unknown, ctx: ForgeContext): Promise<void> {
@@ -44,6 +45,9 @@ export async function jobConsumerHandler(event: { body?: unknown; retryContext?:
 
 /** jira:workflowValidator `threatline-gate`: reads the verdict from app storage (never the user-editable property). */
 export const validateTransitionHandler = async (args: { issue?: { key?: string; id?: string } }, ctx: ForgeContext) => validateTransition(composeCore(ctx), args);
+
+/** webtrigger `ci-verify`: CI reports passing tests; authenticated by a per-site CI token, never by a user. */
+export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => ciVerify(composeCore(ctx), request);
 
 export const sweeperHandler = async (_e: unknown, ctx: ForgeContext) => sweep(composeCore(ctx));
 export const hourlyHandler = async (_e: unknown, ctx: ForgeContext) => hourly(composeCore(ctx));

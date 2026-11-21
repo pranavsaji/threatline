@@ -27,7 +27,7 @@ jobs:
       - name: Generated agent prompt matches @threatline/prompts
         run: cd apps/core && node build.mjs && git diff --exit-code agent/prompt.md
       - name: GitHub Action bundle is up to date
-        run: cd apps/github-action && node build.mjs && git diff --exit-code dist/index.mjs
+        run: cd apps/github-action && node build.mjs && git diff --exit-code dist/index.mjs ../../scripts/threatline-ci-report.mjs
 
   github-action:
     name: GitHub Action runs on a real pull request

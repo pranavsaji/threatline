@@ -4,6 +4,7 @@ import type {
   ContextFact,
   DismissReason,
   Requirement,
+  RequirementStatus,
   Result,
   Review,
   ReviewStatus,
@@ -124,6 +125,11 @@ export interface RequirementRepo {
   forIssue(issueId: string): Promise<Result<Requirement[]>>;
   get(id: string): Promise<Result<Requirement | null>>;
   upsert(r: Requirement): Promise<Result<void>>;
+  /**
+   * Compare-and-set: saves `r` over an existing row only while that row's status is one of `expected`; ok(false) when it
+   * is not (or the row is gone), so a change made meanwhile is never overwritten.
+   */
+  upsertIf(r: Requirement, expected: readonly RequirementStatus[]): Promise<Result<boolean>>;
   /** Removes a requirement row nobody has started (used when its rule-based threat becomes covered). */
   remove(id: string): Promise<Result<void>>;
 }
@@ -154,7 +160,9 @@ export type LedgerEventType =
   | 'suppression.created'
   | 'suppression.revoked'
   | 'suppression.expired'
-  | 'suppression.unhidden';
+  | 'suppression.unhidden'
+  | 'ci_token.created'
+  | 'ci_token.revoked';
 
 export interface LedgerInsert {
   seq: number;

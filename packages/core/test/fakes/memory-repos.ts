@@ -173,6 +173,12 @@ export function memoryRequirementRepo(): RequirementRepo {
       reqs.set(r.id, clone(r));
       return ok(undefined);
     },
+    async upsertIf(r, expected) {
+      const cur = reqs.get(r.id);
+      if (!cur || !expected.includes(cur.status)) return ok(false);
+      reqs.set(r.id, clone(r));
+      return ok(true);
+    },
     async remove(id) {
       reqs.delete(id);
       return ok(undefined);

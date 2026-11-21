@@ -1,4 +1,5 @@
 import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto, Stride, SuppressionRule, SuppressionsDto } from './types.js';
+import { ciApiOver, type CiApi } from './admin/ci-api.js';
 
 import type { ControlsPostureDto } from './types.js';
 
@@ -160,6 +161,8 @@ export interface AdminApi {
   suppressions(): Promise<SuppressionsDto | ApiError>;
   createSuppression(input: SuppressionInput): Promise<SuppressionRule | ApiError>;
   revokeSuppression(ruleId: string, reason: string): Promise<SuppressionRule | ApiError>;
+  /** Verification from CI: the web trigger URL and the site's CI tokens. */
+  ci: CiApi;
 }
 
 export interface SuppressionInput {
@@ -208,6 +211,7 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     suppressions: () => invoke('suppressions.list'),
     createSuppression: (input) => invoke('suppressions.create', { ...input }),
     revokeSuppression: (ruleId, reason) => invoke('suppressions.revoke', { ruleId, reason }),
+    ci: ciApiOver(invoke),
   };
 }
 

@@ -5,6 +5,7 @@ import type { AdminPolicyDto, ApiError, SitePolicy } from '../types.js';
 import { DemoData } from './DemoData.js';
 import { LedgerVerify } from './LedgerVerify.js';
 import { Keys } from './Keys.js';
+import { CiVerification } from './CiVerification.js';
 import { SetupChecklist } from './SetupChecklist.js';
 import { FirstRun } from './FirstRun.js';
 import { Projects } from './Projects.js';
@@ -32,6 +33,7 @@ const SECTIONS = [
   { id: 'suppressions', title: 'Suppressions', needsPolicy: false },
   { id: 'runs', title: 'Recent runs', needsPolicy: false },
   { id: 'keys', title: 'Signing keys', needsPolicy: false },
+  { id: 'ci', title: 'CI verification', needsPolicy: false },
   { id: 'ledger', title: 'Risk ledger', needsPolicy: false },
   { id: 'retention', title: 'Data retention', needsPolicy: false },
   { id: 'demo', title: 'Demo data', needsPolicy: false },
@@ -100,6 +102,7 @@ export function AdminPage({ api }: { api: AdminApi }) {
       {at('suppressions', <Suppressions api={api} />)}
       {at('runs', <Runs api={api} />)}
       {at('keys', <Keys api={api} />)}
+      {at('ci', <CiVerification api={api.ci} />)}
       {at('ledger', <LedgerVerify api={api} />)}
       {at('retention', <DataRetention api={api} />)}
       {at('demo', <DemoData api={api} />)}

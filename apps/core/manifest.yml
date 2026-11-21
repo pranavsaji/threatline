@@ -45,6 +45,12 @@ modules:
     - key: daily
       function: dailyFn
       interval: day
+  # Verification from CI (docs/CI_VERIFICATION.md): CI posts test results with a per-site CI token. No new scope.
+  webtrigger:
+    - key: ci-verify
+      function: ciVerifyFn
+      response:
+        type: dynamic
   jira:issuePanel:
     - key: threatline-panel
       resource: panel
@@ -372,6 +378,8 @@ modules:
       handler: index.postureSummaryHandler
     - key: validateTransitionFn
       handler: index.validateTransitionHandler
+    - key: ciVerifyFn
+      handler: index.ciVerifyHandler
 resources:
   - key: panel
     path: ui/build

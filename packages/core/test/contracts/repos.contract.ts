@@ -192,6 +192,20 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect((await r.get('nope')).ok && (await r.get('nope'))).toEqual({ ok: true, value: null });
     });
 
+    it('requirements: upsertIf saves only while the stored status is an expected one (compare-and-set)', async () => {
+      const r = await f.requirements();
+      expect(await r.upsertIf(req({ status: 'Verified' }), ['Open'])).toEqual({ ok: true, value: false });
+      expect(await r.get(req().id)).toEqual({ ok: true, value: null });
+      await r.upsert(req({ status: 'AcceptedRisk' }));
+      expect(await r.upsertIf(req({ status: 'Verified' }), ['Open', 'InProgress'])).toEqual({ ok: true, value: false });
+      expect(await r.get(req().id)).toMatchObject({ ok: true, value: { status: 'AcceptedRisk' } });
+      await r.upsert(req({ status: 'InProgress' }));
+      const ci = req({ status: 'Verified', evidence: { kind: 'ci', ref: 'https://ci.example/run/1', commitSha: 'a'.repeat(40), repo: 'acme/pay', attester: 'ci:x' } });
+      expect(await r.upsertIf(ci, ['Open', 'InProgress'])).toEqual({ ok: true, value: true });
+      expect(await r.get(req().id)).toMatchObject({ ok: true, value: { status: 'Verified', evidence: { kind: 'ci', commitSha: 'a'.repeat(40) } } });
+      expect(await r.forIssue(req().issueId)).toMatchObject({ ok: true, value: [{ status: 'Verified' }] });
+    });
+
     it('reviews: reserveUsage reserves atomically only while the total stays under the caps (security: no parallel overshoot)', async () => {
       const r = await f.reviews();
       await r.create(review({ tokensIn: 0, tokensOut: 0 }));
