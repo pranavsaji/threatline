@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { appError, AgentThreatModelSchema, ContextFactSchema, err, ok, ReviewSchema, ThreatSchema, type Result, type Review } from '@threatline/shared';
-import type { DiscardedThreat, ReviewRepo, Sample } from '@threatline/core';
+import type { DiscardedThreat, NeedsHumanRow, ReviewRepo, Sample } from '@threatline/core';
 import type { SqlExecutor } from '../executor.js';
 import { collect, parseJson } from '../json.js';
 
@@ -203,6 +203,27 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
       return since
         ? many(`SELECT ${COLS} FROM reviews WHERE created_at >= ? ORDER BY created_at DESC LIMIT ${n}`, [since])
         : many(`SELECT ${COLS} FROM reviews ORDER BY created_at DESC LIMIT ${n}`, []);
+    },
+    async needsHuman(limit) {
+      // Indexed on threats (state, severity); the latest-revision check uses the (issue_id, revision) unique index.
+      const n = Math.max(1, Math.min(500, Math.floor(limit)));
+      const r = await x.query<Row>(
+        `SELECT t.threat_json, ${COLS.split(', ').map((c) => `r.${c}`).join(', ')} FROM threats t JOIN reviews r ON r.id = t.review_id
+         WHERE t.state = 'needs_human' AND r.revision = (SELECT MAX(r2.revision) FROM reviews r2 WHERE r2.issue_id = r.issue_id)
+         ORDER BY CASE t.severity WHEN 'Critical' THEN 0 WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END ASC, r.created_at ASC, t.id ASC
+         LIMIT ${n}`,
+        [],
+      );
+      if (!r.ok) return r;
+      const out: NeedsHumanRow[] = [];
+      for (const row of r.value) {
+        const threat = parseJson(ThreatSchema, row.threat_json, 'threats');
+        if (!threat.ok) return threat;
+        const review = toReview(row);
+        if (!review.ok) return review;
+        out.push({ threat: threat.value, review: review.value });
+      }
+      return ok(out);
     },
     async stages(reviewId) {
       const r = await x.query<Row>('SELECT stage, status, error, updated_at FROM review_stages WHERE review_id = ? ORDER BY updated_at ASC, stage ASC', [reviewId]);

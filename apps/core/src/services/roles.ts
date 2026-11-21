@@ -16,3 +16,13 @@ export async function rolesOf(deps: Pick<CoreDeps, 'jira'>, accountId: string, i
   if (admin.ok && admin.value) roles.push('admin');
   return roles;
 }
+
+/**
+ * Site-wide surfaces with no work item (the champion inbox): a member of the policy's champion group or a Jira admin.
+ * Lookup failures grant nothing.
+ */
+export async function isChampionOrAdmin(deps: Pick<CoreDeps, 'jira'>, accountId: string, policy: SitePolicy): Promise<boolean> {
+  if (!accountId) return false;
+  const [groups, admin] = await Promise.all([deps.jira.groupsOf(accountId), deps.jira.isAdmin(accountId)]);
+  return (groups.ok && groups.value.includes(policy.championGroup)) || (admin.ok && admin.value);
+}

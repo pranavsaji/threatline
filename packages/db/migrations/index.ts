@@ -90,4 +90,11 @@ export const MIGRATIONS: Migration[] = [
       `CREATE INDEX idx_ledger_type_time ON ledger (event_type, created_at)`,
     ],
   },
+  {
+    version: 8,
+    name: 'threats_state_index',
+    // Scale: the champion inbox reads the threats waiting for a champion (state needs_human) across the site through
+    // this index instead of scanning every threat ever stored. Versions 6 and 7 are reserved for parallel work.
+    statements: [`CREATE INDEX idx_threats_state ON threats (state, severity)`],
+  },
 ];
