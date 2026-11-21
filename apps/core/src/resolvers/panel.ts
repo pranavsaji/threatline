@@ -13,6 +13,7 @@ import { readVerdict, refreshVerdict, verdictKey } from '../services/verdict-ser
 import { newScopeCache, scopeForViewer, type ScopeCache } from '../services/viewer-scope.js';
 import { PAGE_KEY } from '../services/confluence-page.js';
 import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
+import { buildDiagram, type DiagramDto } from '../services/diagram-service.js';
 import type { ApiError } from './errors.js';
 
 export const PAGE_SIZE = 50;
@@ -66,6 +67,8 @@ export interface PanelDto {
   roles: Role[];
   /** The published Confluence threat-model page, if any (RQ-5). */
   threatModelPage: { url: string } | null;
+  /** The data-flow diagram of the latest review, scoped to this viewer (absent before the first review). */
+  diagram?: DiagramDto;
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited' };
@@ -186,6 +189,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   let discarded: DiscardedThreat[] = [];
   let hiddenDiscarded = 0;
   let score = review?.riskScore ?? 0;
+  let sketchVisible = false;
   if (review) {
     const scoped = await scopedReview(deps, v, review.id, cache);
     if (!scoped) return { error: 'unavailable' };
@@ -197,6 +201,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     const d = await deps.reviews.discarded(review.id);
     const all = d.ok ? d.value : [];
     // Discarded entries carry no citations, so they are shown only to a viewer who can see every source.
+    sketchVisible = scoped.hiddenFacts === 0;
     if (scoped.hiddenFacts === 0) discarded = all;
     else hiddenDiscarded = all.length;
   }
@@ -226,6 +231,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const shownIds = new Set(shownRequirements.map((r) => r.id));
   const acceptances = rebuildAcceptances(ledger.value, deps.clock.now()).filter((a) => shownIds.has(a.requirementId));
   const p = policy.value;
+  const diagram = review ? await buildDiagram(deps, review.id, { threats, requirements: requirements.value, sketchVisible }) : undefined;
 
   return {
     issueId: v.issueId,
@@ -250,6 +256,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     samples: { received: review?.samplesReceived ?? 0, expected: review?.samplesExpected ?? 0 },
     roles,
     threatModelPage: page && typeof page.url === 'string' ? { url: page.url } : null,
+    ...(diagram ? { diagram } : {}),
   };
 }
 

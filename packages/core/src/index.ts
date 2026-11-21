@@ -23,3 +23,4 @@ export * from './merge-gate.js';
 export * from './verify.js';
 export * from './compliance.js';
 export * from './suppressions.js';
+export * from './diagram.js';

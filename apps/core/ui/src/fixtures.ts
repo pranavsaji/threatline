@@ -1,5 +1,6 @@
 import type { FactDto, PanelDto, Threat, ThreatDiffDto } from './types.js';
 import { REQUIREMENT_CONTROLS_FIXTURE } from './compliance-fixtures.js';
+import { DIAGRAM_FIXTURE } from './diagram-fixture.js';
 
 const now = '2026-11-16T05:31:25.000Z';
 const fact = (id: string, title: string, over: Partial<FactDto> = {}): FactDto => ({
@@ -20,10 +21,10 @@ const threat = (i: number, over: Partial<Threat>): Threat => ({
 });
 
 const UNSORTED: Threat[] = [
-  threat(1, {}),
-  threat(2, { stride: 'InformationDisclosure', title: 'Reset page reveals which emails have accounts', severity: 'Medium', votes: 2, plainLanguage: 'Anyone can learn which email addresses are customers.', citations: [{ factId: 'fact_body', quote: 'The reset page is public and accepts any email address.' }], mappings: [{ framework: 'CWE', refId: 'CWE-204' }] }),
-  threat(3, { stride: 'ElevationOfPrivilege', title: 'Account takeover by changing the email after sign-in', severity: 'Critical', votes: 3, plainLanguage: 'A stolen link lets an attacker lock the real owner out for good.', citations: [{ factId: 'fact_body', quote: 'After sign-in the customer can change the email address and phone number on the account.' }] }),
-  threat(4, { origin: 'baseline', stride: 'DenialOfService', title: 'Reset endpoint can be flooded', severity: 'Low', votes: 0, plainLanguage: 'Someone could send thousands of reset emails.', grounding: 'weak', state: 'needs_human', citations: [{ factId: 'fact_page', quote: 'The reset page is public' }] }),
+  threat(1, { component: 'Magic link service' }),
+  threat(2, { component: 'Reset API', stride: 'InformationDisclosure', title: 'Reset page reveals which emails have accounts', severity: 'Medium', votes: 2, plainLanguage: 'Anyone can learn which email addresses are customers.', citations: [{ factId: 'fact_body', quote: 'The reset page is public and accepts any email address.' }], mappings: [{ framework: 'CWE', refId: 'CWE-204' }] }),
+  threat(3, { component: 'Account settings', stride: 'ElevationOfPrivilege', title: 'Account takeover by changing the email after sign-in', severity: 'Critical', votes: 3, plainLanguage: 'A stolen link lets an attacker lock the real owner out for good.', citations: [{ factId: 'fact_body', quote: 'After sign-in the customer can change the email address and phone number on the account.' }] }),
+  threat(4, { component: 'reset-api', origin: 'baseline', stride: 'DenialOfService', title: 'Reset endpoint can be flooded', severity: 'Low', votes: 0, plainLanguage: 'Someone could send thousands of reset emails.', grounding: 'weak', state: 'needs_human', citations: [{ factId: 'fact_page', quote: 'The reset page is public' }] }),
 ];
 
 const RANK = { Critical: 4, High: 3, Medium: 2, Low: 1 } as const;
@@ -49,6 +50,8 @@ const base: PanelDto = {
   roles: ['viewer', 'developer'],
   threatModelPage: null,
   requirementControls: REQUIREMENT_CONTROLS_FIXTURE,
+  // Generated from the layout (apps/core/test/services/diagram.test.ts keeps it in step: `pnpm vitest run -u`).
+  diagram: DIAGRAM_FIXTURE,
 };
 
 const withReview = (o: Partial<NonNullable<PanelDto['review']>>, rest: Partial<PanelDto> = {}): PanelDto => ({ ...base, review: { ...base.review!, ...o }, ...rest });
