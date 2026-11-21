@@ -1,4 +1,4 @@
-import { panelDiff, panelEnrich, panelGet, panelRerun, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
+import { panelDelivery, panelDiff, panelEnrich, panelGet, panelRerun, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
 import { requirementsCreate, requirementsSetStatus } from './requirements.js';
 import { reviewConfirm, threatsTriage } from './threats.js';
 import { confluencePublish } from './confluence.js';
@@ -14,6 +14,7 @@ import { ciCreateToken, ciRevokeToken, ciTokens } from './ci.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
+type DeliverySource = Parameters<typeof panelDelivery>[2];
 
 /** Who is calling and from which work item: taken from the Forge context, never from the payload. */
 export type ResolverViewer = Viewer & { cloudId: string };
@@ -23,12 +24,14 @@ export type ResolverFn = (deps: CoreDeps, v: ResolverViewer, payload: Record<str
  * Every Custom UI resolver, by key. Forge registers this table (resolvers/index.ts); the local end-to-end harness
  * (e2e/local) serves the same table over in-memory deps, so the journeys exercise exactly these functions.
  */
-export function resolverTable(env: { enricher: () => Enricher; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null; ciTriggerUrl?: () => Promise<string> }): Record<string, ResolverFn> {
+export function resolverTable(env: { enricher: () => Enricher; delivery?: () => DeliverySource; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null; ciTriggerUrl?: () => Promise<string> }): Record<string, ResolverFn> {
   return {
     'panel.get': (deps, v) => panelGet(deps, v),
     'panel.threats': (deps, v, payload) => panelThreats(deps, v, payload as { cursor?: unknown }),
     'panel.rerun': (deps, v) => panelRerun(deps, v),
     'panel.enrich': (deps, v) => panelEnrich(deps, v, env.enricher()),
+    'panel.delivery': (deps, v) =>
+      panelDelivery(deps, v, env.delivery?.() ?? { links: async () => ({ pullRequests: [], deployments: [], partial: true, reasons: ['graph_not_configured'] }) }),
     'panel.diff': (deps, v, payload) => panelDiff(deps, v, payload),
     'panel.whatIf': (deps, v, payload) => panelWhatIf(deps, v, payload),
     'threat.explain': (deps, v, payload) => threatExplain(deps, v, payload as { reviewId?: unknown; threatId?: unknown }),

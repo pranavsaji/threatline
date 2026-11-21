@@ -447,6 +447,11 @@ permissions:
     write:page:confluence: {}
     read:space:confluence: {}
     manage:jira-project: {}
+    # Teamwork Graph (read only, as the viewing user): pull requests and deployments linked to a work item, from any
+    # connected provider. Shown to that viewer only, never stored, never sent to a model.
+    read:graph:issue:jira: {}
+    read:graph:pull-request:external: {}
+    read:graph:deployment:external: {}
     # Adds the Done gate to a project's workflow when an admin clicks "Add the gate for me" (as that admin).
     manage:jira-configuration:
       allowImpersonation: true

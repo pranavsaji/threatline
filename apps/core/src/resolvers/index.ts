@@ -3,6 +3,7 @@ import { getAppContext, webTrigger } from '@forge/api';
 import queryKeys from '../../graph/query-keys.json';
 import { composeCore } from '../composition.js';
 import { forgeGraphRequest, graphEnricher } from '../adapters/graph-enricher.js';
+import { graphDelivery } from '../adapters/graph-delivery.js';
 import { kvsSigningKeys } from '../adapters/signing-keys.js';
 import { systemClock } from '../adapters/clock.js';
 import { resolverTable, type ResolverViewer } from './table.js';
@@ -19,6 +20,7 @@ const viewerOf = (context: Ctx): ResolverViewer => ({
 
 const table = resolverTable({
   enricher: () => graphEnricher(forgeGraphRequest, queryKeys as Record<string, string>),
+  delivery: () => graphDelivery(forgeGraphRequest),
   signingKeysReady: async () => {
     const keys = await kvsSigningKeys(systemClock).publicKeys();
     return keys.ok && Object.keys(keys.value).length > 0;
