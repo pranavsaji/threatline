@@ -18,7 +18,7 @@ describe('migration v7 (suppression rules)', () => {
     expect((await migrate(x, MIGRATIONS.filter((m) => m.version <= 5))).ok).toBe(true);
     await x.exec("INSERT INTO feedback (threat_id, component, title, stride, actor, action, reason) VALUES ('t0', 'c', 'Old', 'Spoofing', 'a', 'dismiss', 'false_positive')", []);
     const up = await migrate(x, MIGRATIONS);
-    expect(up.ok && up.value).toEqual({ from: 5, to: 7 });
+    expect(up.ok && up.value).toEqual({ from: 5, to: MIGRATIONS.at(-1)!.version });
     const fb = sqlFeedbackRepo(x);
     expect(await fb.dismissedFor('c')).toEqual({ ok: true, value: [{ title: 'Old', stride: 'Spoofing', reason: 'false_positive' }] });
     expect(await fb.dismissalsSince('2000-01-01T00:00:00.000Z', 10)).toEqual({ ok: true, value: [] });
