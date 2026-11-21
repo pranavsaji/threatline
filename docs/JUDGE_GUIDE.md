@@ -55,6 +55,23 @@ Also worth a look: **Apps → Threatline security posture** (and the dashboard g
 Confluence (**History → Publish to Confluence**), and asking the **Threatline** agent in Rovo chat "What do I need to fix
 before this can merge?".
 
+## More to try (5 minutes)
+
+- **Data-flow diagram.** In a reviewed work item's panel, open **Diagram**: the review's components, stores, flows and
+  trust boundaries, with each element coloured by its highest open threat. Click an element to filter the threats.
+- **Incidents reopen reviews.** Create a work item labelled `incident` on the same component as a reviewed, open story
+  (the demo data uses `support-agent`). Within a minute or two the story gets a new revision whose panel says which
+  incident caused it, and whose threats quote the incident.
+- **Champion inbox.** Open the Threatline global page (Apps → Threatline security posture) → **Champion inbox**: every
+  threat waiting for a person, across projects, with bulk Confirm and Dismiss (keyboard: j, k, x, c, d).
+- **Compliance.** On the same page, **Controls** shows SOC 2, ISO 27001 and PCI DSS controls (indicative) red, amber or
+  green from the requirements behind them; a requirement card in the panel shows its controls too.
+- **CI verification.** Admin → **CI verification**: create a token, then follow [CI_VERIFICATION.md](CI_VERIFICATION.md)
+  to post JUnit results from GitHub Actions or Bitbucket Pipelines; passing requirement tests become Verified with the
+  run as evidence.
+- **Team suppressions.** Admin → **Suppressions**: rules suggested from repeated dismissals, approved by a champion for
+  at most 90 days. A rule can never hide a threat at or above the blocking threshold.
+
 ## Rovo agent mode (optional)
 
 Create an Automation rule in the project: *Work item created* (condition: type is Story or Epic) → **Use agent:
