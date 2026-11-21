@@ -20,5 +20,6 @@ export {
   postureSummaryHandler,
   submitThreatModelHandler,
   validateTransitionHandler,
+  ciVerifyHandler,
 } from './handlers.js';
 export { panelResolver } from './resolvers/index.js';

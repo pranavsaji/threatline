@@ -2,6 +2,7 @@ import type { AdminApi, PanelApi, PostureApi } from './bridge.js';
 import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
 import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
+import { mockCiApi } from './admin/ci-api.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -82,6 +83,7 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     keyCopied: async () => ({ ok: true }),
     verifyLedger: async () => ({ ok: true, length: 12 }),
     exportLedger: async (projectKey, from, to) => ({ csv: 'seq,created_at\n', json: JSON.stringify({ projectKey, from, to, entries: [] }) }),
+    ci: mockCiApi(),
     setupStatus: async () => ({ keys: true, sqlVersion: 3, validatorSeenOn: ['PAY'], automationRuleSeen: true, mcpEnabledHint: 'Rovo MCP: allow the clients your team uses in Atlassian Administration.', bitbucketKeyCopied: false }),
   };
 }

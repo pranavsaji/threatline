@@ -7,6 +7,7 @@ import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverri
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
+import { ciCreateToken, ciRevokeToken, ciTokens } from './ci.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
@@ -19,7 +20,7 @@ export type ResolverFn = (deps: CoreDeps, v: ResolverViewer, payload: Record<str
  * Every Custom UI resolver, by key. Forge registers this table (resolvers/index.ts); the local end-to-end harness
  * (e2e/local) serves the same table over in-memory deps, so the journeys exercise exactly these functions.
  */
-export function resolverTable(env: { enricher: () => Enricher; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null }): Record<string, ResolverFn> {
+export function resolverTable(env: { enricher: () => Enricher; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null; ciTriggerUrl?: () => Promise<string> }): Record<string, ResolverFn> {
   return {
     'panel.get': (deps, v) => panelGet(deps, v),
     'panel.threats': (deps, v, payload) => panelThreats(deps, v, payload as { cursor?: unknown }),
@@ -61,5 +62,8 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'keys.public': (deps, v) => keysPublic(deps, { accountId: v.accountId }),
     'keys.rotate': (deps, v) => keysRotate(deps, { accountId: v.accountId }),
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),
+    'ci.tokens': (deps, v) => ciTokens(deps, { accountId: v.accountId }, { triggerUrl: env.ciTriggerUrl ?? (async () => Promise.reject(new Error('no web trigger here'))) }),
+    'ci.createToken': (deps, v, payload) => ciCreateToken(deps, { accountId: v.accountId }, payload),
+    'ci.revokeToken': (deps, v, payload) => ciRevokeToken(deps, { accountId: v.accountId }, payload),
   };
 }

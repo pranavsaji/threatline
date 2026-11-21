@@ -1,4 +1,5 @@
 import type { AcceptanceState, AdminPolicyDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
+import { ciApiOver, type CiApi } from './admin/ci-api.js';
 
 /** Calls a resolver by key: Forge's invoke inside Atlassian, or the local end-to-end harness (e2e/local). */
 export type Invoke = <T>(key: string, payload?: Record<string, unknown>) => Promise<T>;
@@ -142,6 +143,8 @@ export interface AdminApi {
   /** R5: an inclusion proof (JSON) for one ledger entry against the current signed tree head. */
   ledgerProof(seq: number): Promise<{ json: string; seq: number; treeSize: number } | ApiError>;
   treeHead(): Promise<TreeHeadInfo | ApiError>;
+  /** Verification from CI: the web trigger URL and the site's CI tokens. */
+  ci: CiApi;
 }
 
 export interface TreeHeadInfo {
@@ -176,6 +179,7 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     installGate: () => invoke('admin.installGate'),
     ledgerProof: (seq) => invoke('ledger.proof', { seq }),
     treeHead: () => invoke('ledger.treeHead'),
+    ci: ciApiOver(invoke),
   };
 }
 

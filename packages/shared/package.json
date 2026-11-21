@@ -7,7 +7,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./requirement-tools": "./src/requirement-tools.ts"
+    "./requirement-tools": "./src/requirement-tools.ts",
+    "./ci": "./src/ci.ts"
   },
   "dependencies": {
     "zod": "^4.6.6"

@@ -6,11 +6,15 @@ export type Criterion = z.infer<typeof CriterionSchema>;
 
 export const EvidenceSchema = z
   .object({
-    kind: z.enum(['pr', 'test', 'confluence', 'manual']),
+    /** `ci`: tests named for the requirement passed in a CI run (ref is the run's https link). Only the CI web trigger sets it. */
+    kind: z.enum(['pr', 'test', 'confluence', 'manual', 'ci']),
     /** The link or path itself (kept clean so the panel can open it). */
     ref: z.string().min(1).max(2000),
     /** Free text about the evidence (e.g. the test that covers it), shown beside the link. */
     note: z.string().max(500).optional(),
+    /** CI evidence: the commit the tests ran on, and the repository (owner/repository or workspace/repository). */
+    commitSha: z.string().regex(/^[0-9a-f]{40}$/).optional(),
+    repo: z.string().min(1).max(201).optional(),
     attester: z.string().min(1),
   })
   .strict();

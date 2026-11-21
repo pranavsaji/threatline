@@ -22,11 +22,32 @@ const STATUS_LABEL: Record<RequirementStatus, string> = {
   AcceptedRisk: 'Accepted risk',
   NotApplicable: 'Not applicable',
 };
-const EVIDENCE_LABEL = { pr: 'PR', test: 'Test', confluence: 'Confluence', manual: 'Note' } as const;
+const EVIDENCE_LABEL = { pr: 'PR', test: 'Test', confluence: 'Confluence', manual: 'Note', ci: 'CI' } as const;
 const DONE: ReadonlySet<RequirementStatus> = new Set(['Verified', 'NotApplicable', 'AcceptedRisk']);
+const linkStyle = { color: token('color.link') };
+
+/** Verified from CI: a link to the run, and the repository and commit its tests passed on. */
+function CiEvidence({ e }: { e: NonNullable<Requirement['evidence']> }) {
+  const where = [e.repo, e.commitSha ? e.commitSha.slice(0, 12) : null].filter(Boolean).join(' @ ');
+  return (
+    <span style={{ font: token('font.body.small'), color: token('color.text.subtle') }}>
+      Evidence: tests passed in CI —{' '}
+      {e.ref.startsWith('https://') ? (
+        <a href={e.ref} target="_blank" rel="noreferrer" style={linkStyle}>
+          CI run
+        </a>
+      ) : (
+        e.ref
+      )}
+      {where ? ` · ${where}` : null}
+      {e.note ? ` (${e.note})` : null}
+    </span>
+  );
+}
 
 function EvidenceLine({ r }: { r: Requirement }) {
   if (!r.evidence) return null;
+  if (r.evidence.kind === 'ci') return <CiEvidence e={r.evidence} />;
   const link = r.evidence.kind === 'pr' || r.evidence.kind === 'confluence';
   return (
     <span style={{ font: token('font.body.small'), color: token('color.text.subtle') }}>

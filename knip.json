@@ -87,6 +87,7 @@
     "apps/github-action": {
       "entry": [
         "src/main.ts",
+        "src/ci-report-cli.ts",
         "test/**/*.test.ts"
       ],
       "project": [
