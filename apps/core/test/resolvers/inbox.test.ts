@@ -4,6 +4,7 @@ import { inboxDecide, inboxList, type InboxDto } from '../../src/resolvers/inbox
 import { buildInbox, INBOX_DECIDE_MAX, INBOX_SCAN } from '../../src/services/inbox-service.js';
 import { resolverTable } from '../../src/resolvers/table.js';
 import { coreDeps, jiraIssue } from '../support/core-deps.js';
+import { appendLedger } from '@threatline/core';
 
 const CHAMPIONS = 'threatline-security-champions';
 const CHAMP = 'acc-champ';
@@ -188,6 +189,15 @@ describe('champion inbox: what it lists', () => {
     const cut = await buildInbox(t.deps, CHAMP, { scan: 3 });
     expect(cut.ok && cut.value.truncated).toBe(true);
     expect(cut.ok && cut.value.total).toBeLessThanOrEqual(3);
+  });
+
+  it('a review a champion already confirmed as a whole in the panel is no longer waiting', async () => {
+    const t = await site();
+    await appendLedger(t.deps.ledger, t.deps.clock, 'review.champion_confirmed', { reviewId: 'rev_3', issueId: '103', issueKey: 'PAY-3' }, CHAMP);
+    await appendLedger(t.deps.ledger, t.deps.clock, 'budget.champion_confirmed', { reviewId: 'rev_1', issueId: '101', issueKey: 'PAY-1' }, CHAMP);
+    const rows = rowsOf(await list(t)).map((r) => r.threatId);
+    expect(rows).not.toContain('thr_d');
+    expect(rows).toContain('thr_a');
   });
 
   it('is unavailable (not empty) when the store fails', async () => {

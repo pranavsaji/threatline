@@ -164,8 +164,18 @@ export async function buildInbox(deps: CoreDeps, accountId: string, opts: { scan
   const browsable = issueIds.length ? await deps.jira.browsable(accountId, issueIds) : ok<string[]>([]);
   if (!browsable.ok) return browsable;
   const allowed = new Set(browsable.value);
+  // A review a champion confirmed as a whole (the panel's "Confirm threats") waits for no one: its threats count as
+  // ordinary ones. Read through the ledger's work-item index, 100 work items per query.
+  const confirmed = new Set<unknown>();
+  const visibleIds = issueIds.filter((x) => allowed.has(x));
+  for (let i = 0; i < visibleIds.length; i += 100) {
+    const rows = await deps.ledger.forIssues(['review.champion_confirmed'], visibleIds.slice(i, i + 100));
+    if (!rows.ok) return rows;
+    for (const row of rows.value) if (row.eventType === 'review.champion_confirmed') confirmed.add(row.payload.reviewId);
+  }
   const byReview = new Map<string, NeedsHumanRow[]>();
-  for (const r of candidates) if (allowed.has(r.review.issueId)) byReview.set(r.review.id, [...(byReview.get(r.review.id) ?? []), r]);
+  for (const r of candidates)
+    if (allowed.has(r.review.issueId) && !confirmed.has(r.review.id)) byReview.set(r.review.id, [...(byReview.get(r.review.id) ?? []), r]);
 
   const site = (await deps.siteUrl()).replace(/\/+$/, '');
   const cache = newScopeCache();
