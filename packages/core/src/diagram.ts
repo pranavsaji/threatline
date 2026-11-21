@@ -256,7 +256,8 @@ export function layoutDiagram(input: DiagramInput): DiagramModel {
         add('process', t.component, 'threat');
         at = drafts.length - 1;
       }
-      const counted = t.state !== 'dismissed';
+      // Dismissed and team-suppressed threats are shown but never counted as open: neither has a requirement to close.
+      const counted = t.state !== 'dismissed' && t.state !== 'suppressed';
       return { t, at, counted, open: counted && !resolved.has(t.id) };
     });
 

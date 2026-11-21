@@ -86,7 +86,13 @@ export async function applyTriage(
 }
 
 /** Refusals known before anything is written, so a refused decision leaves no ledger entry. */
+/** A threat a team rule hides is triaged only after a champion unhides it here (that is ledgered). */
+const hiddenBy = (x: Threat) => (x.state === 'suppressed' ? `“${x.title}” is hidden by a team rule (${x.suppression?.ruleId ?? 'unknown'}). Unhide it here first.` : null);
+
 function precheck(all: readonly Threat[], t: Threat, op: TriageOp, visible: ReadonlySet<string>): Result<never> | null {
+  // Refused before the ledger: an edit could otherwise raise a hidden threat to a blocking severity while it stays hidden.
+  const hidden = hiddenBy(t) ?? (op.op === 'merge' ? hiddenBy(all.find((x) => x.id === op.intoThreatId) ?? t) : null);
+  if (hidden) return err(appError('validation', hidden));
   if (op.op === 'merge') {
     const into = all.find((x) => x.id === op.intoThreatId);
     if (!into || !visible.has(into.id) || into.id === t.id) return err(appError('not_found', 'merge target not found'));
@@ -114,11 +120,6 @@ async function saveTriage(
     });
   const update = async (id: string, patch: Partial<Threat>) => deps.reviews.updateThreat(id, patch);
   const changed: Threat[] = [];
-  // A threat a team rule hides is triaged only after a champion unhides it here (that is ledgered): an edit could
-  // otherwise raise it to a blocking severity while it stays hidden.
-  const hiddenBy = (x: Threat) => (x.state === 'suppressed' ? `“${x.title}” is hidden by a team rule (${x.suppression?.ruleId ?? 'unknown'}). Unhide it here first.` : null);
-  const refused = hiddenBy(t) ?? (op.op === 'merge' ? hiddenBy(all.find((x) => x.id === op.intoThreatId) ?? t) : null);
-  if (refused) return err(appError('validation', refused));
 
   switch (op.op) {
     case 'accept': {
@@ -134,8 +135,10 @@ async function saveTriage(
     case 'dismiss': {
       const u = await update(t.id, { state: 'dismissed', dismissReason: op.reason });
       if (!u.ok) return u;
+      // The dismissal is saved (and ledgered); the feedback row only feeds suppression suggestions, so a failure to
+      // write it must not report the decision as failed.
       const f = await feedback('dismiss', { reason: op.reason, ...(op.note ? { note: op.note } : {}) });
-      if (!f.ok) return f;
+      if (!f.ok) log('triage.feedback_failed', { threatId: t.id, code: f.error.code });
       changed.push({ ...t, state: 'dismissed', dismissReason: op.reason });
       break;
     }

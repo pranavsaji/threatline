@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { DismissReasonSchema } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
-import { isChampionOrAdmin } from '../services/roles.js';
+import { isChampion, isChampionOrAdmin } from '../services/roles.js';
 import { buildInbox, decideInboxItem, INBOX_DECIDE_MAX, INBOX_PAGE, INBOX_PAGE_MAX, inboxPage, type Inbox, type InboxDecision } from '../services/inbox-service.js';
 import { apiError, type ApiError, type ApiErrorCode } from './errors.js';
 
@@ -41,11 +41,13 @@ const DecideSchema = z
 const invalid = (e: z.ZodError): ApiError => ({ error: 'validation', message: e.issues.slice(0, 3).map((i) => `${i.path.join('.') || 'request'}: ${i.message}`).join('; ') });
 
 /** Champions and Jira admins only, checked on every call; lookup failures grant nothing. */
-async function gate(deps: CoreDeps, v: InboxViewer): Promise<{ enabledProjects: string[] } | ApiError> {
+async function gate(deps: CoreDeps, v: InboxViewer, decide = false): Promise<{ enabledProjects: string[] } | ApiError> {
   if (!v.accountId) return { error: 'not_found' };
   const policy = await deps.config.site();
   if (!policy.ok) return { error: 'unavailable' };
   if (!(await isChampionOrAdmin(deps, v.accountId, policy.value))) return { error: 'forbidden', message: 'Only security champions and Jira admins can open the champion inbox.' };
+  // Separation of duties, as in the issue panel: a Jira admin can see the inbox, but only a champion decides.
+  if (decide && !(await isChampion(deps, v.accountId, policy.value))) return { error: 'forbidden', message: 'Only a security champion can confirm or dismiss these threats.' };
   return { enabledProjects: policy.value.enabledProjects };
 }
 
@@ -73,7 +75,7 @@ export async function inboxList(deps: CoreDeps, v: InboxViewer, payload: unknown
 export async function inboxDecide(deps: CoreDeps, v: InboxViewer, payload: unknown): Promise<InboxDecideDto | ApiError> {
   const p = DecideSchema.safeParse(payload);
   if (!p.success) return invalid(p.error);
-  const allowed = await gate(deps, v);
+  const allowed = await gate(deps, v, true);
   if ('error' in allowed) return allowed;
   const op: InboxDecision = p.data.decision === 'confirm' ? { op: 'accept' } : { op: 'dismiss', reason: p.data.reason, ...(p.data.note ? { note: p.data.note } : {}) };
   const results: InboxItemResult[] = [];

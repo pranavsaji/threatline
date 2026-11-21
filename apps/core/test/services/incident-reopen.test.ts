@@ -90,7 +90,7 @@ describe('incident fan-out (reopenForIncident)', () => {
     const t = await setup();
     await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
     const rows = await t.deps.ledger.ofTypes(['review.reopened_by_incident']);
-    expect(rows.ok && rows.value.map((x) => [x.actor, x.payload])).toEqual([[ACTOR, { issueId: '10900', incidentKey: 'PAY-9', components: ['payments'], queued: ['PAY-101', 'PAY-102'] }]]);
+    expect(rows.ok && rows.value.map((x) => [x.actor, x.payload])).toEqual([[ACTOR, { issueId: '10900', issueKey: 'PAY-9', incidentKey: 'PAY-9', components: ['payments'], queued: ['PAY-101', 'PAY-102'] }]]);
   });
 
   it('comments on the incident with a count only (no keys: its readers may not be allowed to see those work items), never its own text', async () => {

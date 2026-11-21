@@ -1,4 +1,5 @@
 import { InvocationError, InvocationErrorCode } from '@forge/events';
+import { log } from './adapters/log.js';
 import { getReviewContext } from './actions/get-review-context.js';
 import { submitThreatModel } from './actions/submit-threat-model.js';
 import { withCaller } from './actions/common.js';
@@ -49,7 +50,11 @@ export const validateTransitionHandler = async (args: { issue?: { key?: string; 
 
 /** webtrigger `ci-verify`: CI reports passing tests; authenticated by a per-site CI token, never by a user. */
 /** Static web trigger (Runs on Atlassian): the full answer is mapped to one of the fixed outputs in manifest.yml. */
-export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => toStaticOutput(await ciVerify(composeCore(ctx), request));
+export const ciVerifyHandler = async (request: WebTriggerRequestLike, ctx: ForgeContext) => toStaticOutput(await ciVerify(composeCore(ctx), request).catch((e: unknown) => {
+    // A thrown error must still answer with a declared output, never a Forge 500.
+    log('ci.verify_threw', { message: e instanceof Error ? e.message.slice(0, 200) : 'unknown' });
+    return { statusCode: 503, headers: {}, body: '' };
+  }));
 
 export const sweeperHandler = async (_e: unknown, ctx: ForgeContext) => sweep(composeCore(ctx));
 export const hourlyHandler = async (_e: unknown, ctx: ForgeContext) => hourly(composeCore(ctx));

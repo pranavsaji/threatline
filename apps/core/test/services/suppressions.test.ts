@@ -267,6 +267,9 @@ describe('security review fixes', () => {
     expect(await threatsTriage(t.deps, who, { threatId: r.by(FORGED).id, op: 'merge', intoThreatId: r.by(LEAK).id })).toEqual({ error: 'validation', message: msg });
     const after = ((await t.deps.reviews.threats(r.id)) as { ok: true; value: Threat[] }).value;
     expect(after.find((x) => x.id === r.by(LEAK).id)).toMatchObject({ state: 'suppressed', severity: 'Medium' });
+    // Refused before the ledger: no decision is recorded that was never allowed.
+    const led = await t.deps.ledger.ofTypes(['threat.triaged', 'threat.triage_failed']);
+    expect(led.ok && led.value).toEqual([]);
   });
 
   async function dismissedOnThree() {

@@ -87,7 +87,7 @@ describe('admin: incidents setting', () => {
     await userEvent.clear(max);
     await userEvent.type(max, '10');
     await userEvent.type(within(f).getByRole('textbox', { name: 'Incident labels (comma-separated)' }), ', sev1');
-    await userEvent.click(within(f).getByRole('checkbox', { name: 'Comment on the incident with the work items re-reviewed' }));
+    await userEvent.click(within(f).getByRole('checkbox', { name: 'Comment on the incident with how many work items are re-reviewed (no keys: the ledger lists them)' }));
     await userEvent.click(within(f).getByRole('button', { name: 'Save incident settings' }));
     await waitFor(() => expect(setPolicy).toHaveBeenCalled());
     const saved = setPolicy.mock.calls[0]![0] as SitePolicy;

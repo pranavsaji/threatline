@@ -51,7 +51,7 @@ export function Incidents(props: PolicySectionProps) {
         </div>
         <label style={check}>
           <input type="checkbox" checked={comment} onChange={(e) => setComment(e.target.checked)} />
-          Comment on the incident with the work items re-reviewed
+          Comment on the incident with how many work items are re-reviewed (no keys: the ledger lists them)
         </label>
         <span style={hint}>A work item is an incident when it has one of these labels or is one of these work types. Newest work items are re-reviewed first.</span>
       </PolicyForm>

@@ -117,7 +117,7 @@ export const MIGRATIONS: Migration[] = [
     version: 8,
     name: 'threats_state_index',
     // Scale: the champion inbox reads the threats waiting for a champion (state needs_human) across the site through
-    // this index instead of scanning every threat ever stored. Versions 6 and 7 are reserved for parallel work.
+    // this index instead of scanning every threat ever stored. Version 6 was never used (the Forge runner tracks steps by name, so the gap is harmless).
     statements: [`CREATE INDEX idx_threats_state ON threats (state, severity)`],
   },
 ];

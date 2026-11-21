@@ -133,6 +133,8 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
     'review.reopened_by_incident',
     {
       issueId: inc.id,
+      // The evidence pack finds an entry's project by its work item; an incident usually has no review, so name its key.
+      issueKey: inc.key,
       incidentKey: inc.key,
       components: inc.components.slice(0, 10),
       queued: claimed.map((e) => e.issue.key),

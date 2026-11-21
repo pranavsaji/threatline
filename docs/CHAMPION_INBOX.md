@@ -9,7 +9,9 @@ item at a time. The champion inbox puts all of them, across projects, in one que
 
 The **Threatline security posture** global page (`jira:globalPage`, `threatline-posture`) has a **Champion inbox** tab next to the dashboard, with
 the number of threats waiting. Only members of the champion group and Jira admins see the tab. The server checks the
-role on every call (`isChampionOrAdmin` in `apps/core/src/services/roles.ts`), and a failed lookup grants nothing.
+role on every call (`isChampionOrAdmin` in `apps/core/src/services/roles.ts`), and a failed lookup grants nothing. A Jira
+admin can see the queue, but only a security champion can confirm or dismiss (`isChampion`), the same separation of
+duties as the issue panel.
 Everyone else sees the dashboard on its own.
 
 ## What it lists

@@ -17,6 +17,13 @@ export async function rolesOf(deps: Pick<CoreDeps, 'jira'>, accountId: string, i
   return roles;
 }
 
+/** Deciding threats that wait for a person is a security champion's job (separation of duties): admins are not enough. */
+export async function isChampion(deps: Pick<CoreDeps, 'jira'>, accountId: string, policy: SitePolicy): Promise<boolean> {
+  if (!accountId) return false;
+  const groups = await deps.jira.groupsOf(accountId);
+  return groups.ok && groups.value.includes(policy.championGroup);
+}
+
 /**
  * Site-wide surfaces with no work item (the champion inbox): a member of the policy's champion group or a Jira admin.
  * Lookup failures grant nothing.

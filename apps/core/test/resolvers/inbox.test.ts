@@ -266,11 +266,12 @@ describe('champion inbox: decisions', () => {
     expect(led.ok && led.value.map((r) => r.payload.threatId)).toEqual(['thr_c', 'thr_a']);
   });
 
-  it('only champions and admins decide; requests are bounded and checked', async () => {
+  it('only champions decide (a Jira admin can see the inbox but not decide, as in the panel); requests are bounded and checked', async () => {
     const t = await site();
     expect(await inboxDecide(t.deps, { accountId: DEV }, { decision: 'confirm', items: [{ issueId: '101', threatId: 'thr_a' }] })).toMatchObject({ error: 'forbidden' });
+    expect(await inboxDecide(t.deps, { accountId: ADMIN }, { decision: 'dismiss', reason: 'false_positive', items: [{ issueId: '101', threatId: 'thr_a' }] })).toMatchObject({ error: 'forbidden' });
     expect((await threatOf(t, 'rev_1', 'thr_a')).state).toBe('needs_human');
-    expect(await inboxDecide(t.deps, { accountId: ADMIN }, { decision: 'confirm', items: [{ issueId: '101', threatId: 'thr_a' }] })).toMatchObject({ decided: 1 });
+    expect(await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'confirm', items: [{ issueId: '101', threatId: 'thr_a' }] })).toMatchObject({ decided: 1 });
     const many = Array.from({ length: INBOX_DECIDE_MAX + 1 }, (_, i) => ({ issueId: '101', threatId: `thr_${i}` }));
     expect(await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'confirm', items: many })).toMatchObject({ error: 'validation' });
     expect(await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'confirm', items: [] })).toMatchObject({ error: 'validation' });
@@ -278,6 +279,16 @@ describe('champion inbox: decisions', () => {
     expect(await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'escalate', items: [{ issueId: '101', threatId: 'thr_b' }] })).toMatchObject({ error: 'validation' });
     // The same threat twice in one request is decided once.
     expect(await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'confirm', items: [{ issueId: '101', threatId: 'thr_b' }, { issueId: '101', threatId: 'thr_b' }] })).toMatchObject({ error: 'validation' });
+  });
+
+  it('a dismissal stands when only its feedback row (suppression suggestions) cannot be written', async () => {
+    const t = await site();
+    t.deps.feedback.record = async () => ({ ok: false, error: { code: 'upstream', message: "Unknown column 'issue_id'" } });
+    const out = await inboxDecide(t.deps, { accountId: CHAMP }, { decision: 'dismiss', reason: 'false_positive', items: [{ issueId: '101', threatId: 'thr_a' }] });
+    expect(out).toMatchObject({ decided: 1, failed: 0 });
+    expect((await threatOf(t, 'rev_1', 'thr_a')).state).toBe('dismissed');
+    const led = await t.deps.ledger.ofTypes(['threat.triaged', 'threat.triage_failed']);
+    expect(led.ok && led.value.map((r) => r.eventType)).toEqual(['threat.triaged']);
   });
 
   it('a decision that could not be saved fails for that item only, and the ledger marks it failed', async () => {

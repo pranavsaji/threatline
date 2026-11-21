@@ -73,6 +73,13 @@ describe('nameKey and matchNode (fuzzy component matching)', () => {
 });
 
 describe('layoutDiagram', () => {
+  it('a team-suppressed threat is shown but never counted as open (it has no requirement to close)', () => {
+    const m = layoutDiagram({ sketch: SKETCH, threats: [threat('t9', 'orders db', { severity: 'Low', state: 'suppressed' })] });
+    const node = m.nodes.find((n) => n.name === 'Orders DB')!;
+    expect(node.openCount).toBe(0);
+    expect(node.maxSeverity).toBeNull();
+  });
+
   it('builds DFD nodes by kind, edges from flows, and per-node threat counts and highest open severity', () => {
     const m = layoutDiagram({
       sketch: SKETCH,
