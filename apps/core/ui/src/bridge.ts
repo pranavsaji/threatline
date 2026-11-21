@@ -1,4 +1,4 @@
-import type { AcceptanceState, AdminPolicyDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
+import type { AcceptanceState, AdminPolicyDto, Stride, SuppressionRule, SuppressionsDto, ApiError, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto } from './types.js';
 
 /** Calls a resolver by key: Forge's invoke inside Atlassian, or the local end-to-end harness (e2e/local). */
 export type Invoke = <T>(key: string, payload?: Record<string, unknown>) => Promise<T>;
@@ -51,6 +51,8 @@ export interface PanelApi {
   createRequirements(threatIds: string[]): Promise<CreatedRequirements | ApiError>;
   setStatus(requirementId: string, status: RequirementStatus, evidence?: Pick<Evidence, 'kind' | 'ref'>): Promise<Requirement | ApiError>;
   triage(input: TriageInput): Promise<Threat[] | ApiError>;
+  /** Champions: show a team rule's hidden threats on this work item again (ledgered). */
+  unhide(ruleId: string): Promise<Threat[] | ApiError>;
   confirm(reviewId: string, kind: 'review' | 'budget'): Promise<{ seq: number } | ApiError>;
   publish(): Promise<{ pageId: string; url: string; created: boolean } | ApiError>;
   requestAcceptance(input: AcceptanceInput): Promise<{ acceptanceId: string; needsApprover: 'none' | 'tech_lead' | 'champion'; entryHash: string } | ApiError>;
@@ -85,6 +87,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     createRequirements: (threatIds) => invoke('requirements.create', { threatIds }),
     setStatus: (requirementId, status, evidence) => invoke('requirements.setStatus', { requirementId, status, ...(evidence ? { evidence } : {}) }),
     triage: (input) => invoke('threats.triage', input),
+    unhide: (ruleId) => invoke('suppressions.unhide', { ruleId }),
     confirm: (reviewId, kind) => invoke('review.confirm', { reviewId, kind }),
     publish: () => invoke('confluence.publish'),
     requestAcceptance: (input) => invoke('acceptance.request', { ...input }),
@@ -142,6 +145,20 @@ export interface AdminApi {
   /** R5: an inclusion proof (JSON) for one ledger entry against the current signed tree head. */
   ledgerProof(seq: number): Promise<{ json: string; seq: number; treeSize: number } | ApiError>;
   treeHead(): Promise<TreeHeadInfo | ApiError>;
+  /** Team suppression rules (champions and admins): active rules with match counts, and suggestions. */
+  suppressions(): Promise<SuppressionsDto | ApiError>;
+  createSuppression(input: SuppressionInput): Promise<SuppressionRule | ApiError>;
+  revokeSuppression(ruleId: string, reason: string): Promise<SuppressionRule | ApiError>;
+}
+
+export interface SuppressionInput {
+  projectKey: string;
+  stride: Stride;
+  title: string;
+  component?: string;
+  reason: string;
+  expiryDays: number;
+  evidence?: string[];
 }
 
 export interface TreeHeadInfo {
@@ -176,6 +193,9 @@ export function adminApiOver(invoke: Invoke): AdminApi {
     installGate: () => invoke('admin.installGate'),
     ledgerProof: (seq) => invoke('ledger.proof', { seq }),
     treeHead: () => invoke('ledger.treeHead'),
+    suppressions: () => invoke('suppressions.list'),
+    createSuppression: (input) => invoke('suppressions.create', { ...input }),
+    revokeSuppression: (ruleId, reason) => invoke('suppressions.revoke', { ruleId, reason }),
   };
 }
 

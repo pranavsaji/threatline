@@ -63,6 +63,7 @@ export function ThreatCard({
             {threat.state === 'needs_human' && <Lozenge appearance="new">Needs a champion</Lozenge>}
             {threat.verification?.keep && <Lozenge appearance="success">Verified</Lozenge>}
             {threat.state === 'dismissed' && threat.verification?.keep === false && <Lozenge appearance="removed">Dropped by the verifier</Lozenge>}
+            {threat.state === 'suppressed' && <Lozenge appearance="removed">Hidden by team rule</Lozenge>}
             <span style={{ color: token('color.text.subtlest'), font: token('font.body.small') }}>{runs}</span>
           </div>
           {threat.verification?.keep === false && (
@@ -71,6 +72,7 @@ export function ThreatCard({
               {threat.state === 'needs_human' ? ' A security champion decides.' : ''}
             </span>
           )}
+          {threat.suppression && <SuppressionNote suppression={threat.suppression} />}
           {covers.length > 0 && (
             <span style={{ color: token('color.text.subtle'), font: token('font.body.small') }}>
               Also covers Threatline's rule-based {covers.length === 1 ? 'check' : 'checks'}: {covers.join('; ')}.
@@ -153,5 +155,20 @@ export function ThreatCard({
       )}
       {children}
     </article>
+  );
+}
+
+/** What a project's team suppression rule did to this threat (docs/SUPPRESSIONS.md). */
+function SuppressionNote({ suppression: s }: { suppression: NonNullable<Threat['suppression']> }) {
+  const text =
+    s.outcome === 'hidden'
+      ? `Hidden by team rule: ${s.reason} (expires ${s.expiresAt.slice(0, 10)}; rule ${s.ruleId}).`
+      : s.outcome === 'blocking'
+        ? `Team rule ${s.ruleId} matched this threat (${s.reason}), but a rule cannot hide a threat at or above the blocking level.`
+        : `Unhidden on this work item by a security champion (team rule ${s.ruleId}: ${s.reason}).`;
+  return (
+    <span style={{ color: token('color.text.subtle'), font: token('font.body.small') }}>
+      {text}
+    </span>
   );
 }

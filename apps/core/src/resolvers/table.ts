@@ -7,6 +7,7 @@ import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverri
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
 import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
+import { suppressionsCreate, suppressionsList, suppressionsRevoke, suppressionsUnhide } from './suppressions.js';
 import type { CoreDeps } from '../deps.js';
 
 type Enricher = Parameters<typeof panelEnrich>[2];
@@ -61,5 +62,9 @@ export function resolverTable(env: { enricher: () => Enricher; signingKeysReady:
     'keys.public': (deps, v) => keysPublic(deps, { accountId: v.accountId }),
     'keys.rotate': (deps, v) => keysRotate(deps, { accountId: v.accountId }),
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),
+    'suppressions.list': (deps, v) => suppressionsList(deps, { accountId: v.accountId }),
+    'suppressions.create': (deps, v, payload) => suppressionsCreate(deps, { accountId: v.accountId }, payload),
+    'suppressions.revoke': (deps, v, payload) => suppressionsRevoke(deps, { accountId: v.accountId }, payload),
+    'suppressions.unhide': (deps, v, payload) => suppressionsUnhide(deps, v, payload),
   };
 }

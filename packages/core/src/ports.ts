@@ -136,7 +136,11 @@ export type LedgerEventType =
   | 'reviews.resumed'
   | 'review.sample'
   | 'review.sample_rejected'
-  | 'key.rotated';
+  | 'key.rotated'
+  | 'suppression.created'
+  | 'suppression.revoked'
+  | 'suppression.expired'
+  | 'suppression.unhidden';
 
 export interface LedgerInsert {
   seq: number;
@@ -182,10 +186,19 @@ export interface FeedbackRow {
   action: 'dismiss' | 'accept' | 'edit';
   reason?: DismissReason;
   note?: string;
+  /** The work item and when (written from migration v7 on; older rows have none and feed no suppression suggestion). */
+  issueId?: string;
+  issueKey?: string;
+  projectKey?: string;
+  at?: string;
 }
+/** A dismissal with a reason, on a work item of a project: the evidence a suppression suggestion rests on. */
+export type DismissalRow = Required<Pick<FeedbackRow, 'threatId' | 'component' | 'title' | 'stride' | 'actor' | 'reason' | 'issueId' | 'issueKey' | 'projectKey' | 'at'>>;
 export interface FeedbackRepo {
   dismissedFor(component: string): Promise<Result<Array<{ title: string; stride: Stride; reason: DismissReason }>>>;
   record(f: FeedbackRow): Promise<Result<void>>;
+  /** Dismissals with a reason recorded at or after `sinceIso` on a known work item, newest first, at most `limit` (capped at 2000). */
+  dismissalsSince(sinceIso: string, limit: number): Promise<Result<DismissalRow[]>>;
 }
 
 export interface IssueRow {

@@ -2,6 +2,7 @@ import type { AdminApi, PanelApi, PostureApi } from './bridge.js';
 import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
 import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
+import { SUPPRESSIONS_FIXTURE } from './admin/suppressions-fixture.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -26,6 +27,7 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
       return { ...r, status, ...(evidence ? { evidence: { ...evidence, attester: 'me' } } : {}) };
     },
     triage: async () => dto.threats,
+    unhide: async (ruleId) => dto.threats.map((t) => (t.state === 'suppressed' && t.suppression?.ruleId === ruleId ? { ...t, state: t.suppression.restoreTo ?? 'accepted', suppression: { ...t.suppression, outcome: 'unhidden' as const } } : t)),
     confirm: async () => ({ seq: 1 }),
     requestAcceptance: async () => ({ acceptanceId: 'acc_mock', needsApprover: 'champion', entryHash: 'f'.repeat(64) }),
     decideAcceptance: async (_id, decision) => ({ state: decision === 'approve' ? 'active' : 'rejected', entryHash: 'e'.repeat(64) }),
@@ -48,6 +50,7 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
   const dto = structuredClone(ADMIN_POLICY_FIXTURE);
   if (state === 'first') Object.assign(dto, { saved: false, policy: { ...dto.policy, enabledProjects: [] } });
   const DAY = 86_400_000;
+  const sup = structuredClone(SUPPRESSIONS_FIXTURE);
   return {
     getPolicy: async () => structuredClone(dto),
     setPolicy: async (policy) => ((dto.policy = { ...structuredClone(policy), warnOnly: dto.policy.warnOnly }), (dto.saved = true), { policy: structuredClone(dto.policy) }),
@@ -74,6 +77,22 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     },
     treeHead: async () => ({ treeHead: { treeSize: 12, rootHash: '3a03ebd5cbaa6828e1bf78ea19554fe4b9992ff4492ab79faca95065a0c66352', timestamp: '2026-11-18T03:00:00.000Z', kid: 'k-mock' }, publicKey: 'MCowBQYDK2VwAyEAmockpublickey', publishedPageId: null }),
     ledgerProof: async (seq) => ({ seq, treeSize: 12, json: JSON.stringify({ format: 'threatline-ledger-proof-v1', entry: { seq }, leafIndex: seq - 1, auditPath: [], treeHead: { treeSize: 12 } }, null, 2) }),
+    suppressions: async () => structuredClone(sup),
+    createSuppression: async (input) => {
+      const now = new Date();
+      const rule = { id: `sup_mock${sup.rules.length + 1}`, ...input, createdBy: 'me', createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + input.expiryDays * DAY).toISOString(), status: 'active' as const, evidence: input.evidence ?? [] };
+      const { expiryDays: _d, ...stored } = rule;
+      sup.rules = [{ ...stored, matches: 0 }, ...sup.rules];
+      sup.suggestions = sup.suggestions.filter((s) => !(s.projectKey === input.projectKey && s.title === input.title));
+      return structuredClone(stored);
+    },
+    revokeSuppression: async (ruleId, reason) => {
+      const r = sup.rules.find((x) => x.id === ruleId);
+      if (!r) return { error: 'not_found' as const };
+      sup.rules = sup.rules.filter((x) => x.id !== ruleId);
+      const { matches: _m, ...rest } = r;
+      return { ...rest, status: 'revoked' as const, endedBy: 'me', endedAt: new Date().toISOString(), endReason: reason };
+    },
     projectStatuses: async (projectKey) => ({ projectKey, statuses: ['To Do', 'In Progress', 'In Review', 'Done'] }),
     installGate: async () => ({ projects: [{ projectKey: 'PAY', added: ['Software workflow for project PAY: Done'], already: [], readOnly: [] }] }),
     seed: async (projectKey) => ({ epicKey: `${projectKey}-1`, storyKeys: [`${projectKey}-2`, `${projectKey}-3`], designPageUrl: 'https://example.atlassian.net/wiki/spaces/PAY/pages/1', incidentKeys: [`${projectKey}-4`, `${projectKey}-5`] }),

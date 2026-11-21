@@ -1,5 +1,5 @@
 import { appError, DismissReasonSchema, err, ok, StrideSchema, type DismissReason, type Stride } from '@threatline/shared';
-import type { AttestationRepo, FeedbackRepo, IssueRepo, TreeHead, TreeHeadRepo, UsageRepo } from '@threatline/core';
+import type { AttestationRepo, DismissalRow, FeedbackRepo, IssueRepo, TreeHead, TreeHeadRepo, UsageRepo } from '@threatline/core';
 import type { SqlExecutor } from '../executor.js';
 
 export function sqlFeedbackRepo(x: SqlExecutor): FeedbackRepo {
@@ -19,10 +19,30 @@ export function sqlFeedbackRepo(x: SqlExecutor): FeedbackRepo {
       return ok(out);
     },
     async record(f) {
-      const r = await x.exec('INSERT INTO feedback (threat_id, component, title, stride, actor, action, reason, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
+      const r = await x.exec('INSERT INTO feedback (threat_id, component, title, stride, actor, action, reason, note, issue_id, issue_key, project_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
         f.threatId, f.component.slice(0, 255), f.title.slice(0, 255), f.stride, f.actor, f.action, f.reason ?? null, f.note?.slice(0, 2000) ?? null,
+        f.issueId ?? null, f.issueKey ?? null, f.projectKey ?? null, f.at ?? null,
       ]);
       return r.ok ? ok(undefined) : r;
+    },
+    async dismissalsSince(sinceIso, limit) {
+      type Row = { threat_id: string; component: string; title: string; stride: string; actor: string; reason: string; issue_id: string; issue_key: string; project_key: string; created_at: string };
+      const n = Math.max(0, Math.min(2000, Math.floor(limit)));
+      const r = await x.query<Row>(
+        `SELECT threat_id, component, title, stride, actor, reason, issue_id, issue_key, project_key, created_at FROM feedback
+         WHERE action = 'dismiss' AND created_at >= ? AND reason IS NOT NULL AND issue_id IS NOT NULL AND issue_key IS NOT NULL AND project_key IS NOT NULL
+         ORDER BY created_at DESC, id DESC LIMIT ${n}`,
+        [sinceIso],
+      );
+      if (!r.ok) return r;
+      const out: DismissalRow[] = [];
+      for (const row of r.value) {
+        const s = StrideSchema.safeParse(row.stride);
+        const d = DismissReasonSchema.safeParse(row.reason);
+        if (s.success && d.success)
+          out.push({ threatId: row.threat_id, component: row.component, title: row.title, stride: s.data, actor: row.actor, reason: d.data, issueId: row.issue_id, issueKey: row.issue_key, projectKey: row.project_key, at: row.created_at });
+      }
+      return ok(out);
     },
   };
 }

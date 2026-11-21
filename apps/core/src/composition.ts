@@ -10,7 +10,7 @@ import { forgeSqlExecutor } from './adapters/forge-sql.js';
 import { jiraClient } from './adapters/jira.js';
 import { defaultsFromEnv, forgeKvs, kvsConfigStore, type KvsPort } from './adapters/kvs-config.js';
 import { restGatherer } from './adapters/rest-gatherer.js';
-import { sqlRetention } from '@threatline/db';
+import { sqlRetention, sqlSuppressionRepo } from '@threatline/db';
 import { kvsSigningKeys } from './adapters/signing-keys.js';
 import { jiraVerdictSink } from './adapters/verdict-sink.js';
 
@@ -61,6 +61,7 @@ export function composeCore(ctx?: ForgeContext): CoreDeps {
     usage: sqlUsageRepo(x),
     attestations: sqlAttestationRepo(x),
     treeHeads: sqlTreeHeadRepo(x),
+    suppressions: sqlSuppressionRepo(x),
     keys: kvsSigningKeys(systemClock, state),
     llm: forgeLlm(),
     jira,

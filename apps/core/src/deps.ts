@@ -9,6 +9,7 @@ import type {
   RequirementRepo,
   ReviewRepo,
   SigningKeyStore,
+  SuppressionRepo,
   UsageRepo,
   VerdictSink, TreeHeadRepo
 } from '@threatline/core';
@@ -34,6 +35,8 @@ export interface CoreDeps {
   attestations: AttestationRepo;
   /** R5: signed Merkle tree heads over the ledger. */
   treeHeads: TreeHeadRepo;
+  /** Team suppression rules per project, and where each hid or was unhidden (docs/SUPPRESSIONS.md). */
+  suppressions: SuppressionRepo;
   /** Ed25519 merge-attestation keys (private halves in Forge secret storage). */
   keys: SigningKeyStore;
   /** Threatline Engine's model (Forge LLMs in production, a fake in tests). Billed to the app's developer. */

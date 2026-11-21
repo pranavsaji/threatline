@@ -33,6 +33,21 @@ export const ThreatSchema = z
     verification: z.object({ keep: z.boolean(), reason: z.string().max(300) }).strict().optional(),
     /** For a `covered` rule-based threat: the id of the AI threat in the same review that covers it. */
     coveredBy: z.string().min(1).optional(),
+    /**
+     * A team suppression rule of the project matched this threat. `hidden`: below the blocking threshold, so its state is
+     * `suppressed` (`restoreTo` is the state it had). `blocking`: at or above the threshold, so the rule could not hide
+     * it and it stands as it was. `unhidden`: a champion unhid it on this work item.
+     */
+    suppression: z
+      .object({
+        ruleId: z.string().min(1).max(40),
+        reason: z.string().max(300),
+        expiresAt: z.string().max(30),
+        outcome: z.enum(['hidden', 'blocking', 'unhidden']),
+        restoreTo: z.enum(['proposed', 'accepted', 'needs_human']).optional(),
+      })
+      .strict()
+      .optional(),
     origin: z.enum(['baseline', 'agent', 'pipeline']),
     citations: z.array(CitationSchema).min(1),
     mappings: z.array(MappingSchema),

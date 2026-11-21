@@ -16,6 +16,7 @@ import { WarnOnly } from './WarnOnly.js';
 import { Notifications } from './Notifications.js';
 import { Runs } from './Runs.js';
 import { DataRetention } from './DataRetention.js';
+import { Suppressions } from './Suppressions.js';
 
 const SECTIONS = [
   { id: 'setup', title: 'Setup checklist', needsPolicy: false },
@@ -26,6 +27,7 @@ const SECTIONS = [
   { id: 'budgets', title: 'Budgets', needsPolicy: true },
   { id: 'warn-only', title: 'Warn-only mode', needsPolicy: true },
   { id: 'notifications', title: 'Notifications', needsPolicy: true },
+  { id: 'suppressions', title: 'Suppressions', needsPolicy: false },
   { id: 'runs', title: 'Recent runs', needsPolicy: false },
   { id: 'keys', title: 'Signing keys', needsPolicy: false },
   { id: 'ledger', title: 'Risk ledger', needsPolicy: false },
@@ -92,6 +94,7 @@ export function AdminPage({ api }: { api: AdminApi }) {
           {at('notifications', <Notifications api={api} ops={dto!.ops} digest={dto!.digest} />)}
         </>
       )}
+      {at('suppressions', <Suppressions api={api} />)}
       {at('runs', <Runs api={api} />)}
       {at('keys', <Keys api={api} />)}
       {at('ledger', <LedgerVerify api={api} />)}

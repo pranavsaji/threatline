@@ -9,6 +9,7 @@ import { ReviewJobSchema, type ReviewJob } from '../jobs/types.js';
 import { monthOf, pauseReasons } from '../services/budget.js';
 import { contextKey, refreshVerdict } from '../services/verdict-service.js';
 import { isPublished, publishThreatModel } from '../services/confluence-page.js';
+import { recordHidden, suppressionsFor } from '../services/suppression-service.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -54,10 +55,13 @@ async function applyAssembly(deps: CoreDeps, review: Review, bundle: ContextBund
     extract.value?.status === 'done'
       ? (extract.value.checkpoint as { sketch?: { injectionSuspected?: boolean } } | undefined)?.sketch?.injectionSuspected === true
       : samples.length > 0 && (await isEngineReview(deps, review.id));
+  // Team suppression rules of the project (docs/SUPPRESSIONS.md); a failed lookup applies none.
+  const suppressions = await suppressionsFor(deps, review);
   const out = assembleReview({
     review, bundle, samples, samplesExpected: review.samplesExpected, priorDismissed, policy, promptVersion: PROMPT_VERSION, now: deps.clock.now(), mode,
     ...(extractorFlag ? { injectionSuspected: true } : {}),
     ...(prior.value ? { prior: prior.value } : {}),
+    ...(suppressions ? { suppressions } : {}),
   });
   const saved = await deps.reviews.saveThreats(review.id, out.threats, out.discarded);
   if (!saved.ok) return saved;
@@ -74,16 +78,23 @@ async function applyAssembly(deps: CoreDeps, review: Review, bundle: ContextBund
   }
   // A rule-based threat that the settled review shows as covered by a more specific AI threat loses the requirement
   // row it got while runs were arriving, unless someone has started on it. Triage recreates it if the threat returns.
+  // The same for a threat a team rule hides (including the row an earlier revision gave the same threat).
   if (settled) {
-    const covered = new Set(out.threats.filter((t) => t.state === 'covered').map((t) => t.id));
+    const covered = new Set(out.threats.filter((t) => t.state === 'covered' || t.state === 'suppressed').map((t) => t.id));
+    const issue = { issueId: review.issueId, issueKey: review.issueKey };
+    const inForce = new Set(requirementsFor(out.threats, issue).map((r) => r.id));
+    const hiddenReqs = new Set(
+      requirementsFor(out.threats.filter((t) => t.state === 'suppressed').map((t) => ({ ...t, state: 'accepted' as const })), issue).map((r) => r.id).filter((id) => !inForce.has(id)),
+    );
     if (covered.size > 0) {
       const rows = await deps.requirements.forIssue(review.issueId);
       if (!rows.ok) return rows;
-      for (const r of rows.value.filter((x) => covered.has(x.threatId) && x.status === 'Open' && !x.subtaskKey && !x.evidence)) {
+      for (const r of rows.value.filter((x) => (covered.has(x.threatId) || hiddenReqs.has(x.id)) && x.status === 'Open' && !x.subtaskKey && !x.evidence)) {
         const d = await deps.requirements.remove(r.id);
         if (!d.ok) return d;
       }
     }
+    await recordHidden(deps, review, out.threats);
   }
   return ok(out);
 }
