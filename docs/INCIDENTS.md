@@ -13,10 +13,12 @@ happened would never hear of it. So when an incident appears, Threatline re-revi
    rule. It needs components or links, a creation date in the last 90 days (reviews read only incidents that recent),
    and a person to scope the re-reviews to (whoever raised it). It then searches the incident's project for open work
    (`statusCategory != Done`) on the same components or linked to it, newest first, at most 100 results. It keeps the
-   reviewed work types (Epic and Story by default) that already have a review, are not incidents themselves and have
-   not been reopened for this incident before, up to the cap (25 by default).
+   reviewed work types (Epic and Story by default) that the incident's creator may browse (the re-review is gathered
+   as them; one permission check for the batch, and if it fails nothing is queued and the job retries), that already
+   have a review, are not incidents themselves and have not been reopened for this incident before, up to the cap
+   (25 by default).
 3. **Ledger first, then the queue.** A `review.reopened_by_incident` entry records the incident key, its components,
-   the work items queued and anything held back (`heldForBudget`, `rateLimited`, `capped`). Then each work item gets a
+   the work items queued and anything held back (`heldForBudget`, `rateLimited`, `skippedForPermission`, `capped`). Then each work item gets a
    `gather` job with reason `incident`. In Rovo agent mode the `threatline-review` label is also added, so the
    Automation rule runs the agent.
 4. **The re-review** is an ordinary review. The gatherer reads the incident as untrusted text, fenced and scanned for
@@ -25,8 +27,10 @@ happened would never hear of it. So when an incident appears, Threatline re-revi
 5. **The panel says why.** The Threats tab and the History tab show, for example: "Re-reviewed because PAY-9
    (incident) hit component Payments API on 2026-11-21." A viewer who cannot open the incident sees "an incident you
    cannot open" instead of its key.
-6. **A comment on the incident** (optional, on by default) lists the work items being re-reviewed in plain text. It
-   uses keys and component names only. The incident's own text is never copied into a comment.
+6. **A comment on the incident** (optional, on by default) says, in plain text, how many open work items on which
+   components are being re-reviewed. It gives a count, never keys: anyone who can see the incident reads it, and they
+   may not be allowed to see those work items. The keys are in the ledger only. The incident's own text is never
+   copied into a comment.
 
 ## Bounds
 
@@ -58,7 +62,7 @@ item's context, and its review shows as out of date until it is re-run.
 2. Create a work item in the demo project with the label `incident` on the `support-agent` component (or of work type
    Incident), for example "Agent read back another customer's refund status".
 3. Within a few minutes, both stories get a new revision. Their panels say "Re-reviewed because PAY-… (incident) hit
-   component support-agent on …". The incident has a comment listing them, and the ledger has a
+   component support-agent on …". The incident has a comment saying two work items are being re-reviewed, and the ledger has a
    `review.reopened_by_incident` entry.
 
 Locally, run `pnpm --filter @threatline/core-ui dev` and open `?state=reopened`.

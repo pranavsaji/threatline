@@ -28,7 +28,8 @@ const list = (xs: readonly string[]) => (xs.length <= 1 ? (xs[0] ?? '') : `${xs.
  * its components or linked to it, so their reviews read it as context (docs/INCIDENTS.md).
  *
  * Bounded: one search (open work in the incident's project, newest first, at most 100), at most `maxItems` re-reviews,
- * each work item at most once per incident and within the per-item re-run limit, and never past the month's review
+ * only work the incident's creator may browse (the re-review is gathered as them), each work item at most once per
+ * incident and within the per-item re-run limit, and never past the month's review
  * budget (what does not fit is not queued, and the admin is alerted). Ledgered before anything is queued. A re-review
  * is an ordinary gather and never queues another fan-out. Only trusted metadata (keys, components) is used here: the
  * incident's text is read by the review itself, fenced as untrusted, and never written into a comment.
@@ -60,12 +61,21 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
   const found = await deps.jira.search(jql, ['issuetype', 'labels', 'components', 'project', 'status', 'created'], MAX_SEARCH);
   if (!found.ok) return found;
 
+  const candidates = found.value.filter(
+    (c) => c.id !== inc.id && c.status.category !== 'done' && c.project.key === inc.project.key && p.reviewIssueTypes.includes(c.issueType.name) && !isIncident({ labels: c.labels, issueType: c.issueType.name }, rule),
+  );
+  // Security: the re-review is gathered as the incident's creator, so it only goes to work they may browse. One
+  // permission check per 100 ids (the search returns at most 100); if it cannot be made, nothing is queued (retried).
+  const allowed = candidates.length ? await deps.jira.browsable(job.actorAccountId, candidates.map((c) => c.id)) : ok<string[]>([]);
+  if (!allowed.ok) return allowed;
+  const browsable = new Set(allowed.value);
+  const skippedForPermission = candidates.filter((c) => !browsable.has(c.id)).length;
+
   const at = now.toISOString();
   const eligible: Array<{ issue: JiraIssue; cause: IncidentCause }> = [];
   let capped = false;
-  for (const c of found.value) {
-    if (c.id === inc.id || c.status.category === 'done' || c.project.key !== inc.project.key) continue;
-    if (!p.reviewIssueTypes.includes(c.issueType.name) || isIncident({ labels: c.labels, issueType: c.issueType.name }, rule)) continue;
+  for (const c of candidates) {
+    if (!browsable.has(c.id)) continue;
     if (eligible.length >= rule.maxItems) {
       capped = true;
       break;
@@ -81,7 +91,7 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
     const components = c.components.filter((x) => inc.components.includes(x)).slice(0, 10);
     eligible.push({ issue: c, cause: { id: inc.id, key: inc.key, components, linked: linked.has(c.id), at } });
   }
-  if (eligible.length === 0) return skip('nothing_to_reopen');
+  if (eligible.length === 0 && skippedForPermission === 0) return skip('nothing_to_reopen');
 
   // Budget: re-reviews count like any review. Paused, nothing is queued; otherwise only what the month has room for.
   const reasons = await pauseReasons(deps, p, now);
@@ -116,7 +126,7 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
   }
 
   // Another fan-out for this incident claimed them all first: it ledgers and queues them.
-  if (claimed.length === 0 && heldForBudget === 0 && rateLimited === 0) return skip('already_claimed');
+  if (claimed.length === 0 && heldForBudget === 0 && rateLimited === 0 && skippedForPermission === 0) return skip('already_claimed');
   const row = await appendLedger(
     deps.ledger,
     deps.clock,
@@ -128,6 +138,7 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
       queued: claimed.map((e) => e.issue.key),
       ...(heldForBudget > 0 ? { heldForBudget } : {}),
       ...(rateLimited > 0 ? { rateLimited } : {}),
+      ...(skippedForPermission > 0 ? { skippedForPermission } : {}),
       ...(capped ? { capped: true } : {}),
     },
     job.actorAccountId,
@@ -157,15 +168,17 @@ export async function reopenForIncident(deps: CoreDeps, job: IncidentJob): Promi
     return pushed;
   }
   if (rule.comment) {
-    const where = inc.components.length ? ` (${inc.components.length === 1 ? 'component' : 'components'} ${list(inc.components)})` : '';
+    // Security: a count only. Anyone who can see the incident reads this comment, and may not be allowed to see the
+    // work items (issue security, project permissions); their keys are kept in the ledger only.
+    const where = inc.components.length ? ` on ${inc.components.length === 1 ? 'component' : 'components'} ${list(inc.components)}` : ' linked to this incident';
     await notify(
       deps,
       inc.id,
       [],
-      `Threatline is re-reviewing ${claimed.length} open work ${claimed.length === 1 ? 'item' : 'items'} because of this incident${where}: ${claimed.map((e) => e.issue.key).join(', ')}. Their security reviews will include this incident as context.`,
+      `Threatline is re-reviewing ${claimed.length} open work ${claimed.length === 1 ? 'item' : 'items'}${where} because of this incident; their security reviews will include it as context, and their panels say why.`,
     );
   }
-  log('incident.reopened', { incidentId: inc.id, queued: claimed.length, heldForBudget, rateLimited, capped });
+  log('incident.reopened', { incidentId: inc.id, queued: claimed.length, heldForBudget, rateLimited, skippedForPermission, capped });
   return ok(undefined);
 }
 

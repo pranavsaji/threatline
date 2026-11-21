@@ -93,14 +93,58 @@ describe('incident fan-out (reopenForIncident)', () => {
     expect(rows.ok && rows.value.map((x) => [x.actor, x.payload])).toEqual([[ACTOR, { issueId: '10900', incidentKey: 'PAY-9', components: ['payments'], queued: ['PAY-101', 'PAY-102'] }]]);
   });
 
-  it('comments on the incident with the work items re-reviewed, in plain text, never repeating the incident’s own text', async () => {
+  it('comments on the incident with a count only (no keys: its readers may not be allowed to see those work items), never its own text', async () => {
     const t = await setup();
     await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
     expect(t.jira.commented.map((c) => c.issueId)).toEqual(['10900']);
     const body = text(t.jira.commented[0]!.adf);
-    expect(body).toContain('PAY-101, PAY-102');
-    expect(body).toContain('payments');
+    expect(body).toContain('Threatline is re-reviewing 2 open work items on component payments');
+    expect(body).toContain('their panels say why');
+    expect(body).not.toMatch(/PAY-10\d/);
     expect(body).not.toMatch(/Ignore previous|SYSTEM|password|mention/);
+    // The keys are kept in the ledger only.
+    const rows = await t.deps.ledger.ofTypes(['review.reopened_by_incident']);
+    expect(rows.ok && rows.value[0]!.payload.queued).toEqual(['PAY-101', 'PAY-102']);
+  });
+
+  it('security: only work items the incident’s creator may browse are re-reviewed as them; the rest are counted in the ledger', async () => {
+    const t = await setup({ found: [story(1), story(2), story(3)] });
+    const asked: Array<{ accountId: string; ids: readonly string[] }> = [];
+    t.jira.browsable = async (accountId, ids) => (asked.push({ accountId, ids }), ok(ids.filter((id) => id !== '10102')));
+    await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
+    expect(asked).toEqual([{ accountId: ACTOR, ids: ['10101', '10102', '10103'] }]);
+    expect(gathers(t.pushed).map((j) => j.issueId)).toEqual(['10101', '10103']);
+    const rows = await t.deps.ledger.ofTypes(['review.reopened_by_incident']);
+    expect(rows.ok && rows.value[0]!.payload).toMatchObject({ queued: ['PAY-101', 'PAY-103'], skippedForPermission: 1 });
+  });
+
+  it('security: the cap is filled with browsable work items, and a work item nobody here may browse is never claimed', async () => {
+    const found = Array.from({ length: 4 }, (_, i) => story(i + 1));
+    const t = await setup({ found, policy: { incidents: { enabled: true, labels: ['incident'], issueTypes: ['Incident'], maxItems: 2, comment: true } } });
+    t.jira.browsable = async (_a, ids) => ok(ids.filter((id) => id !== '10101'));
+    await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
+    expect(gathers(t.pushed).map((j) => j.issueId)).toEqual(['10102', '10103']);
+    expect(t.kv.data.has('incident:reopened:10900:10101')).toBe(false);
+  });
+
+  it('security: when permissions cannot be checked, nothing is queued and the job retries (fails closed)', async () => {
+    const t = await setup();
+    t.jira.browsable = async () => ({ ok: false, error: { code: 'upstream', message: 'down' } });
+    const r = await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
+    expect(!r.ok && r.error.code).toBe('upstream');
+    expect(t.pushed).toEqual([]);
+    const rows = await t.deps.ledger.ofTypes(['review.reopened_by_incident']);
+    expect(rows.ok && rows.value).toEqual([]);
+  });
+
+  it('security: when the creator may browse none of them, nothing is queued and the ledger says why', async () => {
+    const t = await setup();
+    t.jira.browsable = async () => ok([]);
+    await reopenForIncident(t.deps, { kind: 'incident', issueId: '10900', actorAccountId: ACTOR });
+    expect(t.pushed).toEqual([]);
+    expect(t.jira.commented).toEqual([]);
+    const rows = await t.deps.ledger.ofTypes(['review.reopened_by_incident']);
+    expect(rows.ok && rows.value[0]!.payload).toMatchObject({ queued: [], skippedForPermission: 2 });
   });
 
   it('the comment is optional (policy comment: false)', async () => {
