@@ -39,14 +39,14 @@ export interface DeliveryLinks {
 const PAGE = 25;
 const MAX_PAGES = 2;
 
-export const PULL_REQUESTS_QUERY = `query ThreatlineLinkedPullRequests($id: ID!, $first: Int, $after: String) {
+export const PULL_REQUESTS_QUERY = `query threatline_linkedPullRequests($id: ID!, $first: Int, $after: String) {
   jiraWorkItemLinkedExternalPullRequests(id: $id, first: $first, after: $after) {
     edges { node { __typename ... on ExternalPullRequest { id displayId title url status lastUpdatedAt } } }
     pageInfo { hasNextPage endCursor }
   }
 }`;
 
-export const DEPLOYMENTS_QUERY = `query ThreatlineLinkedDeployments($id: ID!, $first: Int, $after: String) {
+export const DEPLOYMENTS_QUERY = `query threatline_linkedDeployments($id: ID!, $first: Int, $after: String) {
   jiraWorkItemLinkedExternalDeployments(id: $id, first: $first, after: $after) {
     edges { node { __typename ... on ExternalDeployment { id displayName url state lastUpdatedAt environment { displayName type } } } }
     pageInfo { hasNextPage endCursor }
@@ -125,8 +125,11 @@ async function runField<T>(
     }
     // Teamwork Graph reports failures as HTTP 200 with errors[]; a field error makes this source partial, not fatal.
     if (Array.isArray(res.errors) && res.errors.length > 0) {
-      const code = (res.errors[0] as { extensions?: { code?: unknown } })?.extensions?.code;
-      return { items, reasons: [`graph_error:${field}:${typeof code === 'string' ? code : 'UNKNOWN'}`] };
+      const first = res.errors[0] as { message?: unknown; extensions?: { code?: unknown; errorType?: unknown; classification?: unknown } };
+      const code = [first?.extensions?.code, first?.extensions?.errorType, first?.extensions?.classification].find((c) => typeof c === 'string') as string | undefined;
+      // Schema and permission messages only (no third-party content): kept short for the operator log.
+      const detail = cleanText(first?.message, 120);
+      return { items, reasons: [`graph_error:${field}:${code ?? 'UNKNOWN'}${detail ? `:${detail}` : ''}`] };
     }
     const conn = (res.data as Record<string, unknown> | undefined)?.[field] as
       | { edges?: Array<{ node?: unknown }>; pageInfo?: { hasNextPage?: unknown; endCursor?: unknown } }

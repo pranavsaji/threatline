@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEPLOYMENTS_QUERY, PULL_REQUESTS_QUERY, cleanText, graphDelivery, safeUrl } from '../../src/adapters/graph-delivery.js';
+import { CUSTOM_QUERY } from '../../src/adapters/graph-enricher.js';
 import type { GraphRequest } from '../../src/adapters/graph-enricher.js';
 
 const ISSUE = 'ari:cloud:jira:c0ffee:issue/10042';
@@ -57,7 +58,7 @@ describe('graphDelivery', () => {
     expect(r.pullRequests).toEqual([]);
     expect(r.deployments).toHaveLength(1);
     expect(r.partial).toBe(true);
-    expect(r.reasons).toEqual([`graph_error:${PR_FIELD}:FORBIDDEN`]);
+    expect(r.reasons).toEqual([`graph_error:${PR_FIELD}:FORBIDDEN:nope`]);
   });
 
   it('a thrown request is graph_unavailable, never an exception', async () => {
@@ -94,6 +95,14 @@ describe('graphDelivery', () => {
     const { request, calls } = scripted(new Map());
     expect(await graphDelivery(request).links('PAY-7')).toEqual({ pullRequests: [], deployments: [], partial: true, reasons: ['bad_issue_ari'] });
     expect(calls).toEqual([]);
+  });
+});
+
+describe('operation names (live finding 2026-11-21)', () => {
+  // Teamwork Graph rejects anything else with DataFetchingException: "You must set an operation name of the shape
+  // `[company]_[operation]` with company >= 3 chars and operation >= 4 chars".
+  it.each([PULL_REQUESTS_QUERY, DEPLOYMENTS_QUERY, CUSTOM_QUERY])('every query is named company_operation', (q) => {
+    expect(q).toMatch(/^query [A-Za-z0-9]{3,}_[A-Za-z0-9]{4,}\(/);
   });
 });
 
