@@ -68,10 +68,13 @@ export function CiVerification({ api }: { api: CiApi }) {
     run(async () => {
       const r = await api.revoke(tokenId).catch((): ApiError => ({ error: 'unavailable' }));
       setRevoking(null);
-      if (isError(r) && r.error !== 'not_found') return setMessage(errorText(r));
+      if (isError(r)) {
+        setMessage(errorText(r));
+        return load();
+      }
       pending.current.revoked.add(tokenId);
       pending.current.created.delete(tokenId);
-      setMessage(isError(r) ? `Token ${tokenId} was already revoked.` : `Token ${tokenId} revoked. CI reports sent with it are refused from now on.`);
+      setMessage(`Token ${tokenId} revoked. CI reports sent with it are refused from now on.`);
       await load();
     });
 

@@ -96,14 +96,15 @@ describe('Admin: CI verification (feature: verification from CI)', () => {
     expect(within(list).getByText(/0123456789abcdef/)).toBeTruthy();
   });
 
-  it('a token someone else already revoked leaves the list instead of showing an error', async () => {
+  it('a failed revoke keeps the token listed and shows the error', async () => {
     const ci = ciApi({ revoke: async () => ({ error: 'not_found', message: 'CI token not found' }) });
     render(<AdminPage api={{ ...mockAdminApi(), ci }} />);
     const s = await section();
     await userEvent.click(await within(s).findByRole('button', { name: 'Revoke 0123456789abcdef' }));
     await userEvent.click(within(s).getByRole('button', { name: 'Confirm revoke' }));
-    expect(await within(s).findByText(/Token 0123456789abcdef was already revoked/)).toBeTruthy();
-    await waitFor(() => expect(within(s).queryByRole('button', { name: 'Revoke 0123456789abcdef' })).toBeNull());
+    expect(await within(s).findByText(/not found/i)).toBeTruthy();
+    expect(within(s).queryByText(/revoked\. CI reports/)).toBeNull();
+    expect(within(s).getByRole('button', { name: 'Revoke 0123456789abcdef' })).toBeTruthy();
   });
 
   it('says so when the URL cannot be read, and shows the server’s errors', async () => {
