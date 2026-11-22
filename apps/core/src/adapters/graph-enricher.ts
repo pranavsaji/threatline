@@ -11,7 +11,7 @@ export interface GraphEnrichment {
 }
 
 /** CE-2: persisted queries only. `value` is a union; Threatline reads node ids only (no untrusted titles). */
-export const CUSTOM_QUERY = `query ThreatlineCustomQuery($queryKey: String!, $queryParams: CypherRequestParams, $first: Int, $after: String) {
+export const CUSTOM_QUERY = `query threatline_customQuery($queryKey: String!, $queryParams: CypherRequestParams, $first: Int, $after: String) {
   customQuery(queryKey: $queryKey, queryParams: $queryParams, first: $first, after: $after) {
     edges { node { columns { key value { __typename ... on CypherQueryResultNode { id } } } } }
     pageInfo { hasNextPage endCursor }

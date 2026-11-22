@@ -24,6 +24,7 @@ import { ThreatModelPage } from './ThreatModelPage.js';
 import { reopenedText } from './reopened.js';
 import { UnhideThreat } from './UnhideThreat.js';
 import { DiagramTab } from './DiagramTab.js';
+import { DeliveryTab, ShippedWhileOpen, prSuggestions, useDelivery } from './DeliveryTab.js';
 
 const STILL_STARTING = 'The review is still starting. Refresh the panel in a minute or two to see it.';
 const NEEDS_EDIT = 'Someone with edit permission on this work item can re-run the review.';
@@ -72,6 +73,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
   }, [load]);
 
   const view = useMemo(() => (dto ? viewOf(dto) : null), [dto]);
+  const delivery = useDelivery(api, dto ? `${dto.verdict?.state ?? 'none'}:${dto.verdict?.blockingCount ?? 0}` : '');
   useEffect(() => {
     if (waiting && dto && rerunLanded(waiting, dto)) setWaiting(null);
   }, [dto, waiting]);
@@ -287,6 +289,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               </ul>
             </SectionMessage>
           )}
+          <ShippedWhileOpen delivery={delivery} />
           <Tabs id="threatline-tabs">
             {/* A narrow panel scrolls the tab row itself rather than the whole page sideways. */}
             <div style={{ overflowX: 'auto', minWidth: 0 }}>
@@ -296,6 +299,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                 <Tab>Acceptances ({dto.acceptances.length})</Tab>
                 <Tab>History</Tab>
                 <Tab>Diagram</Tab>
+                {api.delivery && <Tab>Delivery{delivery ? ` (${delivery.pullRequests.length + delivery.deployments.length})` : ''}</Tab>}
               </TabList>
             </div>
             <TabPanel>
@@ -381,7 +385,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               </div>
             </TabPanel>
             <TabPanel>
-              <RequirementsTab dto={dto} api={api} onChanged={() => void load()} />
+              <RequirementsTab dto={dto} api={api} onChanged={() => void load()} prLinks={prSuggestions(delivery)} />
             </TabPanel>
             <TabPanel>
               <AcceptancesTab dto={dto} api={api} onChanged={() => void load()} />
@@ -439,6 +443,11 @@ export function IssuePanel({ api }: { api: PanelApi }) {
             <TabPanel>
               <DiagramTab diagram={dto.diagram} />
             </TabPanel>
+            {api.delivery && (
+              <TabPanel>
+                <DeliveryTab delivery={delivery} />
+              </TabPanel>
+            )}
           </Tabs>
         </>
       )}

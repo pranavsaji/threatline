@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ok, type Threat } from '@threatline/shared';
 import { normalizeFact } from '@threatline/core';
-import { panelEnrich, panelGet, panelRerun, panelThreats, threatExplain } from '../../src/resolvers/panel.js';
+import { panelDelivery, panelEnrich, panelGet, panelRerun, panelThreats, threatExplain } from '../../src/resolvers/panel.js';
 import { handleJob } from '../../src/consumers/review-consumer.js';
 import { coreDeps, jiraIssue } from '../support/core-deps.js';
+import { verdictKey } from '../../src/services/verdict-service.js';
+import type { DeliveryLinks, LinkedDeployment } from '../../src/adapters/graph-delivery.js';
 
 const ISSUE = '10042';
 const viewer = (accountId = 'acc-1') => ({ accountId, issueId: ISSUE });
@@ -279,5 +281,51 @@ describe('panel.enrich (security: graph facts are per viewer)', () => {
     expect(r).toEqual({ added: 1, partial: true, facts: [expect.objectContaining({ id: graphFact.id, origin: 'graph', sourceType: 'commit' })] });
     const facts = (await t.deps.reviews.facts(reviewId)) as { ok: true; value: Array<{ origin: string }> };
     expect(facts.value.some((f) => f.origin === 'graph')).toBe(false);
+  });
+});
+
+describe('panel.delivery (Teamwork Graph: shipped while security requirements are open)', () => {
+  const prod = (over: Partial<LinkedDeployment> = {}): LinkedDeployment => ({
+    id: 'd1', name: 'Deploy #42', url: null, state: 'SUCCESSFUL', environment: { name: 'prod-eu', type: 'PRODUCTION' }, at: '2026-11-21T09:00:00.000Z', ...over,
+  });
+  const source = (links: Partial<DeliveryLinks>) => {
+    const asked: string[] = [];
+    return { asked, links: async (ari: string) => (asked.push(ari), { pullRequests: [], deployments: [], partial: false, reasons: [], ...links }) };
+  };
+  const blocking = { state: 'block', blockingCount: 3, maxOpenSeverity: 'High', reasons: [], inheritedFrom: [], updatedAt: '2026-11-21T00:00:00Z' };
+
+  it('flags a successful production deployment while the gate blocks, asking for this work item only', async () => {
+    const { t } = await reviewed();
+    t.kv.data.set(verdictKey(ISSUE), blocking);
+    const s = source({ deployments: [prod(), prod({ id: 'd2', environment: { name: 'staging', type: 'STAGING' } }), prod({ id: 'd3', state: 'FAILED' })], pullRequests: [{ id: 'p1', title: '#1 x', url: null, status: 'MERGED', updatedAt: null }] });
+    const r = await panelDelivery(t.deps, { ...viewer(), cloudId: 'c0ffee' }, s);
+    if ('error' in r) throw new Error(r.error);
+    expect(s.asked).toEqual(['ari:cloud:jira:c0ffee:issue/10042']);
+    expect(r.shippedWhileOpen).toEqual({ deployments: [prod()], openRequirements: 3, maxOpenSeverity: 'High', gate: 'block' });
+    expect(r.mergedWhileOpen).toBe(1);
+    expect(r.deployments).toHaveLength(3);
+  });
+
+  it('a passing gate (or no verdict) raises nothing, but still lists the links', async () => {
+    const { t } = await reviewed();
+    t.kv.data.set(verdictKey(ISSUE), { ...blocking, state: 'pass', blockingCount: 0, maxOpenSeverity: null });
+    const r = await panelDelivery(t.deps, { ...viewer(), cloudId: 'c' }, source({ deployments: [prod()] }));
+    if ('error' in r) throw new Error(r.error);
+    expect(r.shippedWhileOpen).toBeNull();
+    expect(r.mergedWhileOpen).toBe(0);
+    expect(r.deployments).toHaveLength(1);
+  });
+
+  it('a viewer who cannot browse the work item gets not_found and the graph is never asked', async () => {
+    const { t } = await reviewed({ canBrowse: false });
+    const s = source({ deployments: [prod()] });
+    expect(await panelDelivery(t.deps, { ...viewer(), cloudId: 'c' }, s)).toEqual({ error: 'not_found' });
+    expect(s.asked).toEqual([]);
+  });
+
+  it('a graph failure degrades to an empty, partial result', async () => {
+    const { t } = await reviewed();
+    const r = await panelDelivery(t.deps, { ...viewer(), cloudId: 'c' }, { links: async () => { throw new Error('boom'); } });
+    expect(r).toEqual({ pullRequests: [], deployments: [], shippedWhileOpen: null, mergedWhileOpen: 0, partial: true });
   });
 });

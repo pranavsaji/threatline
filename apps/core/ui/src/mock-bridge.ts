@@ -24,6 +24,20 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
       return { current, riskScore: Math.min(100, Math.round((current + extra) * mult)), signals: { ...signals, dataClasses: [...signals.dataClasses] }, baseline: { ...baseline, dataClasses: [...baseline.dataClasses] }, partial: false };
     },
     enrich: async () => ({ added: 0, partial: true, facts: [] }),
+    delivery: async () => {
+      const prod = { id: 'dep_1', name: 'payments-service #128', url: 'https://bitbucket.org/acme/payments-service/deployments', state: 'SUCCESSFUL' as const, environment: { name: 'Production', type: 'PRODUCTION' as const }, at: '2026-11-21T09:12:00.000Z' };
+      const blocked = dto.verdict && dto.verdict.state !== 'pass';
+      return {
+        pullRequests: [
+          { id: 'pr_1', title: '#2 Verify webhook signatures', url: 'https://bitbucket.org/acme/payments-service/pull-requests/2', status: 'MERGED' as const, updatedAt: '2026-11-21T08:40:00.000Z' },
+          { id: 'pr_2', title: '#3 Rotate the webhook secret', url: 'https://bitbucket.org/acme/payments-service/pull-requests/3', status: 'OPEN' as const, updatedAt: '2026-11-21T10:05:00.000Z' },
+        ],
+        deployments: [prod, { ...prod, id: 'dep_0', name: 'payments-service #127', environment: { name: 'Staging', type: 'STAGING' as const }, at: '2026-11-21T08:55:00.000Z' }],
+        shippedWhileOpen: blocked ? { deployments: [prod], openRequirements: dto.verdict!.blockingCount, maxOpenSeverity: dto.verdict!.maxOpenSeverity, gate: dto.verdict!.state as 'block' | 'warn' } : null,
+        mergedWhileOpen: blocked ? 1 : 0,
+        partial: false,
+      };
+    },
     createRequirements: async (threatIds) => ({ created: threatIds.map((id, i) => ({ requirementId: `req_${id}`, subtaskKey: `PAY-${100 + i}` })), skipped: [] }),
     setStatus: async (requirementId, status, evidence) => {
       const r = dto.requirements.find((x) => x.id === requirementId)!;

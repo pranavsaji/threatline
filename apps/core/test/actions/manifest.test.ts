@@ -110,6 +110,12 @@ describe('Marketplace readiness (Task 33)', () => {
     expect(unknown).toEqual([]);
   });
   it('declares no egress, so the app can qualify for Runs on Atlassian', () => {
-    expect(JSON.stringify((m as unknown as { permissions?: unknown }).permissions ?? {})).not.toMatch(/external|fetch|backend|client/);
+    // Egress is declared under permissions.external (fetch/backend/client hosts). Teamwork Graph read scopes such as
+    // read:graph:pull-request:external name an object type, not a host, and send nothing out.
+    const perms = ((m as unknown as { permissions?: Record<string, unknown> }).permissions ?? {}) as Record<string, unknown>;
+    expect(perms.external).toBeUndefined();
+    expect(Object.keys(perms).sort()).toEqual(['scopes']);
+    const scopes = Object.keys((perms.scopes ?? {}) as Record<string, unknown>);
+    expect(scopes.filter((s) => /fetch|backend|client/.test(s))).toEqual([]);
   });
 });

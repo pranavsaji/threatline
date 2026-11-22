@@ -100,6 +100,9 @@ describe('keyboard path (Task 32)', () => {
     await panel(mockApi('ready'));
     await userEvent.tab();
     expect(document.activeElement!.textContent).toMatch(/What if/);
+    // The delivery alert (shipped while open) links its deployment before the tab row.
+    await userEvent.tab();
+    expect(document.activeElement!.textContent).toBe('payments-service #128');
     await userEvent.tab();
     expect(document.activeElement!.getAttribute('role')).toBe('tab');
     await userEvent.keyboard('{ArrowRight}');

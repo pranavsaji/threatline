@@ -66,7 +66,7 @@ function EvidenceLine({ r }: { r: Requirement }) {
 }
 
 /** Requirements: create sub-tasks (RQ-2), move status, and verify with evidence (RQ-3, RQ-4). */
-export function RequirementsTab({ dto, api, onChanged }: { dto: PanelDto; api: PanelApi; onChanged: () => void }) {
+export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: PanelDto; api: PanelApi; onChanged: () => void; prLinks?: Array<{ label: string; url: string }> }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [accepting, setAccepting] = useState<string | null>(null);
@@ -168,6 +168,7 @@ export function RequirementsTab({ dto, api, onChanged }: { dto: PanelDto; api: P
             {accepting === r.id && <AcceptRiskModal requirement={r} dto={dto} api={api} onDone={onChanged} onCancel={() => setAccepting(null)} />}
             {verifying === r.id && (
               <EvidenceForm
+                suggestions={prLinks}
                 onCancel={() => setVerifying(null)}
                 onSubmit={async (evidence) => {
                   const out = await api.setStatus(r.id, 'Verified', evidence).catch((): ApiError => ({ error: 'unavailable' }));

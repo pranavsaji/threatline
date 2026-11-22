@@ -13,7 +13,16 @@ const KINDS: Array<{ kind: Evidence['kind']; label: string; hint: string }> = [
 ];
 
 /** RQ-3: closing a requirement needs evidence. The attester is whoever saves it (set on the server). */
-export function EvidenceForm({ onSubmit, onCancel }: { onSubmit: (e: Pick<Evidence, 'kind' | 'ref'>) => Promise<string | null>; onCancel: () => void }) {
+export function EvidenceForm({
+  onSubmit,
+  onCancel,
+  suggestions = [],
+}: {
+  onSubmit: (e: Pick<Evidence, 'kind' | 'ref'>) => Promise<string | null>;
+  onCancel: () => void;
+  /** Pull requests linked to the work item (Teamwork Graph): one click fills the PR link. */
+  suggestions?: Array<{ label: string; url: string }>;
+}) {
   const [kind, setKind] = useState<Evidence['kind']>('pr');
   const [ref, setRef] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +49,15 @@ export function EvidenceForm({ onSubmit, onCancel }: { onSubmit: (e: Pick<Eviden
           </label>
         ))}
       </fieldset>
+      {kind === 'pr' && suggestions.length > 0 && (
+        <div role="group" aria-label="Linked pull requests" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {suggestions.map((s) => (
+            <Button key={s.url} spacing="compact" appearance="subtle" onClick={() => (setRef(s.url), setError(null))}>
+              {`Use ${s.label.length > 48 ? `${s.label.slice(0, 47)}…` : s.label}`}
+            </Button>
+          ))}
+        </div>
+      )}
       <label style={label} htmlFor={`${id}-ref`}>
         {current.label}
       </label>

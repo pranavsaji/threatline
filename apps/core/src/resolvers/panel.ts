@@ -15,6 +15,7 @@ import { PAGE_KEY } from '../services/confluence-page.js';
 import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
 import { buildDiagram, type DiagramDto } from '../services/diagram-service.js';
 import type { ApiError } from './errors.js';
+import type { DeliveryLinks, LinkedDeployment, LinkedPullRequest } from '../adapters/graph-delivery.js';
 
 export const PAGE_SIZE = 50;
 const HISTORY_REVISIONS = 5;
@@ -344,6 +345,49 @@ export async function panelEnrich(
   if (!r.ok) return { added: 0, partial: true, facts: [] };
   const facts = r.value.facts.filter((f) => f.origin === 'graph').map(toFactDto);
   return { added: facts.length, partial: r.value.partial, facts };
+}
+
+export interface DeliveryDto {
+  pullRequests: LinkedPullRequest[];
+  deployments: LinkedDeployment[];
+  /**
+   * Successful production deployments while Threatline's gate is not passing: code reached users with security
+   * requirements still open. The Done gate and merge checks cannot see this; Teamwork Graph can.
+   */
+  shippedWhileOpen: { deployments: LinkedDeployment[]; openRequirements: number; maxOpenSeverity: Severity | null; gate: 'block' | 'warn' } | null;
+  /** Linked pull requests merged while the gate is not passing (e.g. a provider without Threatline's merge check). */
+  mergedWhileOpen: number;
+  partial: boolean;
+}
+
+/**
+ * Delivery check from Teamwork Graph, run as the viewer (graph is asUser only). Returned to this viewer only and never
+ * stored: the links reflect what this viewer can see in the connected tools.
+ */
+export async function panelDelivery(deps: CoreDeps, v: Viewer & { cloudId: string }, source: { links(issueAri: string): Promise<DeliveryLinks> }): Promise<DeliveryDto | Denied> {
+  const auth = await authorise(deps, v, 'browse');
+  if ('error' in auth) return auth;
+  let links: DeliveryLinks;
+  try {
+    links = await source.links(`ari:cloud:jira:${v.cloudId}:issue/${v.issueId}`);
+  } catch {
+    links = { pullRequests: [], deployments: [], partial: true, reasons: ['graph_unavailable'] };
+  }
+  if (links.reasons.length > 0) log('graph.delivery_partial', { issueId: v.issueId, reasons: links.reasons.slice(0, 4).join(',') });
+  const verdict = await readVerdict(deps, v.issueId);
+  const stored = verdict.ok ? verdict.value : undefined;
+  const open = stored && !stored.notApplicable && (stored.state === 'block' || stored.state === 'warn') ? stored : undefined;
+  const shipped = open ? links.deployments.filter((d) => d.environment.type === 'PRODUCTION' && d.state === 'SUCCESSFUL') : [];
+  return {
+    pullRequests: links.pullRequests,
+    deployments: links.deployments,
+    shippedWhileOpen:
+      open && shipped.length > 0
+        ? { deployments: shipped, openRequirements: open.blockingCount, maxOpenSeverity: open.maxOpenSeverity, gate: open.state as 'block' | 'warn' }
+        : null,
+    mergedWhileOpen: open ? links.pullRequests.filter((p) => p.status === 'MERGED').length : 0,
+    partial: links.partial,
+  };
 }
 
 export interface ThreatBrief {
