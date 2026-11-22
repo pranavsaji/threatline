@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { gitHubClient } from './github.js';
-import { parseInputs, runGitHubCheck } from './run.js';
+import { nowSecFrom, parseInputs, runGitHubCheck } from './run.js';
 import { actionReportConfig, runCiReport, type GitHubEventLike } from './ci-report.js';
 
 /**
@@ -41,7 +41,7 @@ async function main(): Promise<number> {
 }
 
 async function mergeGate(event: Event): Promise<number> {
-  const nowSec = env.THREATLINE_NOW ? Number(env.THREATLINE_NOW) : Math.floor(Date.now() / 1000);
+  const nowSec = nowSecFrom(env.THREATLINE_NOW);
   const settings = parseInputs({ 'public-keys': input('public-keys'), 'sensitive-paths': input('sensitive-paths'), mode: input('mode'), 'warn-until': input('warn-until'), 'diff-score-threshold': input('diff-score-threshold') }, nowSec);
   if (!settings.ok) return finish(false, 'config_error', settings.message);
   const number = event.pull_request?.number;

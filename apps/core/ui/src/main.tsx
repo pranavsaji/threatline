@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { adminApiOver, forgeAdminApi, forgeApi, forgeInboxApi, forgePostureApi, inboxApiOver, panelApiOver, postureApiOver, type AdminApi, type InboxApi, type PanelApi, type PostureApi } from './bridge.js';
 import { Router } from './router.js';
 import { enableTheme } from './theme.js';
+import { showLoadError } from './load-error.js';
 
 /** Inside Forge the page is framed by Atlassian; opened directly (vite dev) it uses the fixture bridge. */
 const inForge = window.self !== window.top;
@@ -50,4 +51,5 @@ async function start() {
     </StrictMode>,
   );
 }
-void start();
+// A rejected bridge call (forgeApi, view.getContext…) must not leave the iframe blank.
+start().catch((e: unknown) => showLoadError(document.getElementById('root'), e));

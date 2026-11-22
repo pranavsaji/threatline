@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe stored XSS vulnerability in rich-text comments executing scripts in visitors' browsers.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe injected script executing in moderator context to hijack session and gain privileges.\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": null,\n      \"reason\": \"No reported threat mentions missing audit trail or logging for comment deletions.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe stored XSS via rich-text comment markup executing in visitors' browsers.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"T1 mentions moderator takeover but is matched to E1; no separate moderator-hijacking threat.\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": null,\n      \"reason\": \"No reported threat mentions audit trails or logging of comment deletions.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,31 +15,26 @@
     },
     {
       "id": "T2",
-      "stride": "ElevationOfPrivilege",
-      "title": "Comment script runs inside the moderator admin screen and abuses moderator powers"
-    },
-    {
-      "id": "T3",
       "stride": "Tampering",
       "title": "Automated accounts flood product pages with spam and phishing links"
     },
     {
-      "id": "T4",
+      "id": "T3",
       "stride": "ElevationOfPrivilege",
       "title": "Comment delete endpoint may not verify the caller is a moderator"
     },
     {
-      "id": "T5",
+      "id": "T4",
       "stride": "InformationDisclosure",
       "title": "Attacker-chosen image URLs in comments report every visitor to the attacker's server"
     },
     {
-      "id": "T6",
+      "id": "T5",
       "stride": "Spoofing",
       "title": "Cross-site request forgery makes a victim post or delete comments unknowingly"
     },
     {
-      "id": "T7",
+      "id": "T6",
       "stride": "DenialOfService",
       "title": "Unauthenticated endpoint abused for resource exhaustion"
     }

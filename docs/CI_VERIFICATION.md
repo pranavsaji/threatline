@@ -77,7 +77,10 @@ jobs:
 The work item is found exactly as the merge gate finds it: the keys in the pull request title and branch name
 (`PAY-7 …`, `feature/PAY-7-hmac`); on a push, the branch name. A requirement's own sub-task key (`PAY-101`) works too.
 The commit is the pull request's head commit (on a push, `GITHUB_SHA`), and the evidence link is the workflow run. The
-output `ci-report` is `reported`, `warning` or `failed`.
+output `ci-report` is `reported`, `warning` or `failed`. Each key named gets its own report; a key Threatline answers
+403 or 404 for (another project, or not a work item) is skipped with a line in the log, and the step fails only when
+every key named does. An algorithm name or a full CVE id (`SHA-256`, `CVE-2025-1234`) is never taken for a key; keys set in
+`THREATLINE_ISSUE_KEY` are always used as given.
 
 Secrets are not given to workflows triggered from forks, so reports come from branches in your own repository.
 
@@ -97,7 +100,7 @@ pipelines:
           - npm ci
           - npx vitest run --reporter=junit --outputFile=test-results/junit.xml
         after-script:
-          # Runs even when the tests fail, so failures are reported too.
+          # Runs even when the tests fail, so failures are reported too. Its exit code is ignored (see below).
           - node scripts/threatline-ci-report.mjs --junit "test-results/**/*.xml"
 ```
 
@@ -106,6 +109,27 @@ result page), `BITBUCKET_CLONE_DIR` and `BITBUCKET_BRANCH` (for the work item ke
 (repeatable), `--issue-key PAY-7` (repeatable; otherwise from the branch), `--url`, `--commit`, `--repo`, `--run-url`.
 The token is read only from `THREATLINE_TOKEN`, never from a flag. Exit code 0 when reported (or when Threatline was
 busy), 1 on a configuration error or a refused report.
+
+**Bitbucket ignores an `after-script`'s exit code.** In the example above, a refused report (a revoked token, a work item
+the token's project list does not include, a report over 256 KB) still leaves the step green: the only sign is the
+script's output in the step log, and the requirements stay unverified. To make a refused report fail the build, run the
+script in `script` instead, after tests that are allowed to fail, and keep the tests' own result:
+
+```yaml
+pipelines:
+  default:
+    - step:
+        name: Test
+        image: node:22
+        script:
+          - npm ci
+          - |
+            status=0
+            npx vitest run --reporter=junit --outputFile=test-results/junit.xml || status=$?
+            # Failures are reported too; a refused report fails the step.
+            node scripts/threatline-ci-report.mjs --junit "test-results/**/*.xml" || exit 1
+            exit $status
+```
 
 Any other CI can run the same script with `THREATLINE_URL`, `THREATLINE_TOKEN`, `--commit`, `--repo`, `--run-url` and
 `--issue-key`, or post the request below itself.

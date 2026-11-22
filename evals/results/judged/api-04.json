@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Direct SSRF attack to metadata service; different attack method from c2's DNS rebinding.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"SSRF targeting databases; different harm (database data) from x1's cloud credentials.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: both describe identical DNS rebinding attack to bypass IP validation.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Network enumeration via timing/errors; distinct from SSRF exploitation of known targets.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"DoS via large file download; different mechanism from c1's decompression bomb.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Code execution via parser vulnerability; distinct attack class from SSRF or DoS.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"DoS via slow HTTP response; different mechanism from c1's bomb and x5's large file.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Direct SSRF to metadata service, distinct from DNS rebinding bypass in c2\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Direct SSRF to databases, distinct target from metadata service in x1\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"HTTP redirect bypass distinct from direct access and DNS rebinding methods\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Network enumeration via error analysis, distinct reconnaissance-focused threat from access threats\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Large file size exhausts memory, distinct from decompression bomb expansion attack\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Parser vulnerability exploitation material to core image processing, not generic hygiene\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"Slow download ties connections, distinct from size-based and processing-based DoS\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -21,7 +21,7 @@
     {
       "id": "x3",
       "stride": "InformationDisclosure",
-      "title": "DNS rebinding attack bypasses IP validation"
+      "title": "HTTP redirect to internal resources"
     },
     {
       "id": "x4",

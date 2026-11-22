@@ -138,7 +138,7 @@ function effectivePolicy(settings: RepoSettings, yaml: string | null): { sensiti
 
 /**
  * EN-5/EN-6/AT-2. Changes that touch no sensitive path (and score under the threshold) pass. Otherwise the newest
- * attestation for this repository in the description must verify, be unexpired, and name the PR's head commit.
+ * attestation for this repository in the description that verifies (signed, unexpired) must name the PR's head commit.
  * Warn mode reports failures but lets the merge through.
  */
 export async function evaluateMergeCheck(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | null; settings: RepoSettings; nowSec: number }): Promise<CheckResult> {
@@ -192,17 +192,24 @@ function decide(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | nu
     return sec <= i.nowSec ? sec : null;
   };
   const trusted = Object.fromEntries(Object.entries(i.settings.publicKeys).filter(([kid]) => retiredAt(kid) === null));
-  const v = decodeAttestation(mine[0]!.t, trusted, i.nowSec);
-  if (!v.ok) {
-    const retired = retiredAt(mine[0]!.p!.kid);
-    if (retired !== null && (v.error.code === 'bad_signature' || v.error.code === 'unknown_key'))
-      return { success: false, outcome: 'fail_signature', message: `Threatline: this attestation is signed with key ${mine[0]!.p!.kid}, which this repository retired at ${utcMinute(retired)}. Request a new attestation (it is signed with Threatline's current key).` };
-    if (v.error.code === 'lifetime')
+  // Every token for this repository is verified, newest first: the order comes from each token's own unverified iat,
+  // so a garbage token claiming a later time must not hide a valid one behind it. The newest one that verifies decides;
+  // when none does, the newest one's failure says why.
+  const decoded = mine.map((x) => ({ ...x, v: decodeAttestation(x.t, trusted, i.nowSec) }));
+  const newestValid = decoded.find((x) => x.v.ok)?.v;
+  const p = newestValid?.ok ? newestValid.value : undefined;
+  if (!p) {
+    const newest = decoded[0]!;
+    const code = newest.v.ok ? undefined : newest.v.error.code;
+    const retired = retiredAt(newest.p!.kid);
+    if (retired !== null && (code === 'bad_signature' || code === 'unknown_key'))
+      return { success: false, outcome: 'fail_signature', message: `Threatline: this attestation is signed with key ${newest.p!.kid}, which this repository retired at ${utcMinute(retired)}. Request a new attestation (it is signed with Threatline's current key).` };
+    if (code === 'lifetime')
       return { success: false, outcome: 'fail_signature', message: 'Threatline: this attestation is valid for longer than Threatline ever issues (7 days), so it is refused. Request a new one from the Jira issue panel.' };
-    if (v.error.code === 'expired') {
+    if (code === 'expired') {
       const exp = (() => {
         try {
-          return (JSON.parse(fromUtf8(fromB64url(mine[0]!.t.split('.')[2]!)!)) as { exp: number }).exp;
+          return (JSON.parse(fromUtf8(fromB64url(newest.t.split('.')[2]!)!)) as { exp: number }).exp;
         } catch {
           return i.nowSec;
         }
@@ -211,7 +218,6 @@ function decide(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | nu
     }
     return { success: false, outcome: 'fail_signature', message: MSG_SIGNATURE };
   }
-  const p = v.value;
   const head = i.pr.headSha.toLowerCase();
   // The attestation names the full 40-character commit and must match exactly. Bitbucket's pull request API reports
   // 12-character hashes; Threatline for Bitbucket resolves them to the full hash before calling the gate.
@@ -226,11 +232,7 @@ function decide(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | nu
     return { success: false, outcome: 'fail_other_issue', message: `Threatline: the attestation is for ${p.issueKey}, but this pull request is for ${named.join(', ')}. Request an attestation from ${named[0]}.` };
   // Final review I1: every work item the PR names needs its own valid attestation for this commit; otherwise a passing
   // item named next to a blocked one ("PAY-6 …, see PAY-7") would carry the blocked change.
-  const attested = (key: string) =>
-    mine.some((x) => {
-      const d = decodeAttestation(x.t, trusted, i.nowSec);
-      return d.ok && d.value.issueKey === key && d.value.commitSha === head;
-    });
+  const attested = (key: string) => decoded.some((x) => x.v.ok && x.v.value.issueKey === key && x.v.value.commitSha === head);
   const unattested = named.find((k) => k !== p.issueKey && !attested(k));
   if (unattested)
     return {

@@ -1,4 +1,4 @@
-import { contextHash, DEFAULT_INCIDENT_POLICY, isIncident, normalizeFact, type ClockPort, type ContextGatherer, type GatherOptions, type IssueRepo, type RawFact, type ReviewRepo } from '@threatline/core';
+import { contextHash, DEFAULT_INCIDENT_POLICY, isIncident, normalizeFacts, type ClockPort, type ContextGatherer, type GatherOptions, type IssueRepo, type RawFact, type ReviewRepo } from '@threatline/core';
 import { sha256Hex } from '@threatline/crypto';
 import { ok, type ContextBundle, type ContextFact, type IncidentPolicy, type Result } from '@threatline/shared';
 import type { ConfluenceClient } from './confluence.js';
@@ -16,6 +16,22 @@ export interface RestGathererDeps {
   siteUrl?: () => Promise<string>;
   /** What counts as an incident (the site policy's rule; the default when absent or unreadable). */
   incidentRule?: () => Promise<Pick<IncidentPolicy, 'labels' | 'issueTypes'>>;
+  /** The Confluence page Threatline published for this work item (its threat model), if any: never read as context. */
+  ownPage?: (issueId: string) => Promise<string | null>;
+}
+
+/** The remote-link globalId Threatline gives the threat-model page it links on a work item (confluence-page.ts). */
+export const THREAT_MODEL_LINK_PREFIX = 'threatline-threat-model-';
+
+/**
+ * Threatline's own threat-model page for this work item, known only by the page id Threatline recorded when it published
+ * (state no user can write). Reading it as context would make every re-publish change the context (its version), mark
+ * the review out of date, and feed the model its own output as evidence. Nothing a user controls (a page title, its
+ * headings, a remote link's globalId) can mark a page as Threatline's: that would let anyone hide a design page from
+ * review. Without the record (a failed read), the page is read like any other: stricter, never looser.
+ */
+export function isOwnThreatModel(page: { id: string }, ownPageId: string | null): boolean {
+  return ownPageId !== null && page.id === ownPageId;
 }
 
 const MAX_PAGES = 10;
@@ -129,13 +145,14 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
       const rule = d.incidentRule ? await d.incidentRule().catch(() => DEFAULT_INCIDENT_POLICY) : DEFAULT_INCIDENT_POLICY;
       const incidentJql = await incidentQuery(d.jira, issue, rule, reasons);
 
-      const [parent, children, comments, links, incidents, history] = await Promise.all([
+      const [parent, children, comments, links, incidents, history, ownPage] = await Promise.all([
         issue.parent ? d.jira.issue(issue.parent.id) : Promise.resolve(null),
         d.jira.children(issue.id),
         d.jira.comments(issue.id),
         d.jira.remoteLinks(issue.id),
         incidentJql ? d.jira.search(incidentJql, ['summary', 'description', 'issuetype', 'labels', 'project', 'status', 'created'], 20) : Promise.resolve(ok([])),
         d.reviews.history(issue.id),
+        d.ownPage ? d.ownPage(issue.id).catch(() => null) : Promise.resolve(null),
       ]);
 
       if (parent) {
@@ -185,7 +202,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
         const pageLinks = new Map<string, string>();
         for (const l of links.value) {
           const id = pageIdFromUrl(l.url);
-          if (id && !pageLinks.has(id)) pageLinks.set(id, l.url);
+          if (id && id !== ownPage && !pageLinks.has(id)) pageLinks.set(id, l.url);
         }
         if (pageLinks.size > MAX_PAGES) reasons.push('confluence_pages_truncated');
         const ids = [...pageLinks.keys()].slice(0, MAX_PAGES);
@@ -209,6 +226,8 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
             reasons.push(`confluence_page_other_site:${id}`);
             continue;
           }
+          // Threatline's own output is not evidence, and is neither shown, hashed nor watched for edits.
+          if (isOwnThreatModel(p.value, ownPage)) continue;
           // Linked even when withheld: a restricted page's edits must still mark the review out of date.
           const linked = await d.issues.linkPage(issue.id, p.value.id);
           if (!linked.ok) reasons.push(`page_link_unsaved:${id}`);
@@ -243,7 +262,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
 
       const normalized: ContextFact[] = [];
       const seen = new Set<string>();
-      for (const f of facts.map(normalizeFact)) {
+      for (const f of facts.flatMap(normalizeFacts)) {
         if (seen.has(f.id)) continue;
         seen.add(f.id);
         normalized.push(f);

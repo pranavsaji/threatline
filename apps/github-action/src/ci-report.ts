@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { namedIssueKeys, requirementIdsIn } from '@threatline/shared/ci';
+import { explicitIssueKeys, namedIssueKeys, requirementIdsIn } from '@threatline/shared/ci';
 import { parseJUnit, type TestCase } from './junit.js';
 
 /**
@@ -172,6 +172,8 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
   let verified = 0;
   let detailed = false;
   const problems: string[] = [];
+  /** Keys Threatline does not know (404) or this token may not report on (403): another project, or not a work item. */
+  const unknown: string[] = [];
   // Threatline's web trigger is static (Runs on Atlassian), so it answers with the verdict only; the per-requirement
   // summary comes from these JUnit results: a requirement whose tests all passed here is what CI asks to verify.
   const local = new Map<string, { passed: number; failed: number; skipped: number }>();
@@ -213,7 +215,16 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
       problems.push(`${issueKey}: Threatline answered HTTP ${res.status}, so the report was not recorded.${serverMessage}`);
       continue;
     }
+    if (res.status === 404 || res.status === 403) {
+      unknown.push(`${issueKey} (HTTP ${res.status}${serverMessage ? `:${serverMessage}` : ''})`);
+      continue;
+    }
     return fail(`Threatline: the report for ${issueKey} was refused (HTTP ${res.status}).${serverMessage}`, lines);
+  }
+  if (unknown.length > 0) {
+    // One key that is not a reviewable work item must not stop the others being reported; all of them failing is a misconfiguration.
+    if (unknown.length === keys.length) return fail(`Threatline: no work item named here could be reported: ${unknown.join(', ')}. Check the key in the branch or title, and that the CI token's project list includes it.`, lines);
+    lines.push(`Skipped ${unknown.join(', ')}: not a work item this token can report on.`);
   }
   if (problems.length > 0) return warn(`Threatline: ${problems.join('; ')} Nothing unrecorded was verified; re-run the job to retry.`, lines);
   if (!detailed) {
@@ -241,14 +252,15 @@ export function cliReportConfig(argv: string[], env: Record<string, string | und
   const repo = one('repo', env.THREATLINE_REPO, env.BITBUCKET_REPO_FULL_NAME, env.GITHUB_REPOSITORY);
   const bitbucketRun = env.BITBUCKET_BUILD_NUMBER && repo ? `https://bitbucket.org/${repo}/pipelines/results/${env.BITBUCKET_BUILD_NUMBER}` : undefined;
   const githubRun = env.GITHUB_RUN_ID && repo ? `${env.GITHUB_SERVER_URL ?? 'https://github.com'}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
-  const branch = env.BITBUCKET_BRANCH ?? env.GITHUB_HEAD_REF ?? env.GITHUB_REF_NAME ?? '';
+  // `||`: on a GitHub push event GITHUB_HEAD_REF is set but empty, and the branch is GITHUB_REF_NAME.
+  const branch = env.BITBUCKET_BRANCH || env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || '';
   const explicit = [...(flags['issue-key'] ?? []), ...(env.THREATLINE_ISSUE_KEY ? env.THREATLINE_ISSUE_KEY.split(',') : [])].map((s) => s.trim().toUpperCase()).filter(Boolean);
   const value = {
     url: one('url', env.THREATLINE_URL),
     token: env.THREATLINE_TOKEN ?? '',
     junit: (flags.junit ?? (env.THREATLINE_JUNIT ? env.THREATLINE_JUNIT.split('\n') : [])).join('\n'),
     root: env.BITBUCKET_CLONE_DIR || env.GITHUB_WORKSPACE || process.cwd(),
-    issueKeys: explicit.length > 0 ? namedIssueKeys(explicit.join(' ')) : namedIssueKeys(branch),
+    issueKeys: explicit.length > 0 ? explicitIssueKeys(explicit.join(' ')) : namedIssueKeys(branch),
     repo,
     commitSha: one('commit', env.THREATLINE_COMMIT, env.BITBUCKET_COMMIT, env.GITHUB_SHA),
     runUrl: one('run-url', env.THREATLINE_RUN_URL, bitbucketRun, githubRun),

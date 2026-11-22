@@ -28,6 +28,17 @@ export const WARN_MAX_DAYS = 14;
 const KEY_HINT = 'Add it to the public-keys input of the Threatline step in your workflow (Threatline admin → Signing keys → Copy public key).';
 const lines = (v: string | undefined) => (v ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
 
+/**
+ * The clock the gate checks expiry against: THREATLINE_NOW (Unix seconds, for tests) only when it is a positive whole
+ * number. Anything else is ignored, never NaN: every comparison with NaN is false, so expiry, warn-until and key
+ * retirement would all silently stop applying.
+ */
+export function nowSecFrom(raw: string | undefined, nowMs = Date.now()): number {
+  const s = (raw ?? '').trim();
+  const n = /^\d+$/.test(s) ? Number(s) : NaN;
+  return Number.isSafeInteger(n) && n > 0 ? n : Math.floor(nowMs / 1000);
+}
+
 /** The step's `with:` inputs → repository settings. Rejects anything it cannot honour rather than guessing. */
 export function parseInputs(input: Record<string, string | undefined>, nowSec: number): { ok: true; value: RepoSettings } | { ok: false; message: string } {
   // One key per line, optionally `<key> until=<ISO date>` when it retires (after a rotation's 7-day overlap).
@@ -35,6 +46,8 @@ export function parseInputs(input: Record<string, string | undefined>, nowSec: n
   if (!keys.ok)
     return { ok: false, message: keys.reason === 'until' ? `Threatline: public-keys line ${keys.line}: ${keys.message}.` : `Threatline: ${keys.message}. Copy it from Threatline admin → Signing keys.` };
   const { publicKeys, keyRetireAt } = keys;
+  // Without a key no attestation can ever verify: say so as a configuration error, not on every pull request's check.
+  if (Object.keys(publicKeys).length === 0) return { ok: false, message: "Threatline: public-keys is required when merge-gate is on (no attestation can verify without Threatline's public key). Paste it from Threatline admin → Signing keys → Copy public key, or set merge-gate: false to only report test results." };
   const mode = (input.mode ?? '').trim() || 'block';
   if (mode !== 'block' && mode !== 'warn') return { ok: false, message: `Threatline: mode must be block or warn, not "${mode.slice(0, 20)}".` };
   const rawThreshold = (input['diff-score-threshold'] ?? '').trim();

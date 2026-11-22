@@ -27,6 +27,9 @@ import { DiagramTab } from './DiagramTab.js';
 import { DeliveryTab, ShippedWhileOpen, prSuggestions, useDelivery } from './DeliveryTab.js';
 
 const STILL_STARTING = 'The review is still starting. Refresh the panel in a minute or two to see it.';
+/** Threatline Engine runs several analyses and a verifier itself: two to four minutes, not one. */
+const startedText = (mode: PanelDto['reviewMode']) =>
+  mode === 'engine' ? 'Review started. Threatline Engine reviews take a few minutes.' : 'Review started. This usually takes about a minute.';
 const NEEDS_EDIT = 'Someone with edit permission on this work item can re-run the review.';
 
 const DISCARD_REASON: Record<string, string> = {
@@ -75,7 +78,11 @@ export function IssuePanel({ api }: { api: PanelApi }) {
   const view = useMemo(() => (dto ? viewOf(dto) : null), [dto]);
   const delivery = useDelivery(api, dto ? `${dto.verdict?.state ?? 'none'}:${dto.verdict?.blockingCount ?? 0}` : '');
   useEffect(() => {
-    if (waiting && dto && rerunLanded(waiting, dto)) setWaiting(null);
+    if (waiting && dto && rerunLanded(waiting, dto)) {
+      setWaiting(null);
+      // The new revision is here (its progress shows below), so "Review started" no longer says anything.
+      setNotice((n) => (n === startedText('engine') || n === startedText(undefined) ? null : n));
+    }
   }, [dto, waiting]);
   useEffect(() => {
     const ms = view ? pollMs(view, waiting !== null) : null;
@@ -116,13 +123,15 @@ export function IssuePanel({ api }: { api: PanelApi }) {
       const r = await api.rerun().catch((): ApiError => ({ error: 'unavailable' }));
       if (isError(r))
         return setNotice(
-          r.error === 'rate_limited'
-            ? 'You have re-run reviews 10 times this hour. Try again later.'
-            : r.error === 'not_found'
-              ? 'You need edit permission on this work item to re-run the review.'
-              : 'The re-run could not start. Try again.',
+          (r.error === 'validation' || r.error === 'conflict') && r.message
+            ? r.message
+            : r.error === 'rate_limited'
+              ? 'You have re-run reviews 10 times this hour. Try again later.'
+              : r.error === 'not_found'
+                ? 'You need edit permission on this work item to re-run the review.'
+                : 'The re-run could not start. Try again.',
         );
-      setNotice('Review started. This usually takes about a minute.');
+      setNotice(startedText(dto?.reviewMode));
       // The new revision comes from a queued job, so keep checking until it appears (see pollMs).
       setWaiting({ ...before, since: Date.now() });
       void load();
@@ -194,7 +203,11 @@ export function IssuePanel({ api }: { api: PanelApi }) {
       }}
     >
       <div aria-live="polite">{notice && <SectionMessage appearance="information">{notice}</SectionMessage>}</div>
-      {view.state === 'not_reviewed' ? (
+      {view.state === 'not_reviewed' && dto.inScope === false ? (
+        <SectionMessage appearance="information" title="Threatline is not on for this project or work type">
+          {dto.scopeMessage ?? 'Threatline does not review this work item.'} A parent work item's review, if it has one, still applies at the gate.
+        </SectionMessage>
+      ) : view.state === 'not_reviewed' ? (
         <EmptyState onRun={() => void rerun()} canRun={canRun} busy={busy} />
       ) : (
         <>

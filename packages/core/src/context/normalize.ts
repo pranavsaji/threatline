@@ -14,7 +14,9 @@ export interface RawFact {
   origin: 'rest' | 'graph';
 }
 
-const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'" };
+// `shy` (soft hyphen) is dropped: "pass&shy;word" must read as "password" to the keyword rules.
+const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'", shy: '' };
+const SOFT_HYPHEN = /\u00AD/g;
 
 /** Untrusted numeric entities must never throw: out-of-range values and lone surrogates become U+FFFD. */
 function safeCodePoint(cp: number): string {
@@ -66,18 +68,46 @@ export function htmlToText(html: string): string {
 
 export const factIdOf = (sourceAri: string, version: string): string => `fact_${sha256Hex(`${sourceAri}@${version}`).slice(0, 16)}`;
 
-/** Strips HTML, scans the full text for injection, removes invisible characters, redacts secrets, caps the excerpt. */
-export function normalizeFact(raw: RawFact): ContextFact {
+/** Most parts one source is split into: 12,000 characters of a long design page, beyond which the rest is dropped. */
+export const MAX_PARTS = 6;
+
+/** Splits at a line break (else a sentence end, else a space) in the second half of each window, so parts read whole. */
+export function splitText(text: string, max = MAX_EXCERPT, maxParts = MAX_PARTS): string[] {
+  const parts: string[] = [];
+  let rest = text;
+  while (rest.length > max && parts.length < maxParts - 1) {
+    const window = rest.slice(0, max);
+    const cut = [window.lastIndexOf('\n'), window.lastIndexOf('. ') + 1, window.lastIndexOf(' ')].find((n) => n >= max / 2) ?? max;
+    parts.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trimStart();
+  }
+  parts.push(rest.slice(0, max));
+  return parts.filter((p, n) => n === 0 || p.length > 0);
+}
+
+/**
+ * Strips HTML, scans the full text for injection, removes invisible characters, redacts secrets, and splits a long
+ * source into parts of at most MAX_EXCERPT characters each (up to MAX_PARTS). Before, only the first 2,000 characters
+ * of a page reached the model and the keyword rules, so a long design page lost most of what it said. The first part
+ * keeps the source's fact id, so a short source is exactly what it was. Every part carries the whole source's injection
+ * verdict, so splitting can never hide a directive in another part.
+ */
+export function normalizeFacts(raw: RawFact): ContextFact[] {
   const text = htmlToText(raw.text);
   const title = htmlToText(raw.title);
-  const scan = scanForInjection(`${title}\n${text}`);
-  const clean = (s: string, max: number) => redactSecrets(s.replace(INVISIBLE_CHARS, '')).slice(0, max);
-  const excerpt = clean(text, MAX_EXCERPT);
-  return {
-    id: factIdOf(raw.sourceAri, raw.version),
+  const clean = (s: string) => redactSecrets(s.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, ''));
+  // Scanned twice: as written (hidden characters are themselves a reason) and exactly as the model will read it, so a
+  // character the cleaning removes ("ign\u00ADore previous instructions") cannot split a directive past the scanner.
+  const written = scanForInjection(`${title}\n${text}`);
+  const seen = scanForInjection(`${title.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, '')}\n${text.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, '')}`);
+  const scan = { suspected: written.suspected || seen.suspected, reasons: [...new Set([...written.reasons, ...seen.reasons])] };
+  const parts = splitText(clean(text));
+  const cleanTitle = clean(title).slice(0, 480);
+  return parts.map((excerpt, n) => ({
+    id: n === 0 ? factIdOf(raw.sourceAri, raw.version) : factIdOf(raw.sourceAri, `${raw.version}#${n + 1}`),
     sourceAri: raw.sourceAri,
     sourceType: raw.sourceType,
-    title: clean(title, 500),
+    title: n === 0 ? cleanTitle : `${cleanTitle} (part ${n + 1} of ${parts.length})`,
     url: raw.url,
     excerpt,
     trustLevel: raw.trusted ? 'trusted' : 'untrusted',
@@ -85,5 +115,10 @@ export function normalizeFact(raw: RawFact): ContextFact {
     injectionSuspected: scan.suspected,
     injectionReasons: scan.reasons,
     origin: raw.origin,
-  };
+  }));
+}
+
+/** One fact per source: the first part of `normalizeFacts` (graph facts and other short sources). */
+export function normalizeFact(raw: RawFact): ContextFact {
+  return normalizeFacts(raw)[0]!;
 }

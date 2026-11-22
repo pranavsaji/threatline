@@ -3,6 +3,7 @@ import { requirementsCreate, requirementsSetStatus } from './requirements.js';
 import { reviewConfirm, threatsTriage } from './threats.js';
 import { confluencePublish } from './confluence.js';
 import { adminGetPolicy, adminInstallGate, adminProjectStatuses, adminPurgeProject, adminResumeReviews, adminRuns, adminSeed, adminSetNotifications, adminSetPolicy, adminSetupStatus, adminUsage, adminWarnOnly, adminWarnOnlyEnd } from './admin.js';
+import { adminChampionGroupStatus } from './setup-groups.js';
 import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverride } from './acceptances.js';
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
@@ -42,6 +43,7 @@ export function resolverTable(env: { enricher: () => Enricher; delivery?: () => 
     'confluence.publish': (deps, v, payload) => confluencePublish(deps, v, payload),
     'admin.seed': (deps, v, payload) => adminSeed(deps, { accountId: v.accountId }, payload),
     'admin.setupStatus': (deps, v) => adminSetupStatus(deps, { accountId: v.accountId }, { signingKeys: env.signingKeysReady }),
+    'admin.championGroupStatus': (deps, v) => adminChampionGroupStatus(deps, { accountId: v.accountId }),
     'admin.getPolicy': (deps, v) => adminGetPolicy(deps, { accountId: v.accountId }),
     'admin.setPolicy': (deps, v, payload) => adminSetPolicy(deps, { accountId: v.accountId }, payload),
     'admin.warnOnly': (deps, v, payload) => adminWarnOnly(deps, { accountId: v.accountId }, payload),

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { actionReportConfig, findJUnitFiles, globToRegExp, runCiReport, type CiReportInput } from '../src/ci-report.js';
+import { actionReportConfig, cliReportConfig, findJUnitFiles, globToRegExp, runCiReport, type CiReportInput } from '../src/ci-report.js';
 
 const A = 'req_1a2b3c4d5e6f7a8b';
 const B = 'req_0000ffff0000ffff';
@@ -137,10 +137,26 @@ describe('runCiReport (feature: verification from CI)', () => {
     expect(await runCiReport({ ...input(root, { junit: 'bad/*.xml' }), fetch: f })).toMatchObject({ success: false, message: expect.stringMatching(/bad\/b\.xml.*never closed/) });
     expect(await runCiReport({ ...input(root, { url: 'http://site.example/ci' }), fetch: f })).toMatchObject({ success: false, message: expect.stringMatching(/https/) });
     expect(await runCiReport({ ...input(root, { commitSha: 'abc' }), fetch: f })).toMatchObject({ success: false, message: expect.stringMatching(/commit/) });
+    // 403 and 404 for the only key named also fail: every key failed, so nothing was reported.
     for (const status of [400, 401, 403, 404, 413]) {
       const r = await runCiReport({ ...input(root), fetch: fakeFetch(() => answer(status, { error: 'x', message: 'Threatline said no.' })).f });
       expect(r, String(status)).toMatchObject({ success: false, message: expect.stringMatching(new RegExp(`HTTP ${status}.*Threatline said no`)) });
     }
+  });
+
+  it('a key Threatline does not know (404) or this token may not report on (403) is skipped; the others are still reported', async () => {
+    const root = workspace({ 'reports/u.xml': suite(`<testcase name="${A}"/>`) });
+    for (const status of [403, 404]) {
+      const { f, calls } = fakeFetch((b) => (b.issueKey === 'OTHER-9' ? answer(status, { error: 'not_found', message: 'Unknown work item.' }) : verified(b)));
+      const r = await runCiReport({ ...input(root, { issueKeys: ['OTHER-9', 'PAY-7'] }), fetch: f });
+      expect(r, String(status)).toMatchObject({ success: true, message: 'Threatline: 1 requirement verified from this run.' });
+      expect(r.warning).toBeUndefined();
+      expect(calls.map((c) => c.body.issueKey)).toEqual(['OTHER-9', 'PAY-7']);
+      expect(r.lines.join('\n')).toMatch(new RegExp(`Skipped OTHER-9 \\(HTTP ${status}: Unknown work item\\.\\): not a work item this token can report on`));
+    }
+    // Every key unknown is a misconfiguration: the step fails, naming each.
+    const { f } = fakeFetch(() => answer(404, { error: 'not_found' }));
+    expect(await runCiReport({ ...input(root, { issueKeys: ['OTHER-9', 'PAY-7'] }), fetch: f })).toMatchObject({ success: false, message: expect.stringMatching(/no work item named here could be reported: OTHER-9 \(HTTP 404\), PAY-7 \(HTTP 404\)/) });
   });
 
   it('a busy or unreachable Threatline only warns (the Done gate stays closed until a report gets through)', async () => {
@@ -164,5 +180,17 @@ describe('runCiReport (feature: verification from CI)', () => {
     const { f, calls } = fakeFetch(verified);
     expect(await runCiReport({ ...input(root), fetch: f })).toMatchObject({ success: false, message: expect.stringMatching(/256 KB/) });
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe('cliReportConfig (scripts/threatline-ci-report.mjs)', () => {
+  const base = { THREATLINE_URL: 'https://x/ci', THREATLINE_TOKEN: TOKEN, GITHUB_REPOSITORY: 'acme/payments', GITHUB_RUN_ID: '42', GITHUB_SHA: 'f'.repeat(40) };
+  it('on a GitHub push GITHUB_HEAD_REF is set but empty: the branch comes from GITHUB_REF_NAME', () => {
+    const r = cliReportConfig(['--junit', 'reports/*.xml'], { ...base, GITHUB_HEAD_REF: '', GITHUB_REF_NAME: 'feature/PAY-9-push' });
+    expect(r).toMatchObject({ ok: true, value: { issueKeys: ['PAY-9'] } });
+    expect(cliReportConfig(['--junit', 'r.xml'], { ...base, BITBUCKET_BRANCH: '', GITHUB_HEAD_REF: 'PAY-3-pr', GITHUB_REF_NAME: '3/merge' })).toMatchObject({ ok: true, value: { issueKeys: ['PAY-3'] } });
+  });
+  it('a standard in the branch is not a work item', () => {
+    expect(cliReportConfig(['--junit', 'r.xml'], { ...base, GITHUB_REF_NAME: 'PAY-9-sha-256-CVE-2025-1234' })).toMatchObject({ ok: true, value: { issueKeys: ['PAY-9'] } });
   });
 });

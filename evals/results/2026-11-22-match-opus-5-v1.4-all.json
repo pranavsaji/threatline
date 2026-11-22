@@ -5,12 +5,12 @@
   "version": "match-v1",
   "date": "2026-11-22",
   "totals": {
-    "found": 82,
+    "found": 81,
     "expected": 87,
-    "highFound": 60,
+    "highFound": 59,
     "highExpected": 60,
     "severity": {
-      "higher": 44,
+      "higher": 43,
       "same": 37,
       "lower": 1
     }

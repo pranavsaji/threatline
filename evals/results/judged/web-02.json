@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1 - same stored XSS attack mechanism and session stealing harm already counted\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Valid - automated comment flooding not covered by existing threats, follows from posting feature\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Valid - CSRF on posting/deletion not covered, follows from comment and moderation features\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Valid - malicious links not covered, follows from links explicitly mentioned in design\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Valid - oversized images not covered, follows from images explicitly mentioned in design\"},{\"id\":\"x6\",\"valid\":true,\"reason\":\"Valid - external image tracking not covered, follows from images in rich text\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same XSS attack and session theft harm\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic authentication hygiene, not specific to comment feature design\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific comment flood attack following from unlimited posting capability\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"CSRF on comment/deletion actions, specific to feature operations\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Malicious links in rich text, specific to link capability\"},{\"id\":\"x6\",\"valid\":true,\"reason\":\"Oversized images DoS, specific to image embedding capability\"},{\"id\":\"x7\",\"valid\":true,\"reason\":\"External image tracking, specific to image URL handling\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,26 +15,31 @@
     },
     {
       "id": "x2",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x3",
       "stride": "DenialOfService",
       "title": "Comment spam overwhelming product pages"
     },
     {
-      "id": "x3",
+      "id": "x4",
       "stride": "Tampering",
       "title": "CSRF attack on comment posting and deletion"
     },
     {
-      "id": "x4",
+      "id": "x5",
       "stride": "Tampering",
       "title": "Phishing and malware distribution through comment links"
     },
     {
-      "id": "x5",
+      "id": "x6",
       "stride": "DenialOfService",
       "title": "Resource exhaustion through oversized images"
     },
     {
-      "id": "x6",
+      "id": "x7",
       "stride": "InformationDisclosure",
       "title": "Tracking users through external image URLs"
     }

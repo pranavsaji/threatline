@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { encodeAttestation, generateKeyPair } from '@threatline/crypto';
 import type { AttestationPayload } from '@threatline/shared';
-import { parseInputs, runGitHubCheck, type GitHubClient, type GitHubFile, type GitHubPr } from '../src/run.js';
+import { nowSecFrom, parseInputs, runGitHubCheck, type GitHubClient, type GitHubFile, type GitHubPr } from '../src/run.js';
 
 const NOW = 1_763_208_000; // 2025-11-15T12:00:00Z
 const HEAD = 'c'.repeat(40);
@@ -49,6 +49,19 @@ describe('parseInputs (GitHub Action inputs)', () => {
     const signedByOld = encodeAttestation({ v: 1, kid: old.kid, issueKey: 'PAY-7', repo: REPO, commitSha: HEAD, verdict: 'pass', requirements: [], iat: NOW - 60, exp: NOW + 3600, nonce: 'n0nce9' }, old);
     expect(await runGitHubCheck({ settings: s, client: client({ pr: PR(signedByOld) }), nowSec: NOW })).toMatchObject({ success: false, message: expect.stringMatching(/retired at 2025-11-15 11:00 UTC/) });
     expect(parseInputs({ 'public-keys': `${old.publicKey} until=soon` }, NOW)).toMatchObject({ ok: false, message: expect.stringMatching(/until=/) });
+  });
+
+  it('public-keys is required: with no key the gate is a configuration error, not a check every pull request fails', () => {
+    for (const keys of [undefined, '', '  \n \n'])
+      expect(parseInputs({ 'public-keys': keys }, NOW)).toMatchObject({ ok: false, message: expect.stringMatching(/public-keys is required when merge-gate is on/) });
+  });
+
+  it('THREATLINE_NOW is honoured only as a positive whole number of seconds; anything else is the real clock', () => {
+    const real = Date.UTC(2026, 0, 1);
+    expect(nowSecFrom(String(NOW), real)).toBe(NOW);
+    expect(nowSecFrom(` ${NOW} `, real)).toBe(NOW);
+    for (const raw of [undefined, '', 'x', 'NaN', '0', '-5', '1.5', '1e9', 'Infinity', '99999999999999999999'])
+      expect(nowSecFrom(raw, real), String(raw)).toBe(real / 1000);
   });
 
   it('rejects a malformed key, an unknown mode, and a bad threshold', () => {
@@ -141,7 +154,7 @@ describe('the bundled action', () => {
   });
   afterAll(() => new Promise<void>((r) => server.close(() => r())));
 
-  const runDist = (description: string, eventName = 'pull_request_target') => {
+  const runDist = (description: string, eventName = 'pull_request_target', extraEnv: Record<string, string> = {}) => {
     body = description;
     const dir = mkdtempSync(join(tmpdir(), 'threatline-action-'));
     const event = join(dir, 'event.json');
@@ -152,7 +165,7 @@ describe('the bundled action', () => {
     writeFileSync(summary, '');
     // Async, so this process can keep serving the stand-in API while the action runs.
     const child = spawn(process.execPath, [dist.pathname], {
-      env: { PATH: process.env.PATH ?? '', GITHUB_EVENT_NAME: eventName, GITHUB_EVENT_PATH: event, GITHUB_API_URL: api, GITHUB_OUTPUT: out, GITHUB_STEP_SUMMARY: summary, 'INPUT_GITHUB-TOKEN': 'test-token', 'INPUT_PUBLIC-KEYS': key.publicKey, THREATLINE_NOW: String(NOW) },
+      env: { PATH: process.env.PATH ?? '', GITHUB_EVENT_NAME: eventName, GITHUB_EVENT_PATH: event, GITHUB_API_URL: api, GITHUB_OUTPUT: out, GITHUB_STEP_SUMMARY: summary, 'INPUT_GITHUB-TOKEN': 'test-token', 'INPUT_PUBLIC-KEYS': key.publicKey, THREATLINE_NOW: String(NOW), ...extraEnv },
     });
     let stdout = '';
     child.stdout.on('data', (d: Buffer) => (stdout += d.toString()));
@@ -171,6 +184,16 @@ describe('the bundled action', () => {
     expect(fail.stdout).toMatch(/::error title=Threatline::Threatline: this change touches security-sensitive files/);
     expect(fail.outputs).toMatch(/outcome=fail_missing/);
     expect(fail.stdout).not.toMatch(/::warning/);
+  });
+
+  it.skipIf(!existsSync(dist))('no public keys is a config_error; a THREATLINE_NOW that is not a number does not switch expiry off', async () => {
+    const none = await runDist(token(), 'pull_request_target', { 'INPUT_PUBLIC-KEYS': '' });
+    expect(none.status).toBe(1);
+    expect(none.outputs).toMatch(/outcome=config_error/);
+    // An attestation that expired long ago (by the real clock) stays expired when THREATLINE_NOW is garbage.
+    const expired = await runDist(token({ iat: NOW - 60, exp: NOW + 3600 }), 'pull_request_target', { THREATLINE_NOW: 'x' });
+    expect(expired.status).toBe(1);
+    expect(expired.outputs).toMatch(/outcome=fail_expired/);
   });
 
   it.skipIf(!existsSync(dist))('warns when run on pull_request, where the pull request controls its own workflow', async () => {

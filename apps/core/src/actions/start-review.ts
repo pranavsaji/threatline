@@ -22,7 +22,11 @@ export async function startReview(payload: ActionPayload & Record<string, unknow
   if (!who.ok) return who.error;
   const latest = await deps.reviews.latest(who.viewer.issueId);
   const r = await panelRerun(deps, who.viewer);
-  if ('error' in r) return { error: r.error };
+  if ('error' in r) {
+    // Threatline's own refusals (not reviewed here, a review still running) are told to the agent as they are.
+    if ((r.error === 'validation' || r.error === 'conflict') && r.message) return { error: 'refused', message: r.message };
+    return r.error === 'not_found' || r.error === 'rate_limited' ? { error: r.error } : { error: 'unavailable' };
+  }
   const nextRevision = (latest.ok && latest.value ? latest.value.revision : 0) + 1;
   return {
     queued: true,

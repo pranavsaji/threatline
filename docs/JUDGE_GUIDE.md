@@ -23,7 +23,10 @@ its requirements were handled. No Rovo, Automation rule or other setup was neede
 ## The 2-minute path
 
 1. **Open the admin page**: Jira settings → Apps → **Threatline**. The first-run wizard asks for a project, the transition
-   to guard (for example Done) and the security champion group. Save.
+   to guard (for example Done) and the security champion group. Save. Threatline does not create groups: a new site has
+   no `threatline-security-champions` group, so create it (or name an existing group) in **Atlassian Administration →
+   Directory → Groups** and add yourself. The setup checklist says whether the group exists and whether you are in it;
+   only its members confirm flagged threats.
 2. **Add the gate**: click **Add the gate for me** (right after saving the wizard, or on the setup checklist).
    Threatline adds **Threatline security gate** to the transition you chose, in team-managed and company-managed
    projects alike. (Jira's team-managed workflow editor does not list app rules, so this is the way there; in a
@@ -45,16 +48,20 @@ its requirements were handled. No Rovo, Automation rule or other setup was neede
      threats resting on that page wait for a security champion instead of being trusted;
    - "What if…" to see the score if the feature were public or handled payment data.
 6. **Try to move it to Done.** The gate blocks with the open requirements listed and a link back to the panel.
-7. **Fix or accept**: on **Requirements**, create the sub-tasks, mark one *Verified* with a PR link as evidence, and
-   **Accept risk** on another (a reason, controls and an expiry; a security champion approves it on **Acceptances**).
-   Move the work item to Done: it passes.
+7. **Fix or accept**: on **Requirements**, create the sub-tasks (on the epic they are child Tasks, or Stories, as Jira
+   allows no sub-tasks under an epic), mark one *Verified* with a PR link as evidence, and **Accept risk** on another
+   (a reason, controls and an expiry). A High or Critical acceptance needs a **second account** to approve it on
+   **Acceptances** (a security champion or Jira admin other than you: nobody approves their own request). With only one
+   account, mark every requirement *Verified* with evidence instead. Move the work item to Done: it passes.
 8. **Merge**: once per repository, install Threatline for Bitbucket, copy the public key from the Jira admin page
    (**Signing keys**) into Bitbucket → the repository → **Repository settings → Forge Apps → Threatline**, and add
    **Threatline security attestation** under **Repository settings → Custom merge checks** (Premium makes it required;
-   otherwise it warns). Then on
-   **Requirements → Merge attestation**, enter the repository and head commit and copy the attestation into the pull
-   request description. The Bitbucket check passes; change one character and it fails. Without the key the check
-   fails with "no Threatline public key is configured for this repository".
+   otherwise it warns). Then on **Requirements → Merge attestation**, enter the repository and head commit and copy
+   the attestation into the pull request description. Put the epic's key in the pull request title or branch name (for
+   example a branch `feature/<KEY>-support-agent`): an attestation only counts for the work item the pull request
+   names, so without the key the check fails with "this pull request names no Jira work item". The Bitbucket check
+   passes; change one character and it fails. Without the public key the check fails with "no Threatline public key is
+   configured for this repository".
 9. **Audit**: admin page → **Risk ledger** → **Verify the ledger**, and download an inclusion proof; check it offline
    with `node scripts/verify-ledger-proof.mjs proof.json`.
 
@@ -115,7 +122,7 @@ Everything above runs against fixture data in a local preview, no Atlassian site
 ```bash
 pnpm install
 pnpm --filter @threatline/core-ui dev --port 5179   # then open http://localhost:5179/?state=ready (or ?view=admin, ?view=posture)
-pnpm test                                        # 1,650+ tests, including accessibility checks
+pnpm test                                        # 1,700+ tests, including accessibility checks
 pnpm threatline sign-demo                           # sign an attestation, then show that one changed character fails
 pnpm threatline eval --llm recorded --subset 30     # replay the recorded eval offline
 ```

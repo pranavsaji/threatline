@@ -6,7 +6,7 @@ import { log } from '../adapters/log.js';
 import { monthOf, pauseReasons, RECENT_INGESTS_KEY } from '../services/budget.js';
 import { DIGEST_CONFIG_KEY } from '../services/digest.js';
 import { OPS_CONFIG_KEY, opsAlert } from '../services/ops-alert.js';
-import { POLICY_VERSION_KEY, policyVersion } from '../services/verdict-service.js';
+import { bumpPolicyVersion, POLICY_VERSION_KEY, policyVersion } from '../services/verdict-service.js';
 import { seedDemo, type SeedResult } from '../seeder/seed.js';
 import { SCHEMA_VERSION_KEY } from '../consumers/review-consumer.js';
 import { apiError, type ApiError } from './errors.js';
@@ -139,21 +139,6 @@ async function readJson<T>(deps: CoreDeps, key: string, schema: z.ZodType<T>): P
 }
 const OpsSchema = z.object({ issueKey: z.string().regex(ISSUE_KEY), accountIds: z.array(z.string().regex(/^[A-Za-z0-9:_-]{1,128}$/)).max(10) }).strict();
 const DigestSchema = z.object({ spaceKey: z.string().regex(SPACE_KEY), parentPageId: z.string().regex(/^\d{1,20}$/).optional() }).strict();
-
-/** Bumps the policy version so every stored verdict is recomputed before it is next relied on. */
-async function bumpPolicyVersion(deps: CoreDeps): Promise<boolean> {
-  for (let i = 0; i < 2; i++) {
-    try {
-      const v = await deps.state.get<unknown>(POLICY_VERSION_KEY);
-      await deps.state.set(POLICY_VERSION_KEY, (typeof v === 'number' ? v : 0) + 1);
-      return true;
-    } catch {
-      // retry once
-    }
-  }
-  log('policy.version_bump_failed', {});
-  return false;
-}
 
 const SAVED_UNCHECKED: ApiError = {
   error: 'unavailable',
@@ -448,12 +433,15 @@ export async function adminProjectStatuses(deps: CoreDeps, a: Admin, payload: un
 
 export interface GateInstallDto {
   projects: Array<{ projectKey: string; added: string[]; already: string[]; readOnly: string[] }>;
+  /** Projects whose workflows Jira did not let Threatline change (the others were still changed, and ledgered). */
+  failed?: Array<{ projectKey: string; message: string }>;
 }
 
 /**
- * `admin.installGate`: adds "Threatline security gate" to the guarded transition in every enabled project's workflows,
- * as the admin who clicked (Jira checks they may edit them). The one way to add it in team-managed projects, whose
- * workflow editor does not list app validators. Ledgered as a policy change.
+ * `admin.installGate`: adds "Threatline security gate" to every guarded transition in every enabled project's
+ * workflows, as the admin who clicked (Jira checks they may edit them). The one way to add it in team-managed projects,
+ * whose workflow editor does not list app validators. A project Jira refuses does not stop the others; what was added
+ * is ledgered as a policy change, and the failures are reported by project.
  */
 export async function adminInstallGate(deps: CoreDeps, a: Admin, extensionKey: string | null): Promise<GateInstallDto | ApiError> {
   const denied = await requireAdmin(deps, a);
@@ -461,22 +449,47 @@ export async function adminInstallGate(deps: CoreDeps, a: Admin, extensionKey: s
   if (!extensionKey) return { error: 'unavailable', message: 'Threatline could not tell which app environment it is running in. Add the gate in the workflow editor instead.' };
   const policy = await deps.config.site();
   if (!policy.ok) return apiError(policy.error);
-  const toStatus = policy.value.guardedTransitions[0];
-  if (policy.value.enabledProjects.length === 0 || !toStatus) return { error: 'validation', message: 'Turn Threatline on for a project and pick its guarded transition first.' };
+  const statuses = [...new Set(policy.value.guardedTransitions)];
+  if (policy.value.enabledProjects.length === 0 || statuses.length === 0) return { error: 'validation', message: 'Turn Threatline on for a project and pick its guarded transition first.' };
   const projects: GateInstallDto['projects'] = [];
+  const failed: NonNullable<GateInstallDto['failed']> = [];
+  let firstError: ApiError | null = null;
   for (const projectKey of policy.value.enabledProjects) {
-    const r = await deps.jira.installGate(a.accountId, projectKey, toStatus, extensionKey);
-    if (!r.ok) {
-      if (r.error.code === 'forbidden') return { error: 'forbidden', message: `Jira did not let you edit ${projectKey}'s workflow. Add the gate in the workflow editor instead.` };
-      return apiError(r.error);
+    const entry = { projectKey, added: [] as string[], already: [] as string[], readOnly: [] as string[] };
+    for (const toStatus of statuses) {
+      const r = await deps.jira.installGate(a.accountId, projectKey, toStatus, extensionKey);
+      if (!r.ok) {
+        const e: ApiError =
+          r.error.code === 'forbidden'
+            ? { error: 'forbidden', message: `Jira did not let you edit ${projectKey}'s workflow. Add the gate in the workflow editor instead.` }
+            : { ...apiError(r.error), message: `Jira could not update ${projectKey}'s workflow. Try again, or add the gate in the workflow editor.` };
+        firstError ??= e;
+        failed.push({ projectKey, message: e.message! });
+        break;
+      }
+      const add = (into: string[], items: readonly string[]) => into.push(...items.filter((x) => !into.includes(x)));
+      add(entry.added, r.value.added);
+      add(entry.already, r.value.already);
+      add(entry.readOnly, r.value.readOnly);
     }
-    projects.push({ projectKey, ...r.value });
+    projects.push(entry);
   }
   const added = projects.flatMap((p) => p.added);
   if (added.length > 0) {
-    const row = await appendLedger(deps.ledger, deps.clock, 'policy.changed', { fields: ['doneGate'], transitions: added }, a.accountId);
-    if (!row.ok) return apiError(row.error);
+    const row = await appendLedger(
+      deps.ledger,
+      deps.clock,
+      'policy.changed',
+      { fields: ['doneGate'], transitions: added, projects: projects.filter((p) => p.added.length > 0).map((p) => p.projectKey), ...(failed.length > 0 ? { failedProjects: failed.map((f) => f.projectKey) } : {}) },
+      a.accountId,
+    );
+    if (!row.ok) {
+      log('gate.ledger_failed', { added: added.length });
+      return { error: 'unavailable', message: `Threatline added the gate to ${added.join('; ')}, but could not record it in the ledger. Tell your security team; the gate is in force.` };
+    }
   }
-  log('gate.installed', { added: added.length });
-  return { projects };
+  log('gate.installed', { added: added.length, failed: failed.length });
+  // Nothing changed anywhere and every project failed: the first failure is the answer, as before.
+  if (firstError && failed.length === policy.value.enabledProjects.length && added.length === 0) return firstError;
+  return failed.length > 0 ? { projects, failed } : { projects };
 }

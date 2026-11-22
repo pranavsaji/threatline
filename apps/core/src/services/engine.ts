@@ -133,6 +133,22 @@ export async function isEngineReview(deps: Pick<CoreDeps, 'reviews'>, reviewId: 
 
 type Verdicts = Array<{ threatId: string; keep: boolean; reason: string }>;
 
+/** How long after a review settles the panel keeps waiting for the verifier (a lost job must not poll for ever). */
+export const VERIFY_WAIT_MS = 10 * 60_000;
+
+/**
+ * Whether Threatline Engine's verifier is still to run on this ready review: the panel keeps polling meanwhile, so
+ * the threats it shows are the verified ones without a refresh. Only for an engine review, and only for
+ * VERIFY_WAIT_MS after the review settled.
+ */
+export async function verificationPending(deps: Pick<CoreDeps, 'reviews' | 'clock'>, review: Review): Promise<boolean> {
+  if (review.status !== 'ready') return false;
+  if (deps.clock.now().getTime() - new Date(review.updatedAt).getTime() > VERIFY_WAIT_MS) return false;
+  const [v, engine] = await Promise.all([deps.reviews.stage(review.id, 'verify'), isEngineReview(deps, review.id)]);
+  if (!engine || !v.ok) return false;
+  return v.value?.status !== 'done' && v.value?.status !== 'failed';
+}
+
 /** After a re-assembly, the stored verifier verdicts are applied again so a late run cannot undo them. */
 export async function reapplyVerification(deps: CoreDeps, review: Review): Promise<Result<void>> {
   const s = await deps.reviews.stage(review.id, 'verify');
@@ -141,14 +157,35 @@ export async function reapplyVerification(deps: CoreDeps, review: Review): Promi
   return applyAndStore(deps, review, verdicts);
 }
 
+/**
+ * The threats of this review a person has triaged (accepted, dismissed, edited, merged from or into, split): every
+ * triage decision is ledgered (`threat.triaged`) before it is saved. The verifier's verdicts never touch them.
+ */
+async function triagedThreatIds(deps: CoreDeps, review: Review): Promise<Result<Set<string>>> {
+  const rows = await deps.ledger.forIssues(['threat.triaged'], [review.issueId]);
+  if (!rows.ok) return rows;
+  const ids = new Set<string>();
+  for (const r of rows.value) {
+    if (r.payload.reviewId !== review.id) continue;
+    if (typeof r.payload.threatId === 'string') ids.add(r.payload.threatId);
+    if (typeof r.payload.intoThreatId === 'string') ids.add(r.payload.intoThreatId);
+  }
+  return ok(ids);
+}
+
 async function applyAndStore(deps: CoreDeps, review: Review, verdicts: Verdicts): Promise<Result<void>> {
-  const [threats, facts] = await Promise.all([deps.reviews.threats(review.id), deps.reviews.facts(review.id)]);
+  // Read after the model call: a champion may have triaged threats while the verifier ran (the review is already
+  // ready, so the panel allows it). Their decisions stand; only the untouched threats take the verifier's verdicts.
+  const [threats, facts, triaged] = await Promise.all([deps.reviews.threats(review.id), deps.reviews.facts(review.id), triagedThreatIds(deps, review)]);
   if (!threats.ok) return threats;
   if (!facts.ok) return facts;
+  if (!triaged.ok) return triaged;
   const tainted = new Set(facts.value.filter((f) => f.injectionSuspected).map((f) => f.id));
   const policy = await deps.config.site();
   const blockAtOrAbove = policy.ok ? policy.value.blockAtOrAbove : 'Low';
-  const applied = applyVerification(threats.value, verdicts, { injectionSuspected: false, taintedFacts: tainted, blockAtOrAbove });
+  const untouched = verdicts.filter((v) => !triaged.value.has(v.threatId));
+  if (untouched.length < verdicts.length) log('engine.verify_skipped_triaged', { reviewId: review.id, skipped: verdicts.length - untouched.length });
+  const applied = applyVerification(threats.value, untouched, { injectionSuspected: false, taintedFacts: tainted, blockAtOrAbove });
   for (const t of applied.changed) {
     const u = await deps.reviews.updateThreat(t.id, { state: t.state, verification: t.verification, coveredBy: t.coveredBy, ...(t.dismissReason ? { dismissReason: t.dismissReason } : {}) });
     if (!u.ok) return u;

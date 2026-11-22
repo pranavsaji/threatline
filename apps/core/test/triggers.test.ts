@@ -3,6 +3,7 @@ import { onIssueChange } from '../src/triggers/on-issue-change.js';
 import { onPageChange } from '../src/triggers/on-page-change.js';
 import { onInstallJobs } from '../src/triggers/on-install.js';
 import { coreDeps } from './support/core-deps.js';
+import { PAGE_KEY } from '../src/services/confluence-page.js';
 
 const issueEvent = (o: { type?: string; project?: string; eventType?: string; items?: Array<Record<string, unknown>>; key?: string } = {}) => ({
   eventType: o.eventType ?? 'avi:jira:updated:issue',
@@ -110,6 +111,15 @@ describe('onPageChange', () => {
     const t = coreDeps();
     await onPageChange(t.deps, { content: { id: '1' } });
     expect(t.pushed).toEqual([]);
+  });
+
+  it("Threatline re-publishing a work item's threat-model page does not re-gather that work item (others linking it still are)", async () => {
+    const t = coreDeps();
+    await t.deps.issues.linkPage('10042', '98305');
+    await t.deps.issues.linkPage('10043', '98305');
+    await t.kv.set(PAGE_KEY('10042'), { pageId: '98305', parentId: '1', url: 'https://x/wiki/pages/98305' });
+    await onPageChange(t.deps, { content: { id: '98305' } });
+    expect(t.pushed).toEqual([{ kind: 'gather', issueId: '10043', reason: 'page_changed' }]);
   });
 });
 

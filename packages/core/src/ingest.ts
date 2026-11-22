@@ -101,7 +101,8 @@ function tryExtract(text: string, expectedIssueKey: string): Result<AgentThreatM
     }
   }
   const objects = parsed.filter((p): p is Record<string, unknown> => typeof p === 'object' && p !== null && !Array.isArray(p));
-  const marked = objects.find((o) => o.schema === AGENT_SCHEMA_MARKER || o.schema === LEGACY_SCHEMA_MARKER);
+  // The last marked object: a run that quotes an example or planted threat model before its own answer is read by its answer.
+  const marked = objects.filter((o) => o.schema === AGENT_SCHEMA_MARKER || o.schema === LEGACY_SCHEMA_MARKER).at(-1);
   if (!marked) {
     if (objects.length > 0) return err({ code: 'schema', message: `no JSON object with "schema": "${AGENT_SCHEMA_MARKER}"` });
     return err(text.includes('{') ? { code: 'invalid_json', message: 'JSON could not be parsed (truncated or malformed)' } : { code: 'no_json', message: 'no JSON found in agent response' });
@@ -251,19 +252,24 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
   const factById = new Map(facts.map((f) => [f.id, f]));
   const voteBase = Math.max(1, valid.length);
   // When the material shows signs of injection, earlier dismissals are not applied: suppression must never be steerable by attacker text.
-  const isDismissed = (t: { stride: Stride; title: string; component: string }) =>
-    !injectionSuspected && i.priorDismissed.some((d) => similar(t, { ...d, component: t.component }, { ignoreComponent: true }));
+  // Nor for a threat at a severity that blocks Done: like a team suppression rule, an earlier dismissal (possibly on another
+  // work item) never hides a blocking threat.
+  const isDismissed = (t: { stride: Stride; title: string; component: string }, severity: Threat['severity']) =>
+    !injectionSuspected && !isBlockingSeverity({ severity }, i.policy) && i.priorDismissed.some((d) => similar(t, { ...d, component: t.component }, { ignoreComponent: true }));
 
   // 1. Baseline threats (deterministic, always cited verbatim).
   const threats: Threat[] = [];
   for (const b of baselineThreats(signals)) {
-    if (isDismissed(b)) {
+    if (isDismissed(b, severityOf(b.likelihood, b.impact))) {
       discarded.push({ title: b.title, stride: b.stride, reason: 'duplicate_of_dismissed' });
       continue;
     }
+    // The rule's quote is the sentence its keyword matched, verbatim. Grounding needs 12 characters, so a short sentence
+    // ("Session.") is cited by the fact that holds it rather than dropping the threat: more text must never switch a rule off.
     const citations = b.evidence.flatMap((e) => {
       const g = groundQuote(e.quote, facts);
-      return g.factId ? [{ factId: g.factId, quote: e.quote }] : [];
+      const factId = g.factId ?? facts.find((f) => f.excerpt.includes(e.quote))?.id;
+      return factId ? [{ factId, quote: e.quote }] : [];
     });
     if (citations.length === 0) continue;
     threats.push({
@@ -306,18 +312,20 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
       discarded.push({ title: rep.title, stride: rep.stride, reason: 'unsupported_citation' });
       continue;
     }
-    if (isDismissed(rep)) {
-      discarded.push({ title: rep.title, stride: rep.stride, reason: 'duplicate_of_dismissed' });
-      continue;
-    }
     const citations = grounded.slice(0, MAX_CITATIONS).map((x) => ({ factId: x.g.factId!, quote: x.q }));
     const supported = grounded.some((x) => x.g.grounding === 'supported');
     // The runs' central score, not the highest: one run's outlier should not decide what blocks Done. Under suspected
-    // injection the highest stands, so attacker text that talks one run down cannot lower the outcome.
+    // injection the highest stands, so attacker text that talks one run down cannot lower the outcome. One run counts
+    // once (its highest, when it listed the threat more than once), so a run's restatements cannot outvote the others.
     const pick = injectionSuspected ? (xs: number[]) => Math.max(...xs) : centralScore;
-    const likelihood = pick(cluster.members.map((m) => m.likelihood));
-    const impact = pick(cluster.members.map((m) => m.impact));
+    const perRun = (f: (m: AgentThreat) => number) => cluster.sampleIndexes.map((s) => Math.max(...cluster.members.filter((_, n) => cluster.memberSamples[n] === s).map(f)));
+    const likelihood = pick(perRun((m) => m.likelihood));
+    const impact = pick(perRun((m) => m.impact));
     const agentSeverity = severityOf(likelihood, impact);
+    if (isDismissed(rep, agentSeverity)) {
+      discarded.push({ title: rep.title, stride: rep.stride, reason: 'duplicate_of_dismissed' });
+      continue;
+    }
 
     const touchedByInjection = citations.some((c) => factById.get(c.factId)?.injectionSuspected) || injectionSuspected;
     const trusted = supported && !touchedByInjection;
@@ -369,7 +377,10 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     });
   }
 
-  const carried = i.prior ? carryOver(threats, i.prior, facts, i.review.id, injectionSuspected, i.samples.length >= i.samplesExpected, i.policy) : new Set<string>();
+  // "All runs are in" means enough of them answered to vote: failed runs (an AI outage) must not count, or an outage would
+  // drop the earlier AI threats no run raised again, champion-accepted ones included.
+  const runsComplete = i.samples.length >= i.samplesExpected && (i.samplesExpected === 0 || valid.length >= voteThreshold(i.samplesExpected));
+  const carried = i.prior ? carryOver(threats, i.prior, facts, i.review.id, injectionSuspected, runsComplete, i.policy) : new Set<string>();
 
   // Team suppression rules, before coverage: a hidden AI threat covers nothing, and a hidden rule-based one is not covered.
   applySuppressions(threats, i.suppressions?.rules ?? [], { blockAtOrAbove: i.policy.blockAtOrAbove, injectionSuspected, now: i.now, unhidden: new Set(i.suppressions?.unhidden ?? []) });
@@ -442,7 +453,8 @@ function carryOver(threats: Threat[], prior: NonNullable<AssembleInput['prior']>
     // suppressed one: the project's rules are applied afresh too (a rule may have expired or been revoked).
     if (old.state === 'covered' || old.state === 'suppressed') continue;
     if (!onlyUnchanged(old)) continue;
-    const idx = threats.findIndex((t, n) => !matched.has(n) && onlyUnchanged(t) && similar(t, old, { ignoreComponent: true }));
+    // Same origin only: an old AI threat (perhaps dismissed by the verifier) must not overwrite a fresh rule-based one.
+    const idx = threats.findIndex((t, n) => !matched.has(n) && t.origin === old.origin && onlyUnchanged(t) && similar(t, old, { ignoreComponent: true }));
     const fresh = idx >= 0 ? threats[idx] : undefined;
     if (fresh) {
       matched.add(idx);

@@ -1,15 +1,16 @@
+import { verificationPending } from '../services/engine.js';
 import { z } from 'zod';
 import { ACCEPTANCE_EVENTS, rebuildAcceptances, reviewSignals, riskScore, threatDiff, whatIfScore, type DiscardedThreat, type Role } from '@threatline/core';
 import { cweById, getAsvs, type ControlRef } from '@threatline/frameworks';
 import { requirementControls } from '@threatline/core';
-import { DataClassSchema, ExposureSchema, severityRank, type Acceptance, type DataClass, type Exposure, type Severity, type ContextFact, type Requirement, type Review, type Threat, type Verdict } from '@threatline/shared';
+import { DataClassSchema, ExposureSchema, severityRank, type SitePolicy, type Acceptance, type DataClass, type Exposure, type Severity, type ContextFact, type Requirement, type Review, type Threat, type Verdict } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
 import { log } from '../adapters/log.js';
 import { RERUN_LABEL } from '../triggers/on-issue-change.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
 import { rolesOf } from '../services/roles.js';
-import { readVerdict, refreshVerdict, verdictKey } from '../services/verdict-service.js';
+import { readVerdict, refreshVerdict, scopeRefusal, verdictKey } from '../services/verdict-service.js';
 import { newScopeCache, scopeForViewer, type ScopeCache } from '../services/viewer-scope.js';
 import { PAGE_KEY } from '../services/confluence-page.js';
 import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
@@ -70,9 +71,21 @@ export interface PanelDto {
   threatModelPage: { url: string } | null;
   /** The data-flow diagram of the latest review, scoped to this viewer (absent before the first review). */
   diagram?: DiagramDto;
+  /**
+   * False when Threatline does not review this work item (its project is not turned on, or its work type is not
+   * reviewed): the panel then offers no review. A work item reviewed before it was moved or re-typed keeps its review.
+   */
+  inScope?: boolean;
+  /** Threatline Engine's verifier has still to run on this ready review: the panel keeps polling. */
+  verifying?: boolean;
+  /** Why it is out of scope, worded for the viewer (only when `inScope` is false). */
+  scopeMessage?: string;
+  /** The site's review mode, so the panel can say how long a review takes (Threatline Engine takes a few minutes). */
+  reviewMode?: SitePolicy['reviewMode'];
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited'; message?: string };
+type Refused = { error: 'validation' | 'conflict'; message: string };
 
 const bySeverity = (a: Threat, b: Threat) => severityRank(b.severity) - severityRank(a.severity) || b.votes - a.votes || a.title.localeCompare(b.title);
 
@@ -233,6 +246,8 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const acceptances = rebuildAcceptances(ledger.value, deps.clock.now()).filter((a) => shownIds.has(a.requirementId));
   const p = policy.value;
   const diagram = review ? await buildDiagram(deps, review.id, { threats, requirements: requirements.value, sketchVisible }) : undefined;
+  const outOfScope = scopeRefusal(auth.issue, p);
+  const verifying = review ? await verificationPending(deps, review).catch(() => false) : false;
 
   return {
     issueId: v.issueId,
@@ -258,6 +273,10 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     roles,
     threatModelPage: page && typeof page.url === 'string' ? { url: page.url } : null,
     ...(diagram ? { diagram } : {}),
+    inScope: outOfScope === null,
+    ...(outOfScope ? { scopeMessage: outOfScope } : {}),
+    reviewMode: p.reviewMode,
+    ...(verifying ? { verifying: true } : {}),
   };
 }
 
@@ -275,16 +294,32 @@ export async function panelThreats(deps: CoreDeps, v: Viewer, p: { cursor?: unkn
   return { threats: page, cursor: from + PAGE_SIZE < listed.length ? from + PAGE_SIZE : null };
 }
 
+export const STILL_RUNNING_MESSAGE = 'A review of this work item is still running. Wait for it to finish (the panel updates by itself), then re-run it if you need to.';
+
 /**
  * Queues the gather; in Rovo agent mode it also (re-)adds the threatline-review label, which starts the Automation
  * re-run rule. Threatline Engine and rule-based reviews need no rule, so they leave the work item's labels alone.
+ * Refused, before any re-run is counted: a work item Threatline does not review (unless it was reviewed before it was
+ * moved or re-typed, whose review still applies at the gate), and one whose latest review is still running (awaiting
+ * its runs and younger than the agent timeout, after which the sweeper settles it).
  */
-export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true } | Denied> {
+export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true } | Denied | Refused> {
   const auth = await authorise(deps, v, 'edit');
   if ('error' in auth) return auth;
+  const [policy, latest] = await Promise.all([deps.config.site(), deps.reviews.latest(v.issueId)]);
+  if (!latest.ok) return { error: 'unavailable' };
+  if (policy.ok) {
+    const outOfScope = scopeRefusal(auth.issue, policy.value);
+    if (outOfScope && !latest.value) return { error: 'validation', message: outOfScope };
+    const l = latest.value;
+    const timeoutMs = policy.value.agentTimeoutMinutes * 60_000;
+    // Only while something is actually running: Engine runs, or a Rovo run that has already reported. A Rovo review no
+    // run has answered may mean the Automation rule never fired, and re-running (which re-adds the label) is the fix.
+    const running = l && l.status === 'awaiting_agent' && (policy.value.reviewMode === 'engine' || l.samplesReceived > 0);
+    if (running && deps.clock.now().getTime() - Date.parse(l.updatedAt) < timeoutMs) return { error: 'conflict', message: STILL_RUNNING_MESSAGE };
+  }
   const limit = await checkRerunLimit(deps, v.accountId);
   if (!limit.ok) return { error: limit.error.code === 'budget' ? 'rate_limited' : 'unavailable' };
-  const policy = await deps.config.site();
   // Unknown mode (policy unreadable): label as before, so an Automation rule that may exist still fires.
   const needsRule = !policy.ok || (policy.value.reviewMode !== 'engine' && policy.value.reviewMode !== 'rules_only');
   if (needsRule) await relabel(deps, v.issueId, auth.issue.labels);

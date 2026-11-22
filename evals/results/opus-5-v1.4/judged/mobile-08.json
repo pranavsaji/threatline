@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't specify code format; assuming brute-forceable codes adds implementation details not stated in design.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design describes single sign-up event; assuming replay or multi-code redemption adds unstated implementation vulnerabilities.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; both describe creating fake accounts with own referral code for credits.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't specify response behavior; assuming account enumeration possible adds unstated implementation details.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Describes audit limitations and consequences of c1, not a specific attack action or threat.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: guessable codes enable distributed fraud across strangers' referral codes\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic authentication attack on components design does not mention\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: multiple redemptions per account rather than multiple fake accounts\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same self-referral attack at different scale\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Generic sign-up enumeration; not material to referral feature\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Missing control not an attack; audit logging is generic hygiene\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,21 +15,26 @@
     },
     {
       "id": "x2",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x3",
       "stride": "Tampering",
       "title": "Referral credit redeemed more than once per new account"
     },
     {
-      "id": "x3",
+      "id": "x4",
       "stride": "ElevationOfPrivilege",
       "title": "Users can refer themselves because the two sides of the referral are never checked"
     },
     {
-      "id": "x4",
+      "id": "x5",
       "stride": "InformationDisclosure",
       "title": "Email-only sign-up lets anyone test whether a person already has an account"
     },
     {
-      "id": "x5",
+      "id": "x6",
       "stride": "Repudiation",
       "title": "No link between a credited referral and the identity behind it, so fraud cannot be unwound"
     }

@@ -1,6 +1,10 @@
+import { appendLedger } from '@threatline/core';
 import { appError, err, ok, type Result } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { AdfDoc, JiraIssue } from '../adapters/jira.js';
+import { log } from '../adapters/log.js';
+import { SYSTEM_ACTOR } from '../services/acceptance-service.js';
+import { bumpPolicyVersion } from '../services/verdict-service.js';
 import { DEMO_COMPONENT, DEMO_LABEL, DESIGN_PAGE_TITLE, designPageStorage, designPageText, EPIC, INCIDENTS, STORIES } from './content/demo.js';
 
 export interface SeedResult {
@@ -104,12 +108,18 @@ export async function seedDemo(deps: CoreDeps, i: { projectKey: string; spaceKey
   const reviewed = (name: string) => policy.value.reviewIssueTypes.some((t) => t.toLowerCase() === name.toLowerCase());
   const addedReviewTypes = [storyType.name].filter((n) => !reviewed(n));
   if (!policy.value.enabledProjects.includes(project.value.key) || addedReviewTypes.length > 0) {
+    // A policy change like any other (admin.setPolicy): ledgered first, then saved, then every stored verdict is marked
+    // for a recheck, so the gate stops calling the demo project "not turned on" at once.
+    const fields = [...(policy.value.enabledProjects.includes(project.value.key) ? [] : ['enabledProjects']), ...(addedReviewTypes.length > 0 ? ['reviewIssueTypes'] : [])];
+    const row = await appendLedger(deps.ledger, deps.clock, 'policy.changed', { fields, source: 'demo', projectKey: project.value.key }, actorAccountId ?? SYSTEM_ACTOR);
+    if (!row.ok) return row;
     const set = await deps.config.setSite({
       ...policy.value,
       enabledProjects: policy.value.enabledProjects.includes(project.value.key) ? policy.value.enabledProjects : [...policy.value.enabledProjects, project.value.key],
       reviewIssueTypes: [...policy.value.reviewIssueTypes, ...addedReviewTypes],
     });
     if (!set.ok) return set;
+    if (!(await bumpPolicyVersion(deps))) log('seed.policy_version_unbumped', { projectKey: project.value.key });
   }
   // The items were created by the app, and the issue trigger ignores the app's own events: queue their reviews now, as
   // the admin who loaded the demo (that scopes what the review may read), so the panels fill without a manual re-run.

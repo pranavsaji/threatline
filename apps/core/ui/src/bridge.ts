@@ -122,6 +122,8 @@ export interface SeedResult {
 }
 export interface GateInstallDto {
   projects: Array<{ projectKey: string; added: string[]; already: string[]; readOnly: string[] }>;
+  /** Projects whose workflows Jira refused to change; the gate was still added (and ledgered) in the others. */
+  failed?: Array<{ projectKey: string; message: string }>;
 }
 
 export interface SetupStatus {
@@ -137,6 +139,7 @@ export interface SetupStatus {
 export interface AdminApi {
   seed(projectKey: string, spaceKey: string): Promise<SeedResult | ApiError>;
   setupStatus(): Promise<SetupStatus | ApiError>;
+  championGroupStatus?(): Promise<import('../../src/resolvers/setup-groups.js').ChampionGroupStatus | ApiError>;
   verifyLedger(): Promise<ChainVerdict | ApiError>;
   exportLedger(projectKey: string, from: string, to: string): Promise<{ csv: string; json: string } | ApiError>;
   publicKeys(): Promise<PublicKeyInfo | ApiError>;
@@ -193,6 +196,7 @@ export function adminApiOver(invoke: Invoke): AdminApi {
   return {
     seed: (projectKey, spaceKey) => invoke('admin.seed', { projectKey, spaceKey }),
     setupStatus: () => invoke('admin.setupStatus'),
+    championGroupStatus: () => invoke('admin.championGroupStatus'),
     verifyLedger: () => invoke('ledger.verify'),
     exportLedger: (projectKey, from, to) => invoke('ledger.export', { projectKey, from, to }),
     publicKeys: () => invoke('keys.public'),

@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states keys never expire; concrete permanent-access attack on partner orders and emails.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Key in query string per design; concrete log/proxy leak enabling partner data access.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public API with no rate limiting supports brute-force key guessing attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No rate limiting on public endpoint supports concrete flooding/capacity exhaustion attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct harm from T4: bulk scraping of customer emails via unthrottled endpoint.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Org-wide long-lived keys per design; concrete attribution loss during investigation.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states keys never expire and grant broad access; concrete permanent-access attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Key in query string is in design; log/proxy leakage attack is concrete and distinct.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public API plus no rate limiting supports self-verifying key brute-force attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No rate limiting on public endpoints supports flooding/capacity-exhaustion attack; harm differs from data theft.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unthrottled access to all orders/emails supports distinct bulk PII harvesting attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Long-lived org-wide key per design; attribution/investigation harm distinct from prior threats.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

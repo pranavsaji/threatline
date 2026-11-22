@@ -16,7 +16,8 @@ export interface DiffScore {
   signals: DiffSignal[];
 }
 
-const DEPENDENCY_MANIFESTS = /(^|\/)(package\.json|requirements\.txt|go\.mod|pom\.xml|Gemfile|build\.gradle|Cargo\.toml|pyproject\.toml)$/;
+// Case-insensitive like the sensitive globs (policy.ts isSensitive) and AUTH_CRYPTO: `Package.json` on a case-insensitive file system is the same manifest.
+const DEPENDENCY_MANIFESTS = /(^|\/)(package\.json|requirements\.txt|go\.mod|pom\.xml|Gemfile|build\.gradle|Cargo\.toml|pyproject\.toml)$/i;
 
 export const SECRET_PATTERNS: ReadonlyArray<{ kind: string; re: RegExp }> = [
   { kind: 'aws_key', re: /AKIA[0-9A-Z]{16}/ },

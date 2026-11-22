@@ -122,6 +122,25 @@ describe('Journey B: risk accepted under time pressure (RL-1, RL-2, RL-5)', () =
     expect(await acceptanceRequest(t.deps, as(DEV), { requirementId: req.id, reason, controls: 'Feature flag off', expiryDays: 30 })).toMatchObject({ error: 'conflict' });
   });
 
+  it('one open acceptance per requirement even when two requests arrive at once (atomic reservation, not check-then-append)', async () => {
+    const { t, req } = await reviewed();
+    const ask = () => acceptanceRequest(t.deps, as(DEV), { requirementId: req.id, reason, controls: 'Feature flag off', expiryDays: 30 });
+    const both = await Promise.all([ask(), ask()]);
+    expect(both.filter((r) => !('error' in r))).toHaveLength(1);
+    expect(both.filter((r) => 'error' in r)).toEqual([expect.objectContaining({ error: 'conflict' })]);
+    const rows = await t.deps.ledger.latestOfTypes(['acceptance.requested'], 10);
+    expect(rows.ok && rows.value).toHaveLength(1);
+  });
+
+  it('after an acceptance is rejected, the requirement can be asked for again', async () => {
+    const { t, req } = await reviewed();
+    const ask = () => acceptanceRequest(t.deps, as(DEV), { requirementId: req.id, reason, controls: 'Feature flag off', expiryDays: 30 });
+    const first = await ask();
+    if ('error' in first) throw new Error('request failed');
+    await acceptanceDecide(t.deps, as(CHAMP), { acceptanceId: first.acceptanceId, decision: 'reject', note: 'Not without the HMAC check' });
+    expect(await ask()).toMatchObject({ acceptanceId: expect.any(String) });
+  });
+
   it('someone who cannot edit the work item cannot request', async () => {
     const { t, req } = await reviewed();
     t.jira.canEdit = async () => ok(false);

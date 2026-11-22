@@ -34,8 +34,8 @@ Threatline makes security review part of "Done". One story shows all of it:
 **The AI cannot be talked into approving.** Text that tries to instruct the model is flagged, the threats resting on it
 wait for a security champion, the verifier never runs on flagged material, and code, not the model, computes the
 verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the product runs, through
-Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found all 60
-high-severity must-find threats (94.3% of all). Severity comes from facts each threat states, by a fixed table, so
+Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found 59 of
+the 60 high-severity must-find threats (93.1% of all). Severity comes from facts each threat states, by a fixed table, so
 Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
 replays offline.
 
@@ -107,7 +107,7 @@ title, and upload it as public or unlisted.
 | 14 | Without a valid attestation the required check blocks the merge | Without a valid attestation, the required check stays red, and the merge is blocked. It checks again at merge time, and the same gate runs as a GitHub Action. |
 | 15 | An audit trail anyone can verify | Every acceptance, override and refusal lands in a hash-chained ledger, with signed Merkle tree heads. An auditor can download an inclusion proof, and check it offline. |
 | 16 | Coding agent over MCP | And coding agents see the same requirements. Through Threatline's M.C.P. server, Claude Code or Cursor fetch exactly what the gate will check, write the fix, and mark the requirement verified with their pull request. |
-| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: every high-severity threat found, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
+| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: fifty-nine of sixty high-severity threats found, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
 
 ## Additional info (judges only): ready-to-paste answers
 

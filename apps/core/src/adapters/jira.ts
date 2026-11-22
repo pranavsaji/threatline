@@ -55,12 +55,14 @@ export interface JiraClient {
   issue(idOrKey: string): Promise<Result<JiraIssue>>;
   children(issueId: string): Promise<Result<JiraIssue[]>>;
   comments(issueId: string): Promise<Result<JiraComment[]>>;
-  remoteLinks(issueId: string): Promise<Result<Array<{ url: string; title: string }>>>;
+  remoteLinks(issueId: string): Promise<Result<Array<{ url: string; title: string; globalId?: string }>>>;
   canBrowse(accountId: string, issueId: string): Promise<Result<boolean>>;
   canEdit(accountId: string, issueId: string): Promise<Result<boolean>>;
   /** Of these numeric issue ids, the ones the user may browse (one permission check per 100 ids). */
   browsable(accountId: string, issueIds: readonly string[]): Promise<Result<string[]>>;
   groupsOf(accountId: string): Promise<Result<string[]>>;
+  /** Whether a group of exactly this name exists on the site (the setup checklist's champion-group check). */
+  groupExists?(name: string): Promise<Result<boolean>>;
   isAdmin(accountId: string): Promise<Result<boolean>>;
   setProperty(issueId: string, key: string, value: unknown): Promise<Result<void>>;
   /** The property's value, or null when the work item has no such property. */
@@ -381,9 +383,9 @@ export function createJiraClient(request: FetchLike, opts: JiraClientOptions = {
       if (!ISSUE_REF.test(issueId)) return badRef('issue id');
       const r = await call(`/rest/api/3/issue/${seg(issueId)}/remotelink`);
       if (!r.ok) return r;
-      const p = parse(z.array(z.object({ object: z.object({ url: z.string(), title: z.string().nullish() }).nullish() })), r.value, 'remote links');
+      const p = parse(z.array(z.object({ globalId: z.string().nullish(), object: z.object({ url: z.string(), title: z.string().nullish() }).nullish() })), r.value, 'remote links');
       if (!p.ok) return p;
-      return ok(p.value.flatMap((l) => (l.object ? [{ url: l.object.url, title: l.object.title || l.object.url }] : [])));
+      return ok(p.value.flatMap((l) => (l.object ? [{ url: l.object.url, title: l.object.title || l.object.url, ...(l.globalId ? { globalId: l.globalId } : {}) }] : [])));
     },
 
     canBrowse: (accountId, issueId) => hasIssuePermission(accountId, issueId, 'BROWSE_PROJECTS'),
@@ -426,6 +428,14 @@ export function createJiraClient(request: FetchLike, opts: JiraClientOptions = {
       if (!r.ok) return r;
       const p = parse(z.array(z.object({ name: z.string() })), r.value, 'groups');
       return p.ok ? ok(p.value.map((g) => g.name)) : p;
+    },
+
+    async groupExists(name) {
+      if (!name || name.length > 255) return ok(false);
+      const r = await call(`/rest/api/3/group/bulk?groupName=${encodeURIComponent(name)}&maxResults=1`);
+      if (!r.ok) return r.error.code === 'not_found' ? ok(false) : r;
+      const p = parse(z.object({ values: z.array(z.object({ name: z.string() })).nullish() }), r.value, 'groups');
+      return p.ok ? ok((p.value.values ?? []).some((g) => g.name === name)) : p;
     },
 
     async isAdmin(accountId) {

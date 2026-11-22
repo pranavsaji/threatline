@@ -1,8 +1,8 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1650%2B%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1700%2B%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
-![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
+![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-59%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![runs on Atlassian](https://img.shields.io/badge/egress-none-informational)
 
@@ -32,8 +32,8 @@ someone allowed to accept it.
 **And the AI cannot be talked into approving.** Text that tries to instruct the model is flagged in the panel, the
 threats resting on it wait for a security champion, and the verdict is always computed by code, never by the model.
 Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, then the
-verifier): all 15 of 15 poisoned cases held, and a separate model grader found all 60 high-severity must-find
-threats (94.3% of all) on the full 55-case set ([eval](#eval), [how the engine works](docs/ENGINE.md)).
+verifier): all 15 of 15 poisoned cases held, and a separate model grader found 59 of the 60 high-severity must-find
+threats (93.1% of all) on the full 55-case set ([eval](#eval), [how the engine works](docs/ENGINE.md)).
 
 ## Also in the box
 
@@ -57,7 +57,7 @@ threats (94.3% of all) on the full 55-case set ([eval](#eval), [how the engine w
   [skill](mcp-skill/skill.md)). Each requirement also copies as a failing test skeleton
   (TypeScript, Python or Java).
 - **Guardrails for the guardrail.** Review runs can be locked to one account, so developers cannot write their own
-  review; break-glass overrides need a written reason and are ledgered; warn-only mode expires after 14 days; a
+  review; break-glass overrides need a written reason and are ledgered; warn-only mode expires after 14 days (on GitHub the date lives in the workflow file, so it binds only as far as edits to that file are reviewed: see [GitHub](docs/GITHUB.md)); a
   budget pause needs a champion's confirmation; changes that touch no sensitive paths merge freely.
 - **Where people already work.** Issue panel, admin wizard, posture page and dashboard gadget, Confluence threat-model
   pages, fix-by dates (7, 30, 90 days by severity), and a rule-based mode for sites without AI.
@@ -79,16 +79,20 @@ enumeration), so it under-reports recall by about 7 points.
 | Metric (40 clean + 15 poisoned cases) | Now | Before the clustering fix | Prompt v1.3.0 |
 | --- | --- | --- | --- |
 | Injection resistance | 15 of 15 | 15 of 15 | 15 of 15 |
-| High-severity recall, graded | **100% (60 of 60)** | 96.7% (58 of 60) | 95.0% (57 of 60) |
-| Recall, graded | **94.3% (82 of 87)** | 92.0% (80 of 87) | 92.0% (80 of 87) |
+| High-severity recall, graded | **98.3% (59 of 60)** | 96.7% (58 of 60) | 95.0% (57 of 60) |
+| Recall, graded | **93.1% (81 of 87)** | 92.0% (80 of 87) | 92.0% (80 of 87) |
 | Recall, keyword matcher | 87.4% | 83.9% | 83.9% |
-| Severity of found threats vs the expert's | 37 same, 44 higher, 1 lower | 38 same, 42 higher, 0 lower | 27 same, 52 higher, 1 lower |
-| Blocking requirements per story (average) | 4.35 | 4.0 | 4.9 |
-| Precision, judged: threats the model proposed | 80.9% (99 of 140, all 40 cases) | 79.9% (32 cases judged) | 73.4% |
+| Severity of found threats vs the expert's | 37 same, 43 higher, 1 lower | 38 same, 42 higher, 0 lower | 27 same, 52 higher, 1 lower |
+| Blocking requirements per story (average) | 4.42 | 4.0 | 4.9 |
+| Precision, judged: threats the model proposed | 81.1% (101 of 142, all 40 cases) | 79.9% (32 cases judged) | 73.4% |
 | Citation grounding | 99.8% | 99.8% | 97.4% |
 
-The five threats still missed are all Low: log injection, automated sign-ups as a load problem, an audit trail for
-comment deletion, billing data cached by shared proxies, and flooding an admin portal. One found threat is rated below
+Six threats are still missed. Five are Low: log injection, automated sign-ups as a load problem, an audit trail for
+comment deletion, billing data cached by shared proxies, and flooding an admin portal. One is High: a moderator's
+session hijacked by a script in a comment (web-02). Only one of the three runs raised it. It used to survive on votes
+borrowed from other threats in the same discussion. Since each threat now joins the closest matching group, those
+votes stay with the threats they belong to, and three threats that were being absorbed came back (two High, one
+Critical). One found threat is rated below
 the expert's severity (the grader's report does not say which; `rematch` lists only misses).
 
 What changed around the same model:
@@ -172,7 +176,7 @@ pnpm threatline eval --llm fake                             # deterministic base
   only Jira, Confluence, Rovo and the clock simulated (`e2e/local/server.ts`). CI also runs semgrep (Threatline's own
   rules in `.semgrep.yml` plus the registry rulesets), `pnpm audit`, gitleaks and knip, and fails on any high finding.
 
-  The line-coverage badge comes from `pnpm test:cov` (92.85% of lines on 2026-11-21, when the suite had 1,084 tests; 1,652 on 2026-11-22). It counts only the
+  The line-coverage badge comes from `pnpm test:cov` (92.85% of lines on 2026-11-21, when the suite had 1,084 tests; 1,732 on 2026-11-22). It counts only the
   TypeScript under `packages/*/src` and `apps/*/src` (`vitest.config.ts`). The Custom UI (`apps/core/ui`,
   `apps/bitbucket/ui`), the eval runner, `scripts/` and `e2e/` are not part of that figure.
 

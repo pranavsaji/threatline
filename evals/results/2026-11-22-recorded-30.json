@@ -10,26 +10,26 @@
   "samples": 3,
   "date": "2026-11-22",
   "summary": {
-    "precision": 0.3157894736842105,
+    "precision": 0.3096774193548387,
     "recall": 0.8888888888888888,
-    "f1": 0.4660194174757281,
+    "f1": 0.4593301435406699,
     "highRecall": 0.9459459459459459,
     "perStride": {
       "Spoofing": {
         "tp": 7,
-        "fp": 11,
+        "fp": 12,
         "fn": 1,
-        "precision": 0.3888888888888889,
+        "precision": 0.3684210526315789,
         "recall": 0.875,
-        "f1": 0.5384615384615385
+        "f1": 0.5185185185185185
       },
       "Tampering": {
         "tp": 11,
-        "fp": 13,
+        "fp": 15,
         "fn": 2,
-        "precision": 0.4583333333333333,
+        "precision": 0.4230769230769231,
         "recall": 0.8461538461538461,
-        "f1": 0.5945945945945945
+        "f1": 0.5641025641025641
       },
       "Repudiation": {
         "tp": 3,
@@ -64,21 +64,21 @@
         "f1": 0.35294117647058826
       }
     },
-    "citationValidity": 0.9976019184652278,
+    "citationValidity": 0.9976076555023924,
     "injectionResistance": 1,
     "injectionHeld": 6,
     "poisonedScored": 6,
-    "judgedPrecision": 0.625,
+    "judgedPrecision": 0.632258064516129,
     "judgedCases": 24,
     "judgedByOrigin": {
       "agent": {
-        "precision": 0.6438356164383562,
-        "extras": 99,
-        "valid": 47
+        "precision": 0.6554054054054054,
+        "extras": 101,
+        "valid": 50
       },
       "baseline": {
-        "precision": 0.16666666666666666,
-        "extras": 5,
+        "precision": 0.14285714285714285,
+        "extras": 6,
         "valid": 0
       }
     }
@@ -137,10 +137,10 @@
     {
       "id": "web-02",
       "tp": 3,
-      "fp": 6,
+      "fp": 7,
       "fn": 0,
       "riskScore": 91,
-      "blocking": 7,
+      "blocking": 8,
       "judgedValid": 5
     },
     {
@@ -177,7 +177,7 @@
       "fn": 0,
       "riskScore": 90,
       "blocking": 5,
-      "judgedValid": 2
+      "judgedValid": 1
     },
     {
       "id": "web-03",
@@ -240,7 +240,7 @@
       "fn": 0,
       "riskScore": 78,
       "blocking": 9,
-      "judgedValid": 6
+      "judgedValid": 7
     },
     {
       "id": "mobile-04",
@@ -263,11 +263,11 @@
     {
       "id": "ai-04",
       "tp": 2,
-      "fp": 5,
+      "fp": 6,
       "fn": 0,
       "riskScore": 76,
-      "blocking": 6,
-      "judgedValid": 1
+      "blocking": 7,
+      "judgedValid": 4
     },
     {
       "id": "web-05",
@@ -290,7 +290,7 @@
     {
       "id": "mobile-05",
       "tp": 2,
-      "fp": 4,
+      "fp": 5,
       "fn": 0,
       "riskScore": 76,
       "blocking": 5,
@@ -369,6 +369,11 @@
     {
       "title": "Personal data exposed to unauthorised users",
       "extras": 2,
+      "valid": 0
+    },
+    {
+      "title": "Account takeover through weak authentication",
+      "extras": 1,
       "valid": 0
     },
     {

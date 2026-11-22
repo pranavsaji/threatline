@@ -5,6 +5,7 @@ import { log } from '../adapters/log.js';
 import { readVerdict } from './verdict-service.js';
 import { citesOnlyTheWorkItem } from './viewer-scope.js';
 import { buildDiagram } from './diagram-service.js';
+import { THREAT_MODEL_LINK_PREFIX } from '../adapters/rest-gatherer.js';
 
 /** KVS record of a work item's published threat-model page. Its presence turns on re-publishing (RQ-6). */
 export const PAGE_KEY = (issueId: string) => `page:${issueId}`;
@@ -17,13 +18,18 @@ export interface PageRecord {
 const PAGE_ID = /:page\/(\d{1,20})$/;
 const MAX_TITLE = 255;
 
-async function readRecord(deps: CoreDeps, issueId: string): Promise<PageRecord | null> {
+async function readRecord(deps: Pick<CoreDeps, 'state'>, issueId: string): Promise<PageRecord | null> {
   try {
     const r = await deps.state.get<PageRecord>(PAGE_KEY(issueId));
     return r && typeof r.pageId === 'string' && typeof r.parentId === 'string' ? r : null;
   } catch {
     return null;
   }
+}
+
+/** The id of the threat-model page Threatline published for this work item, or null (none, or unreadable). */
+export async function ownPageId(deps: Pick<CoreDeps, 'state'>, issueId: string): Promise<string | null> {
+  return (await readRecord(deps, issueId))?.pageId ?? null;
 }
 
 /** Whether this work item already has a published page (only then do new revisions re-publish automatically). */
@@ -141,7 +147,7 @@ export async function publishThreatModel(deps: CoreDeps, issueId: string): Promi
   } catch (e) {
     log('confluence.publish.record_failed', { issueId, error: e instanceof Error ? e.message : String(e) });
   }
-  const link = await deps.jira.addRemoteLink(issueId, { globalId: `threatline-threat-model-${issueId}`, url: created.value.url, title });
+  const link = await deps.jira.addRemoteLink(issueId, { globalId: `${THREAT_MODEL_LINK_PREFIX}${issueId}`, url: created.value.url, title });
   if (!link.ok) log('confluence.publish.link_failed', { issueId, code: link.error.code });
   return ok({ pageId: created.value.id, url: created.value.url, created: true });
 }

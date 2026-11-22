@@ -11,7 +11,7 @@ const ACTOR = { actorAccountId: 'acc-actor' };
 const PROJECT = JSON.stringify({ id: '10000', key: 'PAY', issueTypes: [{ id: '10001', name: 'Story' }, { id: '10004', name: 'Incident' }] });
 
 function setup(
-  over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; project?: Reply; siteUrl?: () => Promise<string>; incidentRule?: { labels: string[]; issueTypes: string[] } } = {},
+  over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; project?: Reply; siteUrl?: () => Promise<string>; incidentRule?: { labels: string[]; issueTypes: string[] }; ownPage?: string | null } = {},
 ) {
   const jiraHttp = fakeHttp([
     [/GET \/rest\/api\/3\/project\/PAY$/, over.project ?? { status: 200, body: PROJECT }],
@@ -31,11 +31,61 @@ function setup(
   const reviews = memoryReviewRepo();
   const issues = memoryIssueRepo();
   const clock = fixedClock('2026-11-15T12:00:00Z');
-  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}), ...(over.incidentRule ? { incidentRule: async () => over.incidentRule! } : {}) });
+  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}), ...(over.incidentRule ? { incidentRule: async () => over.incidentRule! } : {}), ...(over.ownPage !== undefined ? { ownPage: async () => over.ownPage! } : {}) });
   return { g, reviews, issues, jiraCalls: jiraHttp.calls, confCalls: confHttp.calls };
 }
 
 describe('restGatherer', () => {
+  describe("Threatline's own threat-model page is never context (no feedback loop)", () => {
+    const ownPage = (version: number, title = 'Threat model: PAY-7 Refund webhook') => ({
+      status: 200,
+      body: JSON.stringify({
+        id: '98305', title, spaceId: '4456', version: { number: version },
+        body: { storage: { value: `<h2>Threats</h2><p>r${version}</p><h2>Revision history</h2><h2>Owner notes</h2>`, representation: 'storage' } },
+        _links: { webui: '/spaces/PAY/pages/98305/Threat+model', base: 'https://one-atlas-mefc.atlassian.net/wiki' },
+      }),
+    });
+
+    it('the published page (by its stored id) is not read, hashed, linked for page events or reported as partial', async () => {
+      const a = setup({ ownPage: '98305' });
+      const r = await a.g.gather('10042', ACTOR);
+      if (!r.ok) throw new Error('gather');
+      expect(r.value.facts.some((f) => f.sourceType === 'confluence_page')).toBe(false);
+      expect(r.value.partialReasons).toEqual([]);
+      expect(await a.issues.issuesForPage('98305')).toEqual({ ok: true, value: [] });
+      expect(a.confCalls.some((c) => /pages\/98305/.test(c.path))).toBe(false);
+    });
+
+    it('re-publishing (a new page version) leaves the context hash as it was', async () => {
+      const v1 = await setup({ page: ownPage(1), ownPage: '98305' }).g.gather('10042', ACTOR);
+      const v2 = await setup({ page: ownPage(2), ownPage: '98305' }).g.gather('10042', ACTOR);
+      if (!v1.ok || !v2.ok) throw new Error('gather');
+      expect(v1.value.facts.some((f) => f.sourceType === 'confluence_page')).toBe(false);
+      expect(v2.value.contextHash).toBe(v1.value.contextHash);
+    });
+
+    it('a page merely titled and laid out like Threatline\'s is still read: nothing a user writes can hide a page from review', async () => {
+      const r = await setup({ page: ownPage(1) }).g.gather('10042', ACTOR);
+      expect(r.ok && r.value.facts.filter((f) => f.sourceType === 'confluence_page').length).toBeGreaterThan(0);
+    });
+
+    it("a design page that merely mentions a threat model is still read", async () => {
+      const r = await setup({ page: ownPage(1, 'Threat model notes for refunds') }).g.gather('10042', ACTOR);
+      expect(r.ok && r.value.facts.filter((f) => f.sourceType === 'confluence_page')).toHaveLength(1);
+    });
+  });
+
+  it('a long linked design page arrives as several facts, so its later sections reach the review', async () => {
+    const long = `<p>${'Background on the refund roadmap and its owners. '.repeat(60)}</p><p>Refunds are signed with a shared HMAC secret stored in the config file.</p>`;
+    const page = { status: 200, body: JSON.stringify({ id: '98305', title: 'Refund design', spaceId: '4456', version: { number: 3 }, body: { storage: { value: long, representation: 'storage' } }, _links: { webui: '/spaces/PAY/pages/98305/Refund+design', base: 'https://one-atlas-mefc.atlassian.net/wiki' } }) };
+    const r = await setup({ page }).g.gather('10042', ACTOR);
+    if (!r.ok) throw new Error('gather');
+    const parts = r.value.facts.filter((f) => f.sourceType === 'confluence_page');
+    expect(parts.length).toBeGreaterThan(1);
+    expect(parts.some((f) => f.excerpt.includes('shared HMAC secret'))).toBe(true);
+    expect(new Set(parts.map((f) => f.id)).size).toBe(parts.length);
+  });
+
   it('Jira sources link to the site with absolute URLs (relative ones break inside the panel iframe), without changing the context hash', async () => {
     const plain = await setup().g.gather('10042', ACTOR);
     const sited = await setup({ siteUrl: async () => 'https://one-atlas-mefc.atlassian.net' }).g.gather('10042', ACTOR);
