@@ -83,6 +83,15 @@ export async function requestAcceptance(
   // Requests made through Rovo or MCP never take effect on the requester's own authority: an agent can ask, a second person grants.
   if (opts.viaAgent && valid.value.needsApprover === 'none') valid.value.needsApprover = 'tech_lead';
 
+  // Concurrency: the check above reads the ledger, so two requests at once would both pass it. One atomic slot per
+  // requirement and ledger generation (how many requests it has had) lets only one of them be written; once that one is
+  // in the ledger, the next request sees it (or, after it ends, a new generation with a fresh slot). The hour in the
+  // window bounds how long a slot whose ledger write then failed can hold the requirement.
+  const generation = rows.value.filter((r) => r.eventType === 'acceptance.requested' && r.payload.requirementId === req.value.id).length;
+  const slot = await deps.usage.takeSlot(`acc:${req.value.id}`.slice(0, 191), `${Math.min(generation, 999_999)}@${now.toISOString().slice(0, 13)}`, 1);
+  if (!slot.ok) return err(appError('upstream', `acceptance slot: ${slot.error.message}`));
+  if (slot.value === null) return err(appError('conflict', 'Another risk acceptance for this requirement is being recorded. Reload the panel to see it.'));
+
   const acceptanceId = `acc_${globalThis.crypto.randomUUID()}`;
   const row = await appendLedger(
     deps.ledger,

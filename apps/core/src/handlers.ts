@@ -1,4 +1,4 @@
-import { InvocationError, InvocationErrorCode } from '@forge/events';
+import type { InvocationError } from '@forge/events';
 import { log } from './adapters/log.js';
 import { getReviewContext } from './actions/get-review-context.js';
 import { submitThreatModel } from './actions/submit-threat-model.js';
@@ -15,6 +15,7 @@ import { startReview } from './actions/start-review.js';
 import { getPostureSummary } from './actions/posture-summary.js';
 import { composeCore, type ForgeContext } from './composition.js';
 import { reviewConsumer } from './consumers/review-consumer.js';
+import { retryDecision } from './consumers/retry.js';
 import { daily } from './jobs/daily.js';
 import { hourly } from './jobs/hourly.js';
 import { sweep } from './jobs/sweeper.js';
@@ -39,11 +40,9 @@ export async function lifecycleHandler(_event: unknown, ctx: ForgeContext): Prom
 }
 
 export async function jobConsumerHandler(event: { body?: unknown; retryContext?: { retryCount?: number } }, ctx: ForgeContext): Promise<InvocationError | void> {
-  const r = await reviewConsumer(event, composeCore(ctx));
-  // Transient platform failures (Jira/KVS/SQL briefly unavailable, e.g. just after install) are retried a few times.
-  if (!r.ok && (r.error.code === 'upstream' || r.error.code === 'timeout') && (event.retryContext?.retryCount ?? 0) < 3)
-    return new InvocationError({ retryAfter: 60, retryReason: InvocationErrorCode.FUNCTION_RETRY_REQUEST });
+  return retryDecision(await reviewConsumer(event, composeCore(ctx)), event.retryContext?.retryCount ?? 0);
 }
+
 
 /** jira:workflowValidator `threatline-gate`: reads the verdict from app storage (never the user-editable property). */
 export const validateTransitionHandler = async (args: { issue?: { key?: string; id?: string } }, ctx: ForgeContext) => validateTransition(composeCore(ctx), args);

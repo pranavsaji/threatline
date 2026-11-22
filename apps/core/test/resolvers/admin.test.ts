@@ -342,6 +342,29 @@ describe('admin.installGate (one click instead of the workflow editor)', () => {
     expect((await ledger(r)).filter((e) => e.eventType === 'policy.changed').at(-1)?.payload).toMatchObject({ fields: ['doneGate'] });
   });
 
+  it('a project Jira refuses does not stop the others: what was added is ledgered and the failure named; every guarded transition is gated', async () => {
+    const r = await reviewed();
+    const p = await policyOf(r);
+    await r.t.deps.config.setSite({ ...p, enabledProjects: ['PAY', 'OPS', 'WEB'], guardedTransitions: ['Done', 'Released'] });
+    const calls: string[] = [];
+    r.t.deps.jira.installGate = async (_a, key, status) => {
+      calls.push(`${key}:${status}`);
+      return key === 'OPS' ? { ok: false, error: { code: 'forbidden', message: '403' } } : ok({ added: [`${key} workflow: ${status}`], already: [], readOnly: [] });
+    };
+    const res = await adminInstallGate(r.t.deps, A, EXT);
+    expect(calls).toEqual(['PAY:Done', 'PAY:Released', 'OPS:Done', 'WEB:Done', 'WEB:Released']);
+    expect(res).toMatchObject({
+      projects: [
+        { projectKey: 'PAY', added: ['PAY workflow: Done', 'PAY workflow: Released'] },
+        { projectKey: 'OPS', added: [] },
+        { projectKey: 'WEB', added: ['WEB workflow: Done', 'WEB workflow: Released'] },
+      ],
+      failed: [{ projectKey: 'OPS', message: expect.stringContaining("Jira did not let you edit OPS's workflow") }],
+    });
+    const row = (await ledger(r)).filter((e) => e.eventType === 'policy.changed').at(-1);
+    expect(row?.payload).toMatchObject({ fields: ['doneGate'], transitions: ['PAY workflow: Done', 'PAY workflow: Released', 'WEB workflow: Done', 'WEB workflow: Released'], projects: ['PAY', 'WEB'], failedProjects: ['OPS'] });
+  });
+
   it('says so plainly when Jira refuses, or the environment is unknown, and ledgers nothing', async () => {
     const r = await reviewed();
     r.t.deps.jira.installGate = async () => ({ ok: false, error: { code: 'forbidden', message: '403' } });

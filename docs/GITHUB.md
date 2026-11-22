@@ -49,11 +49,20 @@ setting or policy file can remove these paths (`GATE_CONFIG_PATHS` in `packages/
 
 | Input | Default | Meaning |
 | --- | --- | --- |
-| `public-keys` | (required) | Threatline public keys, one per line: `<key>` or `<key> until=<ISO date>`. During a key rotation, list both (see below). |
+| `public-keys` | none; required unless `merge-gate: false` | Threatline public keys, one per line: `<key>` or `<key> until=<ISO date>`. During a key rotation, list both (see below). With the merge gate on and no key, the step fails with `outcome=config_error`. |
 | `sensitive-paths` | none | Extra path globs, one per line, on top of Threatline's defaults. |
 | `diff-score-threshold` | `40` | A change scoring at or above this needs an attestation even outside sensitive paths. |
 | `mode` | `block` | `warn` reports failures but passes, until `warn-until`. |
 | `warn-until` | none | Required in warn mode: an ISO date at most 14 days away. After it, the check blocks again. |
+| `github-token` | `${{ github.token }}` | Token the action reads the pull request, its files and the base branch's policy file with. The workflow's own token with `contents: read` and `pull-requests: read` is enough. |
+| `merge-gate` | `true` | `false` skips the gate and only sends the CI verification report (`threatline-url`, `threatline-token`, `junit`; see [CI_VERIFICATION.md](CI_VERIFICATION.md)). |
+
+**Warn mode's 14-day limit is checked against each run, not against when warn mode was switched on.** The action has no
+memory between runs: it only sees today's `warn-until`, so someone who can edit the workflow on the base branch can keep
+moving the date forward and stay in warn mode indefinitely. The limit stops a forgotten warn mode, not a determined
+admin. Branch protection on the workflow file (and an organisation ruleset, below) is what controls who can do that.
+Threatline for Bitbucket sets the date itself when an admin saves warn mode and keeps it while warn mode runs, so there
+saving the settings again cannot extend it (warn mode can be switched on again only after it has ended).
 
 The base branch's `.threatline/policy.yml` can add sensitive paths and lower the threshold. It can never weaken them, and
 an unreadable policy file makes every changed file count as sensitive.
@@ -91,8 +100,12 @@ Every work item the title or branch names needs its own valid attestation for th
 carry another). A key is a project key, `-` and a number, not touching another letter or digit: `PAY-7`, `MY_PROJ-12`,
 and also `PAY-7_fix` or `fix_PAY-7` (an underscore separates). A lowercase key such as `pay-7-fix` counts only when the
 title or branch also names an uppercase key of the same project (`PAY-6 …` with branch `pay-7-fix` names PAY-6 and
-PAY-7); on its own, lowercase text like `utf-8` or `sha-256` is never treated as a work item. The attestation must be for
-exactly the head commit (all 40 characters).
+PAY-7); on its own, lowercase text like `utf-8` or `sha-256` is never treated as a work item. An algorithm or encoding
+name and a full CVE id are never work items either: `PAY-7 switch to SHA-256` and `Fix CVE-2025-1234 in PAY-7` name
+only PAY-7 (`SHA-256`, `AES-128`, `UTF-8`, `RSA-2048`, `X-509` and the like, `STANDARD_ID` in
+`packages/shared/src/ci.ts`). Nothing else is excluded, because RFC, ISO and CWE are common real project keys:
+`RFC-1234` always counts, and so do `SHA-12` and `CVE-2025` on its own. The attestation must be for exactly the head commit (all
+40 characters).
 
 The check fails, saying exactly why, when the attestation is missing, for another commit or repository, for a
 different work item than the one the pull request names, expired, or not signed by a listed key. It also fails closed

@@ -1,4 +1,4 @@
-import { DEFAULT_SITE_POLICY, isSensitive, scoreDiff, type DiffSignal } from '@threatline/core';
+import { DEFAULT_SITE_POLICY, GATE_CONFIG_PATHS, isSensitive, scoreDiff, type DiffSignal } from '@threatline/core';
 import type { Requirement, Severity } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
@@ -25,9 +25,11 @@ export interface ChangeRiskResult {
 const OPEN = new Set<Requirement['status']>(['Open', 'InProgress']);
 
 /**
- * GET (Agent, MCP): a preview of the Bitbucket merge check for a set of changed paths. Scores the paths the way the
- * merge check does (site sensitive globs; a repository's own `.threatline/policy.yml` may add more), lists the
- * requirements whose file hints match, and says whether the work item's verdict would let it through.
+ * GET (Agent, MCP): a preview of the merge check for a set of changed paths. Scores the paths the way the merge check
+ * does (the gate's own configuration, site sensitive globs), lists the requirements whose file hints match, and says
+ * whether the work item's verdict would let it through. The merge check also reads the repository's Threatline settings
+ * and the destination branch's `.threatline/policy.yml`, which this cannot see and which can only add paths, so a pass
+ * here is a prediction.
  */
 export async function checkChangeRisk(payload: ActionPayload & Record<string, unknown>, deps: CoreDeps): Promise<ChangeRiskResult | ActionError> {
   const input = parseInput(SCHEMAS.checkChangeRisk, payload);
@@ -39,7 +41,8 @@ export async function checkChangeRisk(payload: ActionPayload & Record<string, un
   if (!policy.ok) return { error: 'unavailable' };
 
   const paths = input.value.changedPaths;
-  const sensitivePaths = [...new Set([...DEFAULT_SITE_POLICY.sensitivePaths, ...policy.value.sensitivePaths])];
+  // The same base set as the gate (packages/core merge-gate effectivePolicy): its own configuration is always sensitive.
+  const sensitivePaths = [...new Set([...GATE_CONFIG_PATHS, ...DEFAULT_SITE_POLICY.sensitivePaths, ...policy.value.sensitivePaths])];
   const diff = scoreDiff(
     paths.map((path) => ({ path, status: 'modified' as const, linesAdded: 0 })),
     { sensitivePaths },
@@ -56,7 +59,10 @@ export async function checkChangeRisk(payload: ActionPayload & Record<string, un
   let wouldPass: boolean;
   if (!needsAttestation) {
     wouldPass = true;
-    reasons.push('None of these paths is security-sensitive, so the merge check lets the change through without an attestation.');
+    reasons.push(
+      'None of these paths is security-sensitive, so the merge check lets the change through without an attestation.',
+      "This is a prediction: the repository's Threatline settings and the destination branch's .threatline/policy.yml can add sensitive paths (or lower the diff-score threshold), and the merge check uses them.",
+    );
   } else {
     reasons.push(
       diff.sensitiveFiles.length > 0

@@ -7,6 +7,7 @@ import { DEMO_COMPONENT, DEMO_LABEL, DESIGN_PAGE_TITLE, designPageStorage, HIDDE
 import { seedDemo } from '../src/seeder/seed.js';
 import { adminSeed, adminSetupStatus } from '../src/resolvers/admin.js';
 import { coreDeps, jiraIssue } from './support/core-deps.js';
+import { POLICY_VERSION_KEY } from '../src/services/verdict-service.js';
 
 type Created = { projectId: string; issueTypeId: string; summary: string; description: AdfDoc; labels: string[]; components?: string[]; parentId?: string };
 
@@ -51,6 +52,26 @@ function site() {
 }
 
 describe('demo seeder (Task 24)', () => {
+  it('turning the demo project on is a policy change like the admin page makes: ledgered, and every stored verdict rechecked', async () => {
+    const s = site();
+    const before = await s.t.deps.config.site();
+    if (!before.ok) throw new Error('policy');
+    await s.t.deps.config.setSite({ ...before.value, enabledProjects: [] });
+    await s.t.kv.set(POLICY_VERSION_KEY, 4);
+    const r = await seedDemo(s.t.deps, { projectKey: 'PAY' }, 'acc-admin');
+    if (!r.ok) throw new Error(r.error.message);
+    const after = await s.t.deps.config.site();
+    expect(after.ok && after.value.enabledProjects).toEqual(['PAY']);
+    expect(s.t.kv.data.get(POLICY_VERSION_KEY)).toBe(5);
+    const rows = await s.t.deps.ledger.latestOfTypes(['policy.changed'], 10);
+    expect(rows.ok && rows.value).toEqual([expect.objectContaining({ actor: 'acc-admin', payload: { fields: ['enabledProjects'], source: 'demo', projectKey: 'PAY' } })]);
+    // Loading it again changes no policy, so nothing more is ledgered or bumped.
+    await seedDemo(s.t.deps, { projectKey: 'PAY' }, 'acc-admin');
+    expect(s.t.kv.data.get(POLICY_VERSION_KEY)).toBe(5);
+    const again = await s.t.deps.ledger.latestOfTypes(['policy.changed'], 10);
+    expect(again.ok && again.value).toHaveLength(1);
+  });
+
   it('works on a site without Confluence: the design, hidden instruction included, goes into the descriptions (audit finding)', async () => {
     const s = site();
     s.t.deps.confluence = {} as ConfluenceClient; // any Confluence call would throw

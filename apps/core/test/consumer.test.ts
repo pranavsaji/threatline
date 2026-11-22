@@ -167,6 +167,27 @@ describe('gather job', () => {
     expect(usage.ok && usage.value.reviews).toBe(0);
   });
 
+  it('a never-reviewed work item Threatline does not review gets no review, whatever queued the gather (no model budget spent)', async () => {
+    for (const issue of [jiraIssue({ id: '10042', key: 'OPS-7', project: { id: '1', key: 'OPS' } }), jiraIssue({ id: '10042', key: 'PAY-7', issueType: { id: '1', name: 'Bug', subtask: false } })]) {
+      const t = coreDeps({ issues: [issue] });
+      for (const reason of ['rerun', 'page_changed', 'created'] as const) expect((await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason })).ok).toBe(true);
+      expect(await t.deps.reviews.latest('10042')).toEqual({ ok: true, value: null });
+      expect(t.gatherer.calls).toEqual([]);
+      expect(verdictOf(t, '10042')).toMatchObject({ state: 'pass', notApplicable: true });
+      expect(await t.deps.usage.get('2026-11')).toMatchObject({ ok: true, value: { reviews: 0 } });
+    }
+  });
+
+  it('a work item reviewed before it was moved out of scope can still be re-reviewed (its review still decides the gate)', async () => {
+    const t = coreDeps();
+    await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'created' });
+    t.jira.issue = async () => ({ ok: true, value: jiraIssue({ id: '10042', key: 'OPS-7', project: { id: '1', key: 'OPS' } }) });
+    t.gatherer.texts['10042'] = 'Now also stores card numbers';
+    await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'rerun' });
+    const latest = await t.deps.reviews.latest('10042');
+    expect(latest.ok && latest.value?.revision).toBe(2);
+  });
+
   it('a gather failure for a never-reviewed item still writes a blocking verdict', async () => {
     const t = coreDeps();
     t.deps.gatherer = { gather: async () => ({ ok: false, error: { code: 'upstream', message: 'jira down' } }) };

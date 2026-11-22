@@ -204,6 +204,18 @@ describe('check-change-risk', () => {
     expect(r).toMatchObject({ wouldPass: true, needsAttestation: false, touchedRequirements: [] });
   });
 
+  it('the gate\'s own configuration is sensitive here too, and a pass says it is a prediction', async () => {
+    const { t } = await withSessionRequirement();
+    for (const path of ['bitbucket-pipelines.yml', '.threatline/policy.yml', '.redline/policy.yml', '.github/actions/setup/action.yml']) {
+      const r = await checkChangeRisk({ issueKey: 'PAY-7', changedPaths: path, ...ctx(ME) }, t.deps);
+      if ('error' in r) throw new Error(r.error);
+      expect(r, path).toMatchObject({ needsAttestation: true, sensitiveFiles: [path] });
+    }
+    const r = await checkChangeRisk({ issueKey: 'PAY-7', changedPaths: 'README.md', ...ctx(ME) }, t.deps);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.reasons.join(' ')).toMatch(/prediction.*Threatline settings.*policy\.yml/);
+  });
+
   it('a sensitive change on a work item whose verdict passes would pass', async () => {
     const { t } = await reviewed({ allVerified: true });
     const r = await checkChangeRisk({ issueKey: 'PAY-7', changedPaths: 'src/payments/refund.ts', ...ctx(ME) }, t.deps);

@@ -4,7 +4,7 @@ import { encodeAttestation, generateKeyPair, type KeyPair } from '@threatline/cr
 import type { AttestationPayload } from '@threatline/shared';
 import type { DiffFile } from '@threatline/core';
 import { evaluateMergeCheck, runMergeCheck, type RepoSettings } from '../src/merge-check.js';
-import type { BitbucketClient } from '../src/bitbucket-client.js';
+import { bitbucketClient, type BitbucketClient } from '../src/bitbucket-client.js';
 import { kvsSettingsStore } from '../src/settings-store.js';
 
 const fixture = (p: string) => readFileSync(new URL(`./fixtures/${p}`, import.meta.url), 'utf8');
@@ -182,6 +182,28 @@ describe('evaluateMergeCheck (EN-5, EN-6, AT-2)', () => {
     expect(await named('Harden refunds', 'pay-6-fix')).toMatchObject({ success: false, outcome: 'fail_other_issue', message: expect.stringMatching(/names no Jira work item/) });
   });
 
+  it('a standard named next to the work item (SHA-256, CVE-2025-1234) is not a second work item needing an attestation', async () => {
+    const titled = (title: string, branch = 'feature/x') => evaluateMergeCheck({ pr: { ...pr(token()), title, branch }, files: AUTH, repoPolicyYaml: null, settings: settings(), nowSec: NOW });
+    expect(await titled('PAY-7 switch to SHA-256')).toMatchObject({ success: true, outcome: 'pass_attested' });
+    expect(await titled('Fix CVE-2025-1234 in PAY-7')).toMatchObject({ success: true, outcome: 'pass_attested' });
+    expect(await titled('Harden webhooks', 'fix/PAY-7-SHA-256')).toMatchObject({ success: true, outcome: 'pass_attested' });
+    // A standard alone names no work item.
+    expect(await titled('Switch to SHA-256', 'fix/CVE-2025-1234')).toMatchObject({ success: false, outcome: 'fail_other_issue', message: expect.stringMatching(/names no Jira work item/) });
+  });
+
+  it('a garbage token claiming a later iat does not hide a valid attestation behind it', async () => {
+    const valid = token();
+    const stranger = generateKeyPair();
+    const forged = token({ iat: NOW + 10, nonce: 'forged1' }, stranger); // untrusted key, newer claimed time
+    const body = valid.split('.')[2]!;
+    const tampered = valid.replace(body, Buffer.from(JSON.stringify({ ...JSON.parse(Buffer.from(body, 'base64url').toString()), iat: NOW })).toString('base64url'));
+    for (const description of [`${forged}\n${valid}`, `${valid}\n${forged}`, `${tampered}\n${valid}`])
+      expect(await run(description)).toMatchObject({ success: true, outcome: 'pass_attested' });
+    // None verifies: the newest one's failure is reported, as before.
+    expect(await run(`${forged}\n${token({ iat: NOW - 90_000, exp: NOW - 3600 })}`)).toMatchObject({ success: false, outcome: 'fail_signature' });
+    expect(await run(`${token({ iat: NOW - 90_000, exp: NOW - 3600 })}\n${token({ iat: NOW - 200_000, exp: NOW - 7200, nonce: 'n0nce2' }, stranger)}`)).toMatchObject({ success: false, outcome: 'fail_expired' });
+  });
+
   it('M9: an attestation for a review made with partial context says so in the check message', async () => {
     expect(await run(token({ partial: true }))).toMatchObject({ success: true, outcome: 'pass_attested', message: expect.stringMatching(/reviewed with partial context/) });
   });
@@ -335,6 +357,38 @@ describe('runMergeCheck: reads the PR, its diffstat, the destination policy and 
     const huge = `diff --git a/README.md b/README.md\n+++ b/README.md\n${'+x\n'.repeat(1_100_000)}`;
     const { c: c3 } = client({ description: '', diff: fixture('diffstat/docs-only.json'), patch: huge });
     expect(await runMergeCheck(event, { client: c3, settings: async () => settings(), nowSec: () => NOW })).toMatchObject({ success: false });
+  });
+
+  it('a Bitbucket read that throws (network error, a body that is not JSON) fails closed with the re-run message', async () => {
+    const t = token({ commitSha: 'b'.repeat(40) });
+    const boom = async () => {
+      throw new TypeError('fetch failed');
+    };
+    const cases: Array<[keyof BitbucketClient, RegExp]> = [
+      ['pullRequest', /\(pull request\)/],
+      ['diffstat', /\(changed files\)/],
+      ['fileAt', /\(policy file\)/],
+      ['headCommit', /\(head commit\)/],
+    ];
+    for (const [method, why] of cases) {
+      const { c } = client({ description: t });
+      const broken = { ...c, [method]: boom } as BitbucketClient;
+      expect(await runMergeCheck(event, { client: broken, settings: async () => settings(), nowSec: () => NOW }), method).toEqual({
+        success: false,
+        message: expect.stringMatching(new RegExp(`could not read this pull request from Bitbucket ${why.source}, so it cannot be checked\\. Re-run the check in a minute\\.`)),
+      });
+    }
+    // Diff text that throws is unread text: sensitive, never a pass.
+    const { c } = client({ description: '', diff: fixture('diffstat/docs-only.json') });
+    expect(await runMergeCheck(event, { client: { ...c, diff: boom }, settings: async () => settings(), nowSec: () => NOW })).toMatchObject({ success: false, message: expect.stringMatching(/diff text Threatline could not read/) });
+    // Through the real client: requestBitbucket rejecting, or a 200 whose body is not JSON.
+    const notJson = bitbucketClient(async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => JSON.parse('<html>'), text: async () => '<html>' }));
+    const offline = bitbucketClient(async () => Promise.reject(new TypeError('fetch failed')));
+    for (const real of [notJson, offline])
+      expect(await runMergeCheck(event, { client: real, settings: async () => settings(), nowSec: () => NOW })).toMatchObject({ success: false, message: expect.stringMatching(/Re-run the check in a minute/) });
+    // Warn mode still only warns.
+    const warn = settings({ mode: 'warn', warnUntil: new Date((NOW + 60) * 1000).toISOString() });
+    expect(await runMergeCheck(event, { client: offline, settings: async () => warn, nowSec: () => NOW })).toMatchObject({ success: true, message: expect.stringMatching(/^Warning: /) });
   });
 
   it('I2 follow-up: an unreadable pull request blocks once warn mode has ended', async () => {

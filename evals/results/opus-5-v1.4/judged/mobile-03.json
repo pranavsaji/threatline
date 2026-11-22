@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: same session-sharing attack, same wrong-attribution harm, just different STRIDE category; unauthorized access not in design\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Server accepting tampered offline data follows from sync design with no stated validation; specific attack and harm\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Stale data conflicts follow from offline devices syncing without stated conflict resolution; specific harm to clinical records\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Session inheritance enabling impersonation is distinct from c1's attribution failure. Different attack mechanism.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2. Same attack (device access) and harm (reading cached data). Over-retention vs no-encryption is same vulnerability.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Server trusting client sync is a distinct tampering vector. Sync protocol is implied by offline-work design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Accidental sync conflicts causing data loss distinct from x3's malicious tampering. Multiple devices are design-stated.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,11 +15,16 @@
     },
     {
       "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Cache keeps full medical history for patients the current nurse is not treating"
+    },
+    {
+      "id": "x3",
       "stride": "Tampering",
       "title": "Server trusts whatever the offline device sends on sync, including patient ids and timestamps"
     },
     {
-      "id": "x3",
+      "id": "x4",
       "stride": "Tampering",
       "title": "Sync conflict handling can silently overwrite or lose clinical notes"
     }

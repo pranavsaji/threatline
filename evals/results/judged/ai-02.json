@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Direct prompt injection is a specific LLM threat, not generic input validation\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic 'log everything' hygiene, doesn't describe independent attack\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Indirect prompt injection causes different harm: leaking other retrieved documents\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct attack vector: prompt injection on LLM layer versus c1's RAG authorization bypass\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene explicitly listed in instructions; design doesn't make audit trails material\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicates c1's unauthorized retrieval attack; mentions components like provider caching not in design\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -21,7 +21,7 @@
     {
       "id": "x3",
       "stride": "InformationDisclosure",
-      "title": "Indirect prompt injection through poisoned Confluence content"
+      "title": "Sensitive data leaked through LLM context window"
     }
   ]
 }

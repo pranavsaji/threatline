@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Legitimate customers misusing exposed phone numbers to harass drivers, distinct from unauthorized access in c1.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack via delivery ID enumeration, same harm tracking drivers and addresses.\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Assumes data retention not in design; privacy harm from unauthorized tracking already covered by c1.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific DoS attack on GPS updates and map endpoint described in design, not duplicate.\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Different from c1: authorized customers misusing exposed phone numbers\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same unauthorized access via delivery ID\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Tracking aspects duplicate c1; assumes retention not in design\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: compromised device sending false GPS data\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific to feature: high-frequency updates and queries enable DoS\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -25,6 +25,11 @@
     },
     {
       "id": "x4",
+      "stride": "Tampering",
+      "title": "Rooted or compromised driver phones can send manipulated GPS data"
+    },
+    {
+      "id": "x5",
       "stride": "DenialOfService",
       "title": "Unlimited location updates and map requests risk resource exhaustion"
     }

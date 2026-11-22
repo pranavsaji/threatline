@@ -1,5 +1,5 @@
 import { DEFAULT_REPO_SETTINGS, evaluateMergeCheck, withAddedText, type DiffFile, type RepoSettings } from '@threatline/core';
-import { log } from '@threatline/shared';
+import { appError, err, log, type Result } from '@threatline/shared';
 import type { BitbucketClient, DiffstatEntry } from './bitbucket-client.js';
 
 const STATUS: Record<string, DiffFile['status']> = { added: 'added', removed: 'removed', renamed: 'renamed', modified: 'modified' };
@@ -14,6 +14,15 @@ export function toDiffFiles(entries: DiffstatEntry[]): DiffFile[] {
     return [{ path, ...(oldPath ? { oldPath } : {}), status: STATUS[e.status ?? ''] ?? 'modified', linesAdded: e.lines_added ?? 0 }];
   });
 }
+
+/**
+ * A Bitbucket read that throws (requestBitbucket's network error, a body that is not JSON) is a failed read like any
+ * other, so the check fails closed with its "re-run in a minute" message instead of an unhandled error.
+ */
+const settle = <T>(read: () => Promise<Result<T>>): Promise<Result<T>> =>
+  Promise.resolve()
+    .then(read)
+    .catch((e: unknown) => err(appError('upstream', `request failed (${e instanceof Error ? e.name : 'error'})`)));
 
 export interface PRCheckEvent {
   workspace: { uuid: string };
@@ -42,10 +51,13 @@ export async function runMergeCheck(
   };
   const ws = event.workspace.uuid;
   const repo = event.repository.uuid;
+  const { client } = deps;
+  const readDiff = client.diff;
   const [pr, diff, patch] = await Promise.all([
-    deps.client.pullRequest(ws, repo, event.pullrequest.id),
-    deps.client.diffstat(ws, repo, event.pullrequest.id),
-    deps.client.diff ? deps.client.diff(ws, repo, event.pullrequest.id) : Promise.resolve(null),
+    settle(() => client.pullRequest(ws, repo, event.pullrequest.id)),
+    settle(() => client.diffstat(ws, repo, event.pullrequest.id)),
+    // A diff that throws is unread text: withAddedText treats it as sensitive.
+    readDiff ? settle(() => readDiff.call(client, ws, repo, event.pullrequest.id)) : Promise.resolve(null),
   ]);
   if (!pr.ok) return unreadable('pull request');
   if (!diff.ok) return unreadable('changed files');
@@ -54,8 +66,8 @@ export async function runMergeCheck(
   const fullName = pr.value.destination?.repository?.full_name ?? '';
   if (!shortHead || !dest || !fullName) return unreadable('commits');
   // `.redline/policy.yml`: the name before the rename to Threatline, still read when the new file is absent.
-  const current = await deps.client.fileAt(ws, repo, dest, '.threatline/policy.yml');
-  const policy = current.ok && current.value === null ? await deps.client.fileAt(ws, repo, dest, '.redline/policy.yml') : current;
+  const current = await settle(() => client.fileAt(ws, repo, dest, '.threatline/policy.yml'));
+  const policy = current.ok && current.value === null ? await settle(() => client.fileAt(ws, repo, dest, '.redline/policy.yml')) : current;
   if (!policy.ok) return unreadable('policy file');
   const input = (headSha: string) => ({
     pr: { description: pr.value.description ?? '', headSha, destSha: dest, repoFullName: fullName, title: pr.value.title ?? '', branch: pr.value.source?.branch?.name ?? '' },
@@ -70,7 +82,7 @@ export async function runMergeCheck(
   if (r.outcome !== 'pass_not_sensitive' && !/^[0-9a-f]{40}$/i.test(shortHead)) {
     // The pull request API reports 12-character hashes; the gate matches the attestation's full hash exactly. The full
     // hash comes from the pull request's own commit list (forks included); anything that does not match fails closed.
-    const resolved = await deps.client.headCommit(ws, repo, event.pullrequest.id, shortHead);
+    const resolved = await settle(() => client.headCommit(ws, repo, event.pullrequest.id, shortHead));
     if (!resolved.ok || !resolved.value.startsWith(shortHead.toLowerCase())) return unreadable('head commit');
     r = await evaluateMergeCheck(input(resolved.value));
   }

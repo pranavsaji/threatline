@@ -46,7 +46,7 @@ describe('offline eval gate', () => {
 
   // Sonnet 4.5 recordings (not the production model). Since clustering stopped splitting one threat across STRIDE
   // categories and stopped chaining different threats of one run together (2026-11-22), more of Sonnet's threats
-  // survive: recall 85.2% -> 88.9%, high-severity 91.9% -> 94.6%, judged precision of its proposals 76.3% -> 64.4%.
+  // survive: recall 85.2% -> 88.9%, high-severity 91.9% -> 94.6%, judged precision of its proposals 76.3% -> 64.4% (65.5% once each threat joins its closest group, the same day).
   // The production model's precision is gated below (Opus 5 does not restate threats the way Sonnet 4.5 does).
   it('replayed judge verdicts (Sonnet 4.5 set): every case judged, model-proposed threats at or above 60% judged precision', { timeout: 120_000 }, async () => {
     const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Baseline;
@@ -115,7 +115,7 @@ describe('offline eval gate', () => {
 
 /**
  * Floors for the production set, a few points under the 2026-11-22 replay (keyword recall 87.4%, keyword high-severity
- * recall 96.7%, judged precision of model-proposed threats 80.9%; graded recall 94.3%, high-severity 60 of 60).
+ * recall 96.7%, judged precision of model-proposed threats 81.1%; graded recall 93.1%, high-severity 59 of 60).
  */
 const PRODUCTION_FLOOR = { recall: 0.85, highRecall: 0.95, judgedPrecision: 0.75 };
 

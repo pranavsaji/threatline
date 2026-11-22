@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Public API with no rate limiting enables unlimited key guessing attempts against valid credentials.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct from DoS threat: exploits no rate limiting for bulk data theft, not service exhaustion.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Discusses partner staff and investigation processes outside design scope.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes keys are guessable with low entropy, which is not specified in design\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; bulk export speed is execution detail, not separate harm from stolen key access\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Org-level never-expiring keys prevent attribution; material for PII breach investigation requirements\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -16,7 +16,7 @@
     {
       "id": "x2",
       "stride": "InformationDisclosure",
-      "title": "No rate limiting lets one key be used to scrape every customer email address"
+      "title": "Bulk harvesting of customer email addresses through the unthrottled API"
     },
     {
       "id": "x3",

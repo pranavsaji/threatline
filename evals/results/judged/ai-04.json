@@ -3,15 +3,15 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: same attack (crafted email) and harm (agent leaks confidential data in responses)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: explicitly describes the same prompt injection attack causing forwards and harmful replies\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Spoofing assumes sender-based trust not in design; harmful outcomes from malicious content already covered by c2\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Describes missing control (audit trail), not specific attack; doesn't name attacker or attack action\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS attack via email flood consuming LLM tokens; delays legitimate sales inquiries; not covered\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":true,\"reason\":\"Different attack vector (spoofing sender) from c1/c2 (content injection); creates unique trust-based harms like accepting false claims.\"},\n  {\"id\":\"x2\",\"valid\":false,\"reason\":\"Exact duplicate of c2; both describe prompt injection causing forwarding or leaking data through drafted replies.\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate of c2; both cover agent leaking confidential information in replies, whether via subtle or obvious manipulation.\"},\n  {\"id\":\"x4\",\"valid\":true,\"reason\":\"Different harm from c2; c2 leaks company secrets, x4 injects attacker content to attack recipients.\"},\n  {\"id\":\"x5\",\"valid\":true,\"reason\":\"Valid repudiation threat from AI authorship ambiguity; material to design due to legal implications and manipulation risks.\"},\n  {\"id\":\"x6\",\"valid\":true,\"reason\":\"Valid DoS specific to LLM token consumption; material design risk from processing untrusted internet emails.\"}\n]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "InformationDisclosure",
-      "title": "Agent leaks confidential information in summaries or replies"
+      "stride": "Spoofing",
+      "title": "Attacker impersonates trusted sender to manipulate agent"
     },
     {
       "id": "x2",
@@ -20,16 +20,21 @@
     },
     {
       "id": "x3",
-      "stride": "Spoofing",
-      "title": "Attacker impersonates trusted sender to manipulate agent"
+      "stride": "InformationDisclosure",
+      "title": "Agent leaks confidential information in summaries or replies"
     },
     {
       "id": "x4",
+      "stride": "Tampering",
+      "title": "Attacker controls content of draft replies"
+    },
+    {
+      "id": "x5",
       "stride": "Repudiation",
       "title": "No audit trail for automated agent actions"
     },
     {
-      "id": "x5",
+      "id": "x6",
       "stride": "DenialOfService",
       "title": "Resource exhaustion via malicious email flood"
     }

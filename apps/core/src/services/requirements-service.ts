@@ -51,9 +51,25 @@ export function requirementDescription(req: Requirement, o: { issueKey: string; 
   return { type: 'doc', version: 1, content };
 }
 
-export type SkipReason = 'not_found' | 'not_required' | 'exists' | 'in_progress' | 'failed';
+export type SkipReason = 'not_found' | 'not_required' | 'exists' | 'in_progress' | 'failed' | 'no_child_type';
 
-/** RQ-2: one Jira sub-task per chosen threat, idempotent per threat (a requirement row remembers its sub-task key). */
+/** Jira Cloud allows no sub-tasks under an epic: its requirements become child work items of a standard type. */
+export const isEpic = (issue: JiraIssue): boolean => !issue.issueType.subtask && /^epic$/i.test(issue.issueType.name.trim());
+
+/** For an epic: the project's Task type, else its Story type (never a sub-task or another epic). */
+async function epicChildType(deps: CoreDeps, issue: JiraIssue): Promise<Result<string | null>> {
+  const p = await deps.jira.projectInfo(issue.project.key);
+  if (!p.ok) return p;
+  const standard = p.value.issueTypes.filter((t) => !t.subtask);
+  const named = (n: string) => standard.find((t) => t.name.trim().toLowerCase() === n);
+  return ok((named('task') ?? named('story'))?.id ?? null);
+}
+
+/**
+ * RQ-2: one Jira sub-task per chosen threat, idempotent per threat (a requirement row remembers its sub-task key). On
+ * an epic, each requirement is a child Task (else Story) of the epic instead, as Jira forbids sub-tasks there; when the
+ * project has neither type, the threats are skipped with `no_child_type`.
+ */
 export async function createRequirementSubtasks(
   deps: CoreDeps,
   v: Viewer,
@@ -72,7 +88,8 @@ export async function createRequirementSubtasks(
   if (!facts.ok) return facts;
   if (!reqs.ok) return reqs;
   const panelUrl = `${await deps.siteUrl()}/browse/${issue.key}`;
-  let typeId: string | undefined;
+  const epic = isEpic(issue);
+  let typeId: string | null | undefined;
 
   for (const threatId of ids) {
     const t = scoped.threats.find((x) => x.id === threatId);
@@ -104,22 +121,28 @@ export async function createRequirementSubtasks(
     }
     await deps.state.set(lockKey, now).catch(() => undefined);
 
-    if (!typeId) {
-      const type = await deps.jira.subtaskType(issue.project.id);
+    if (typeId === undefined) {
+      const type = epic ? await epicChildType(deps, issue) : await deps.jira.subtaskType(issue.project.id);
       if (!type.ok) {
         await deps.state.delete(lockKey).catch(() => undefined);
         return type;
       }
       typeId = type.value;
     }
+    if (typeId === null) {
+      await deps.state.delete(lockKey).catch(() => undefined);
+      skipped.push({ threatId, reason: 'no_child_type' });
+      continue;
+    }
     const safe = citesOnlyTheWorkItem(t, facts.value, issue.id);
     const summary = safe ? req.title : `Threatline ${req.severity} security requirement (${STRIDE_LABEL[t.stride]})`;
-    const sub = await deps.jira.createSubtask(issue.id, {
+    const fields = {
       summary: summary.slice(0, 255),
       description: requirementDescription(req, { issueKey: issue.key, revision: review.revision, panelUrl, safe }),
       labels: [REQUIREMENT_LABEL],
       issueTypeId: typeId,
-    });
+    };
+    const sub = epic ? await deps.jira.createIssue({ ...fields, projectId: issue.project.id, parentId: issue.id }) : await deps.jira.createSubtask(issue.id, fields);
     if (!sub.ok) {
       log('requirements.create.failed', { issueId: issue.id, code: sub.error.code });
       await deps.state.delete(lockKey).catch(() => undefined);

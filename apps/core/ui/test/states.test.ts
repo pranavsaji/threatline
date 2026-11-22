@@ -41,3 +41,18 @@ describe('viewOf', () => {
     expect(pollMs(viewOf(FIXTURES.ready!))).toBeNull();
   });
 });
+
+describe('polling while the Engine verifier runs', () => {
+  it('keeps polling a ready review until panel.get stops reporting verification as pending', () => {
+    const ready = FIXTURES.ready!;
+    const verifying = viewOf({ ...ready, verifying: true } as typeof ready);
+    expect(verifying).toMatchObject({ state: 'ready', verifying: true });
+    expect(pollMs(verifying)).toBe(3000);
+    expect(pollMs(viewOf({ ...ready, verifying: false } as typeof ready))).toBeNull();
+  });
+
+  it('a failed review never counts as verifying', () => {
+    const failed = FIXTURES.failed!;
+    expect(viewOf({ ...failed, verifying: true } as typeof failed).verifying).toBe(false);
+  });
+});

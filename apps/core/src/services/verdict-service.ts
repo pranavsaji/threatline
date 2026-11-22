@@ -40,6 +40,24 @@ export async function policyVersion(deps: Pick<CoreDeps, 'state'>): Promise<numb
   }
 }
 
+/**
+ * Bumps the policy version so every stored verdict is recomputed before it is next relied on. Every policy write (the
+ * admin page, the demo seeder) calls it after saving. False when KVS failed twice.
+ */
+export async function bumpPolicyVersion(deps: Pick<CoreDeps, 'state'>): Promise<boolean> {
+  for (let i = 0; i < 2; i++) {
+    try {
+      const v = await deps.state.get<unknown>(POLICY_VERSION_KEY);
+      await deps.state.set(POLICY_VERSION_KEY, (typeof v === 'number' ? v : 0) + 1);
+      return true;
+    } catch {
+      // retry once
+    }
+  }
+  log('policy.version_bump_failed', {});
+  return false;
+}
+
 const storedVersion = (v: object) => {
   const n = (v as { policyVersion?: unknown }).policyVersion;
   return typeof n === 'number' ? n : 0;
@@ -208,6 +226,18 @@ async function ownVerdict(
   const [first, ...more] = verdict.reasons;
   if (scope && first) verdict.reasons = [{ ...first, message: `Threatline reviewed this work item before it ${scope}, so its review and security requirements still apply. ${first.message}` }, ...more];
   return ok({ verdict, reviewed: review !== null, notApplicable: false, requirements: requirements.value, ...(review ? { riskScore: review.riskScore } : {}) });
+}
+
+/** Whether Threatline reviews this work item today: its project is turned on and its work type is one it reviews. */
+export const inReviewScope = (issue: Pick<JiraIssue, 'project' | 'issueType'>, policy: Pick<SitePolicy, 'enabledProjects' | 'reviewIssueTypes'>): boolean =>
+  policy.enabledProjects.includes(issue.project.key) && policy.reviewIssueTypes.includes(issue.issueType.name);
+
+/** Why a review cannot start on this work item, for the person who asked; null when Threatline reviews it. */
+export function scopeRefusal(issue: Pick<JiraIssue, 'project' | 'issueType'>, policy: Pick<SitePolicy, 'enabledProjects' | 'reviewIssueTypes'>): string | null {
+  if (!policy.enabledProjects.includes(issue.project.key)) return `Threatline is not turned on for project ${issue.project.key}, so it does not review its work items. A Jira admin can turn it on in Threatline admin.`;
+  if (!policy.reviewIssueTypes.includes(issue.issueType.name))
+    return `Threatline does not review ${issue.issueType.name || 'this'} work items. A Jira admin can add the work type in Threatline admin (Policy).`;
+  return null;
 }
 
 /** Why Threatline would not review this item today (its type or project), worded for the gate; null when it would. */

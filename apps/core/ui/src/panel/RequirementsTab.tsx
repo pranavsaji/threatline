@@ -65,6 +65,23 @@ function EvidenceLine({ r }: { r: Requirement }) {
   );
 }
 
+/** What the panel says after creating requirement work items: the new keys, and why any could not be created. */
+export function createdNotice(r: { created: Array<{ subtaskKey: string }>; skipped: Array<{ reason: string }> }): string {
+  const keys = r.created.map((c) => c.subtaskKey);
+  const failed = r.skipped.filter((s) => s.reason === 'failed').length;
+  const noType = r.skipped.filter((s) => s.reason === 'no_child_type').length;
+  const parts = [keys.length > 0 ? `Created ${keys.join(', ')}.` : failed + noType > 0 ? 'Nothing was created.' : 'No new sub-tasks were needed.'];
+  if (noType > 0)
+    parts.push(
+      `${noType} could not be created: Jira allows no sub-tasks under an epic, and this project has no Task or Story work type for them. Add one of those work types to the project and try again, or track the requirements here and mark them Verified with evidence.`,
+    );
+  if (failed > 0)
+    parts.push(
+      `Jira did not create ${failed}: check that you can create work items in this project and that it has a sub-task work type (on an epic: Task or Story), then try again.`,
+    );
+  return parts.join(' ');
+}
+
 /** Requirements: create sub-tasks (RQ-2), move status, and verify with evidence (RQ-3, RQ-4). */
 export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: PanelDto; api: PanelApi; onChanged: () => void; prLinks?: Array<{ label: string; url: string }> }) {
   const [notice, setNotice] = useState<string | null>(null);
@@ -85,9 +102,7 @@ export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: Pa
     creating.run(async () => {
       const r = await api.createRequirements(missing.map((x) => x.threatId)).catch((): ApiError => ({ error: 'unavailable' }));
       if (isError(r)) return setNotice(errorTextOf(r));
-      const keys = r.created.map((c) => c.subtaskKey);
-      const failed = r.skipped.filter((s) => s.reason === 'failed').length;
-      setNotice(`${keys.length > 0 ? `Created ${keys.join(', ')}.` : 'No new sub-tasks were needed.'}${failed > 0 ? ` ${failed} could not be created; try again.` : ''}`);
+      setNotice(createdNotice(r));
       onChanged();
     });
 

@@ -1,18 +1,22 @@
 #!/usr/bin/env tsx
 /**
  * Offline harness: `pnpm threatline <command>`.
- *   review <caseId> [--llm fake|claude-code] [--samples 3] [--model m] [--path agent|pipeline] [--yes]
- *   eval [--subset 30|all] [--llm fake|claude-code|recorded] [--samples 3] [--model m] [--path agent|pipeline] [--concurrency 1] [--yes]
+ *   review <caseId> [--llm fake|claude-code] [--samples 3] [--model m] [--path agent|pipeline|engine] [--yes]
+ *   eval [--subset all|<n>] [--llm fake|claude-code|recorded] [--samples 3] [--model m] [--path agent|pipeline|engine] [--concurrency 1] [--yes]
  *        [--write-baseline] [--gate evals/results/baseline.json] [--resume] [--judge claude-code|recorded] [--record-set name] [--judge-model m]
+ *        [--verify recorded|claude-code|resume] [--no-coverage] [--annotate-judged]
  *     --judge grades every reported threat outside a case's must-find list with a separate claude -p call (recorded
  *     into evals/results/judged/), so the report shows judged precision next to strict precision.
  *     claude-code runs record every raw reply into evals/results/recorded/; `--llm recorded` replays them offline (CI).
+ *     --path engine adds the Engine's verifier: --verify recorded (default) replays its verdicts, claude-code calls it
+ *     live on --model, resume calls it only for cases without a recorded verdict (both live modes ask first).
  *   rematch --record-set <name> [--subset 30|all|holdout] [--match claude-code|recorded|resume] [--match-model m] [--concurrency 4] [--yes]
  *     replays a recorded Engine run and has a separate claude -p call decide which reported threat finds each must-find
  *     threat (recorded into evals/results/<name>/matched/), so recall is not limited by the keyword matcher.
  *   sign-demo
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { createInterface } from 'node:readline/promises';
 import { decodeAttestation, generateKeyPair } from '@threatline/crypto';
 import { claudeCodeLlm } from '@threatline/llm-dev';
@@ -33,6 +37,25 @@ const flag = (name: string, def?: string) => {
   return i >= 0 ? argv[i + 1] : def;
 };
 const has = (name: string) => argv.includes(`--${name}`);
+
+/** eval's `--subset`: `all` or a positive whole number of cases. Anything else used to become NaN and select no case. */
+export function evalSubset(raw: string | undefined): number | 'all' {
+  if (raw === 'all') return 'all';
+  if (raw !== undefined && /^[1-9]\d*$/.test(raw)) return Number(raw);
+  throw new Error(`--subset takes all or a positive whole number of cases, not "${(raw ?? '').slice(0, 20)}"`);
+}
+
+/** rematch's `--subset`: every clean case, the 30-case tuning set, or the held-out rest. */
+export function rematchSubset(raw: string | undefined): 'all' | '30' | 'holdout' {
+  if (raw === 'all' || raw === '30' || raw === 'holdout') return raw;
+  throw new Error(`rematch --subset takes all, 30 or holdout, not "${(raw ?? '').slice(0, 20)}"`);
+}
+
+/** The Engine verifier's mode (`--verify`, path engine): recorded replays; claude-code and resume call claude -p live. */
+export function verifyMode(raw: string | undefined): { mode: 'recorded' | 'claude-code' | 'resume'; live: boolean } {
+  if (raw === 'recorded' || raw === 'claude-code' || raw === 'resume') return { mode: raw, live: raw !== 'recorded' };
+  throw new Error(`--verify takes recorded, claude-code or resume, not "${(raw ?? '').slice(0, 20)}"`);
+}
 
 async function confirm(calls: number, model: string): Promise<boolean> {
   if (has('yes')) return true;
@@ -81,12 +104,15 @@ async function main() {
     return;
   }
   if (cmd === 'eval') {
-    const subsetArg = flag('subset', 'all')!;
-    const subset = subsetArg === 'all' ? 'all' : Number(subsetArg);
+    const subset = evalSubset(flag('subset', 'all'));
     const { llm, name, model } = llmFrom();
     const sel = selectCases(subset);
     const n = sel.clean.length + sel.poisoned.length;
     if (llm && !(await confirm(n * samples * (path === 'pipeline' ? 2 : 1), model))) return;
+    // The Engine's verifier makes its own claude -p calls even when the reviews are replayed (`--llm recorded`).
+    const verify = path === 'engine' ? verifyMode(flag('verify', 'recorded')) : null;
+    const verifyModel = flag('model', 'claude-sonnet-4-5')!;
+    if (verify?.live && !(await confirm(n, `${verifyModel} (verifier, at most one call per case${verify.mode === 'resume' ? ' without a recorded verdict' : ''})`))) return;
     const recorded = flag('llm') === 'recorded';
     const judgeWith = flag('judge');
     // The judge always runs on a real model, even when the reviews are replayed (`--llm recorded` has model "none").
@@ -119,11 +145,11 @@ async function main() {
           }
         : {}),
       ...(has('no-coverage') ? { coverage: false } : {}),
-      ...(path === 'engine'
+      ...(verify
         ? (() => {
-            const which = flag('verify', 'recorded');
+            const which = verify.mode;
             // `resume`: replay recorded verdicts, and call the model (recording it) only for cases without a recording.
-            const live = which === 'claude-code' || which === 'resume' ? claudeCodeLlm({ model: flag('model', 'claude-sonnet-4-5')! }) : null;
+            const live = verify.live ? claudeCodeLlm({ model: verifyModel }) : null;
             const replayedVerify = new Set<string>();
             return {
               verify: {
@@ -162,7 +188,7 @@ async function main() {
   if (cmd === 'rematch') {
     const set = flag('record-set');
     if (!set || !/^[a-z0-9][a-z0-9.-]*$/.test(set)) throw new Error('rematch needs --record-set <name>, for example opus-5');
-    const which = flag('subset', 'all');
+    const which = rematchSubset(flag('subset', 'all'));
     const tuning = new Set(selectCases(30).clean.map((c) => c.id));
     const clean = which === 'all' ? CLEAN_CASES : which === 'holdout' ? CLEAN_CASES.filter((c) => !tuning.has(c.id)) : CLEAN_CASES.filter((c) => tuning.has(c.id));
     const dir = `evals/results/${set}`;
@@ -267,10 +293,14 @@ ${missing.length ? `\nNot graded: ${missing.sort().join('; ')}\n` : ''}`;
     console.log('verify with one character changed →', t.ok ? 'PASS (unexpected!)' : `FAIL: ${t.error.message}`);
     return;
   }
-  console.log('usage: pnpm threatline review <caseId> | eval [--subset 30|all] | sign-demo   (add --llm claude-code to use your Claude subscription)');
+  console.log(
+    'usage: pnpm threatline review <caseId> | eval [--subset all|<n>] [--path agent|pipeline|engine] [--verify recorded|claude-code|resume] | rematch --record-set <name> [--subset all|30|holdout] [--match recorded|claude-code|resume] | sign-demo   (add --llm claude-code to use your Claude subscription; every live call asks first unless --yes)',
+  );
 }
 
-main().catch((e: unknown) => {
-  console.error(e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+// Run only as the entry point, so tests can import the argument parsers above without starting a command.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main().catch((e: unknown) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exit(1);
+  });

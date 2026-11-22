@@ -120,6 +120,7 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     exportLedger: async (projectKey, from, to) => ({ csv: 'seq,created_at\n', json: JSON.stringify({ projectKey, from, to, entries: [] }) }),
     exportControls: async (projectKey, from, to) => ({ csv: 'framework,control_id\n', json: JSON.stringify({ kind: 'threatline.controls-summary.v1', projectKey, from, to, frameworks: [] }) }),
     ci: mockCiApi(),
+    championGroupStatus: async () => ({ group: 'threatline-security-champions', exists: true, member: true, groupsUrl: 'https://admin.atlassian.com/' }),
     setupStatus: async () => ({ keys: true, sqlVersion: 3, validatorSeenOn: ['PAY'], automationRuleSeen: true, mcpEnabledHint: 'Rovo MCP: allow the clients your team uses in Atlassian Administration.', bitbucketKeyCopied: false }),
   };
 }

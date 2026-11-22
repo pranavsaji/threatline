@@ -62,4 +62,17 @@ describe('scoreDiff', () => {
     expect(r.signals).toContain('sensitive_path');
     expect(r.signals).toContain('auth_crypto_change');
   });
+
+  it('scores paths whatever their case: capitalised sensitive directories and manifests count', () => {
+    const r = scoreDiff(
+      [
+        { path: 'Src/Auth/LoginController.cs', status: 'modified', linesAdded: 3 },
+        { path: 'INFRA/main.tf', status: 'modified', linesAdded: 1 },
+        { path: 'web/Package.json', status: 'modified', linesAdded: 1 },
+      ],
+      policy,
+    );
+    expect(r.sensitiveFiles).toEqual(['Src/Auth/LoginController.cs', 'INFRA/main.tf']);
+    expect(r.signals).toEqual(['sensitive_path', 'new_dependency', 'auth_crypto_change']);
+  });
 });

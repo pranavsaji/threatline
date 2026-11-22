@@ -13,20 +13,32 @@ var IN_NAME = new RegExp(`(?<![A-Za-z0-9])${ID}(?![A-Za-z0-9])`, "g");
 function requirementIdsIn(name) {
   return [...new Set([...name.matchAll(IN_NAME)].map((m) => m[0]))];
 }
+var STANDARD_ID = /^(?:SHA-(?:1|2|3|224|256|384|512)|SHA3-(?:224|256|384|512)|AES-(?:128|192|256)|UTF-(?:7|8|16|32)|RSA-(?:1024|2048|3072|4096)|P-(?:256|384|521)|ED-25519|X-509|HMAC-(?:256|384|512))$/;
+var CVE_REST = /^-\d{4,}/;
 var KEY_LIKE = /(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9_]*)-(\d+)(?![0-9])/g;
 var UPPER_PROJECT = /^[A-Z][A-Z0-9_]+$/;
 var suffixes = (project) => project.split("_").map((_, i, parts) => parts.slice(i).join("_"));
 function namedIssueKeys(...texts) {
-  const found = texts.flatMap((t) => [...t.matchAll(KEY_LIKE)].map((m) => ({ project: m[1], num: m[2] })));
+  return keysIn(texts, true);
+}
+function explicitIssueKeys(...texts) {
+  return keysIn(texts, false);
+}
+function keysIn(texts, excludeStandards) {
+  const found = texts.flatMap(
+    (t) => [...t.matchAll(KEY_LIKE)].map((m) => ({ project: m[1], num: m[2], cveId: CVE_REST.test(t.slice(m.index + m[0].length)) }))
+  );
+  const standard = (key, f) => excludeStandards && (STANDARD_ID.test(key) || f.cveId && /^CVE-(?:19|20)\d\d$/.test(key));
   const upper = found.map((f) => {
     const project = suffixes(f.project).find((p) => UPPER_PROJECT.test(p));
-    return project ? `${project}-${f.num}` : null;
+    const key = project ? `${project}-${f.num}` : null;
+    return key && !standard(key, f) ? key : null;
   });
   const projects = new Set(upper.flatMap((k) => k ? [k.slice(0, k.lastIndexOf("-"))] : []));
   const keys = found.flatMap((f, i) => {
     if (upper[i]) return [upper[i]];
     const project = suffixes(f.project.toUpperCase()).find((p) => projects.has(p));
-    return project ? [`${project}-${f.num}`] : [];
+    return project && !standard(`${project}-${f.num}`, f) ? [`${project}-${f.num}`] : [];
   });
   return [...new Set(keys)];
 }
@@ -249,6 +261,7 @@ async function runCiReport(i) {
   let verified = 0;
   let detailed = false;
   const problems = [];
+  const unknown = [];
   const local = /* @__PURE__ */ new Map();
   for (const c of cases)
     for (const id of requirementIdsIn(c.name)) {
@@ -287,7 +300,15 @@ async function runCiReport(i) {
       problems.push(`${issueKey}: Threatline answered HTTP ${res.status}, so the report was not recorded.${serverMessage}`);
       continue;
     }
+    if (res.status === 404 || res.status === 403) {
+      unknown.push(`${issueKey} (HTTP ${res.status}${serverMessage ? `:${serverMessage}` : ""})`);
+      continue;
+    }
     return fail(`Threatline: the report for ${issueKey} was refused (HTTP ${res.status}).${serverMessage}`, lines);
+  }
+  if (unknown.length > 0) {
+    if (unknown.length === keys.length) return fail(`Threatline: no work item named here could be reported: ${unknown.join(", ")}. Check the key in the branch or title, and that the CI token's project list includes it.`, lines);
+    lines.push(`Skipped ${unknown.join(", ")}: not a work item this token can report on.`);
   }
   if (problems.length > 0) return warn(`Threatline: ${problems.join("; ")} Nothing unrecorded was verified; re-run the job to retry.`, lines);
   if (!detailed) {
@@ -310,14 +331,14 @@ function cliReportConfig(argv, env) {
   const repo = one("repo", env.THREATLINE_REPO, env.BITBUCKET_REPO_FULL_NAME, env.GITHUB_REPOSITORY);
   const bitbucketRun = env.BITBUCKET_BUILD_NUMBER && repo ? `https://bitbucket.org/${repo}/pipelines/results/${env.BITBUCKET_BUILD_NUMBER}` : void 0;
   const githubRun = env.GITHUB_RUN_ID && repo ? `${env.GITHUB_SERVER_URL ?? "https://github.com"}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : void 0;
-  const branch = env.BITBUCKET_BRANCH ?? env.GITHUB_HEAD_REF ?? env.GITHUB_REF_NAME ?? "";
+  const branch = env.BITBUCKET_BRANCH || env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || "";
   const explicit = [...flags["issue-key"] ?? [], ...env.THREATLINE_ISSUE_KEY ? env.THREATLINE_ISSUE_KEY.split(",") : []].map((s) => s.trim().toUpperCase()).filter(Boolean);
   const value = {
     url: one("url", env.THREATLINE_URL),
     token: env.THREATLINE_TOKEN ?? "",
     junit: (flags.junit ?? (env.THREATLINE_JUNIT ? env.THREATLINE_JUNIT.split("\n") : [])).join("\n"),
     root: env.BITBUCKET_CLONE_DIR || env.GITHUB_WORKSPACE || process.cwd(),
-    issueKeys: explicit.length > 0 ? namedIssueKeys(explicit.join(" ")) : namedIssueKeys(branch),
+    issueKeys: explicit.length > 0 ? explicitIssueKeys(explicit.join(" ")) : namedIssueKeys(branch),
     repo,
     commitSha: one("commit", env.THREATLINE_COMMIT, env.BITBUCKET_COMMIT, env.GITHUB_SHA),
     runUrl: one("run-url", env.THREATLINE_RUN_URL, bitbucketRun, githubRun)

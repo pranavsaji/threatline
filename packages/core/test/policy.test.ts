@@ -42,6 +42,14 @@ describe('policy', () => {
     expect(isSensitive('anything', [])).toBe(false);
   });
 
+  it('matches sensitive globs whatever the case: a capital letter is not a way past the gate', () => {
+    const globs = DEFAULT_SITE_POLICY.sensitivePaths;
+    for (const path of ['src/Payments/Refund.cs', 'src/Auth/LoginController.cs', 'Infra/main.tf', 'certs/KEY.PEM', 'SRC/AUTH/x.ts', '.GitHub/Workflows/ci.yml'])
+      expect(isSensitive(path, globs), path).toBe(true);
+    expect(isSensitive('src/Paymentsx/Refund.cs', globs)).toBe(false);
+    expect(isSensitive('docs/Payments.md', globs)).toBe(false);
+  });
+
   it('clamps warn-only to 14 days from now', () => {
     const now = new Date('2026-11-15T00:00:00Z');
     const day = 86_400_000;

@@ -51,9 +51,14 @@ export function parseRepoPolicy(yamlText: string): Result<RepoPolicy> {
   return r.success ? ok(r.data) : err(appError('validation', 'invalid .threatline/policy.yml', { issues: issuesOf(r.error) }));
 }
 
+/**
+ * Whether a path matches any of the globs, ignoring case: `src/Payments/Refund.cs`, `Infra/main.tf` and `certs/KEY.PEM`
+ * are as sensitive as their lowercase spelling (C#, Java and Windows repositories capitalise directories), and a gate
+ * that a capital letter slips past is no gate.
+ */
 export function isSensitive(path: string, globs: string[]): boolean {
   if (globs.length === 0) return false;
-  return picomatch(globs, { dot: true })(path);
+  return picomatch(globs, { dot: true, nocase: true })(path);
 }
 
 /** End of the active warn-only window for a project (at most 14 days after it was switched on), or null. */

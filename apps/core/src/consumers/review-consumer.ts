@@ -7,7 +7,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { ReviewJobSchema, type ReviewJob } from '../jobs/types.js';
 import { monthOf, pauseReasons } from '../services/budget.js';
-import { contextKey, refreshVerdict } from '../services/verdict-service.js';
+import { contextKey, inReviewScope, refreshVerdict } from '../services/verdict-service.js';
 import { isPublished, publishThreatModel } from '../services/confluence-page.js';
 import { REOPENED_STAGE, reopenForIncident } from '../services/incident-reopen.js';
 import { opsAlert } from '../services/ops-alert.js';
@@ -107,6 +107,17 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
   if (!policy.ok) return policy;
   const latest = await deps.reviews.latest(job.issueId);
   if (!latest.ok) return latest;
+  // A first review only for work items Threatline reviews (its project turned on, its work type reviewed), whatever
+  // queued it: no model budget on items the gate passes anyway. A reviewed item that was moved or re-typed is still
+  // judged on its review, so it can still be re-reviewed. (Jira unavailable: the gather below reports it.)
+  if (!latest.value) {
+    const issue = await deps.jira.issue(job.issueId);
+    if (issue.ok && !inReviewScope(issue.value, policy.value)) {
+      log('gather.out_of_scope', { issueId: job.issueId, reason: job.reason });
+      const v = await refreshVerdict(deps, job.issueId);
+      return v.ok ? voidOk() : v;
+    }
+  }
   const bundle = await deps.gatherer.gather(job.issueId, job.actorAccountId ? { actorAccountId: job.actorAccountId } : {});
   if (!bundle.ok) {
     log('gather.failed', { issueId: job.issueId, code: bundle.error.code });

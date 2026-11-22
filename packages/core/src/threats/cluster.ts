@@ -95,9 +95,27 @@ function majorityStride(c: Cluster): Stride {
   return best;
 }
 
+const wording = (t: AgentThreat) => `${t.title} ${t.scenario}`;
+
 /**
- * Greedy clustering across samples; a cluster's votes are the distinct samples it appears in. A threat joins a cluster
- * its run has not contributed to yet: one of its own category first, then one of another category (see
+ * Of the clusters with a member that `matches`, the one whose matching member is worded most like `threat` (first on a
+ * tie). Taking the first match instead let a threat join a neighbour's cluster: runs [[A], [A, B], [B]] with A and B on
+ * one passage put run 3's B with A, leaving B one vote and A replaced by B as the representative.
+ */
+function closest(clusters: Cluster[], threat: AgentThreat, matches: (cl: Cluster, m: AgentThreat, i: number) => boolean): Cluster | undefined {
+  let best: { c: Cluster; score: number } | undefined;
+  for (const cl of clusters)
+    cl.members.forEach((m, i) => {
+      if (!matches(cl, m, i)) return;
+      const score = jaccard(wording(m), wording(threat));
+      if (!best || score > best.score) best = { c: cl, score };
+    });
+  return best?.c;
+}
+
+/**
+ * Greedy clustering across samples; a cluster's votes are the distinct samples it appears in. A threat joins the closest
+ * cluster (see `closest`) its run has not contributed to yet: one of its own category first, then one of another category (see
  * `sameThreatAnyCategory`). It joins a cluster its run already contributed to only when it repeats that member (the
  * run listed one threat twice): two different threats one run reported, citing the same passage, stay two threats
  * (live finding: "read other customers' invoices" and "no stated authentication" were chained into one). The cluster
@@ -109,9 +127,9 @@ export function clusterSamples(samples: ReadonlyArray<readonly AgentThreat[]>): 
     for (const threat of sample) {
       const fresh = (cl: Cluster) => !cl.sampleIndexes.includes(idx);
       const c =
-        clusters.find((cl) => fresh(cl) && cl.members.some((m) => sameThreat(m, threat))) ??
-        clusters.find((cl) => fresh(cl) && cl.members.some((m) => sameThreatAnyCategory(m, threat))) ??
-        clusters.find((cl) => cl.members.some((m, i) => cl.memberSamples[i] === idx && repeated(m, threat)));
+        closest(clusters, threat, (cl, m) => fresh(cl) && sameThreat(m, threat)) ??
+        closest(clusters, threat, (cl, m) => fresh(cl) && sameThreatAnyCategory(m, threat)) ??
+        closest(clusters, threat, (cl, m, i) => cl.memberSamples[i] === idx && repeated(m, threat));
       if (c) {
         c.members.push(threat);
         c.memberSamples.push(idx);

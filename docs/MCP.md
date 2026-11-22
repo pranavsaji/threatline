@@ -9,7 +9,7 @@ as the signed-in user, with that user's Jira permissions.
 | Tool | What it does |
 | --- | --- |
 | `get-security-requirements` | A work item's requirements: Given/When/Then criteria, ASVS ids, status, fix-by date, file hints, and (with `testLanguage`) a test skeleton with one failing test per criterion. |
-| `check-change-risk` | Given changed paths, says whether the merge check would pass and why not. |
+| `check-change-risk` | Given changed paths, predicts whether the merge check would pass and why not. It scores them against the site's sensitive paths and the gate's own configuration files; the repository's Threatline settings and the destination branch's `.threatline/policy.yml` can add more, so a pass is a prediction. |
 | `get-merge-attestation` | Signs an attestation for one repository and one head commit, when the work item's verdict allows it. |
 | `verify-requirement` | Marks one requirement Verified with the pull request as evidence, as the caller, ledgered as made through an agent. |
 | `request-risk-acceptance` | Records a pending risk acceptance; a person must approve it in Jira. |
@@ -62,6 +62,8 @@ It then:
 3. once the pull request was open and green, called `verify-requirement` with the requirement id and the PR link. The
    answer says what still blocks Done;
 4. called `get-merge-attestation` for the repository and the head commit, and put the snippet in the PR description.
+   The PR's title or branch names PAY-7: the check only accepts an attestation for a work item the PR names
+   (`fail_other_issue` otherwise).
 
 The merge check then passes for that exact commit, and fails if one character changes.
 

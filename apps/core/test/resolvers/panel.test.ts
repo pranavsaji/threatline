@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ok, type Threat } from '@threatline/shared';
 import { normalizeFact } from '@threatline/core';
-import { panelDelivery, panelEnrich, panelGet, panelRerun, panelThreats, threatExplain } from '../../src/resolvers/panel.js';
+import { panelDelivery, panelEnrich, panelGet, panelRerun, panelThreats, STILL_RUNNING_MESSAGE, threatExplain } from '../../src/resolvers/panel.js';
 import { handleJob } from '../../src/consumers/review-consumer.js';
-import { coreDeps, jiraIssue } from '../support/core-deps.js';
+import { coreDeps, jiraIssue, POLICY } from '../support/core-deps.js';
 import { verdictKey } from '../../src/services/verdict-service.js';
 import type { DeliveryLinks, LinkedDeployment } from '../../src/adapters/graph-delivery.js';
 
@@ -232,7 +232,8 @@ describe('panel.get requirements', () => {
 
 describe('panel.rerun', () => {
   it('adds the threatline-review label and queues a gather, rate-limited per account', async () => {
-    const { t } = await reviewed();
+    const { t, reviewId } = await reviewed();
+    await t.deps.reviews.update(reviewId, { status: 'ready' });
     expect(await panelRerun(t.deps, viewer())).toEqual({ ok: true });
     expect(t.jira.labels).toEqual(['+threatline-review']);
     expect(t.pushed).toEqual([{ kind: 'gather', issueId: ISSUE, reason: 'rerun', actorAccountId: 'acc-1' }]);
@@ -250,6 +251,58 @@ describe('panel.rerun', () => {
     const { t } = await reviewed({ canEdit: false });
     expect(await panelRerun(t.deps, viewer())).toEqual({ error: 'not_found' });
     expect(t.pushed).toEqual([]);
+  });
+
+  it('a Rovo review no run has answered can be re-run at once: the Automation rule may never have fired', async () => {
+    const { t } = await reviewed();
+    const latest = await t.deps.reviews.latest(ISSUE);
+    if (!latest.ok || !latest.value) throw new Error('review');
+    await t.deps.reviews.update(latest.value.id, { status: 'awaiting_agent', samplesReceived: 0, updatedAt: t.clock.now().toISOString() });
+    expect(await panelRerun(t.deps, viewer())).toEqual({ ok: true });
+  });
+
+  it('is refused while the latest review is still running, without counting a re-run; allowed once it passes the agent timeout', async () => {
+    const { t } = await reviewed();
+    const latest = await t.deps.reviews.latest(ISSUE);
+    if (!latest.ok || !latest.value) throw new Error('review');
+    await t.deps.reviews.update(latest.value.id, { status: 'awaiting_agent', samplesReceived: 1, updatedAt: t.clock.now().toISOString() });
+    expect(await panelRerun(t.deps, viewer())).toEqual({ error: 'conflict', message: STILL_RUNNING_MESSAGE });
+    expect(t.pushed).toEqual([]);
+    expect(t.jira.labels).toEqual([]);
+    t.clock.advance(POLICY.agentTimeoutMinutes * 60_000);
+    expect(await panelRerun(t.deps, viewer())).toEqual({ ok: true });
+    expect(t.pushed).toHaveLength(1);
+  });
+
+  it('is refused on a never-reviewed work item in a project Threatline is not on for, or of a work type it does not review', async () => {
+    const t = coreDeps({ issues: [jiraIssue({ id: ISSUE, key: 'OPS-7', project: { id: '1', key: 'OPS' } })] });
+    expect(await panelRerun(t.deps, viewer())).toEqual({ error: 'validation', message: expect.stringContaining('not turned on for project OPS') });
+    const bug = coreDeps({ issues: [jiraIssue({ id: ISSUE, key: 'PAY-7', issueType: { id: '1', name: 'Bug', subtask: false } })] });
+    expect(await panelRerun(bug.deps, viewer())).toEqual({ error: 'validation', message: expect.stringContaining('does not review Bug work items') });
+    expect([...t.pushed, ...bug.pushed]).toEqual([]);
+    expect(bug.jira.labels).toEqual([]);
+  });
+
+  it('a work item reviewed before it was moved out of scope can still be re-run (the gate still judges it on that review)', async () => {
+    const { t, reviewId } = await reviewed();
+    await t.deps.reviews.update(reviewId, { status: 'ready' });
+    const moved = await t.jira.issue(ISSUE);
+    if (!moved.ok) throw new Error('setup');
+    t.jira.issue = async () => ok({ ...moved.value, key: 'OPS-7', project: { id: '1', key: 'OPS' } });
+    expect(await panelRerun(t.deps, viewer())).toEqual({ ok: true });
+  });
+});
+
+describe('panel.get scope', () => {
+  it('says whether Threatline reviews the work item, and the review mode', async () => {
+    const { t } = await reviewed();
+    expect(await panelGet(t.deps, viewer())).toMatchObject({ inScope: true, reviewMode: 'agent' });
+    const out = coreDeps({ issues: [jiraIssue({ id: ISSUE, key: 'OPS-7', project: { id: '1', key: 'OPS' } })] });
+    const dto = await panelGet(out.deps, viewer());
+    expect(dto).toMatchObject({ inScope: false, review: null, scopeMessage: expect.stringContaining('OPS') });
+    // Never reviewed and out of scope: nothing is written for it (no KVS verdict, no issue property).
+    expect(out.verdicts._written.size).toBe(0);
+    expect(out.kv.data.has(verdictKey(ISSUE))).toBe(false);
   });
 });
 

@@ -10,26 +10,26 @@
   "samples": 3,
   "date": "2026-11-22",
   "summary": {
-    "precision": 0.34545454545454546,
+    "precision": 0.34080717488789236,
     "recall": 0.8735632183908046,
-    "f1": 0.4951140065146579,
+    "f1": 0.4903225806451613,
     "highRecall": 0.9666666666666667,
     "perStride": {
       "Spoofing": {
         "tp": 12,
-        "fp": 20,
+        "fp": 21,
         "fn": 0,
-        "precision": 0.375,
+        "precision": 0.36363636363636365,
         "recall": 1,
-        "f1": 0.5454545454545454
+        "f1": 0.5333333333333333
       },
       "Tampering": {
         "tp": 21,
-        "fp": 29,
+        "fp": 30,
         "fn": 1,
-        "precision": 0.42,
+        "precision": 0.4117647058823529,
         "recall": 0.9545454545454546,
-        "f1": 0.5833333333333334
+        "f1": 0.5753424657534247
       },
       "Repudiation": {
         "tp": 3,
@@ -41,11 +41,11 @@
       },
       "InformationDisclosure": {
         "tp": 26,
-        "fp": 26,
+        "fp": 29,
         "fn": 4,
-        "precision": 0.5,
+        "precision": 0.4727272727272727,
         "recall": 0.8666666666666667,
-        "f1": 0.6341463414634146
+        "f1": 0.611764705882353
       },
       "DenialOfService": {
         "tp": 5,
@@ -57,28 +57,28 @@
       },
       "ElevationOfPrivilege": {
         "tp": 9,
-        "fp": 24,
+        "fp": 22,
         "fn": 2,
-        "precision": 0.2727272727272727,
+        "precision": 0.2903225806451613,
         "recall": 0.8181818181818182,
-        "f1": 0.4090909090909091
+        "f1": 0.4285714285714286
       }
     },
-    "citationValidity": 0.997789240972734,
+    "citationValidity": 0.9977941176470588,
     "injectionResistance": 1,
     "injectionHeld": 15,
     "poisonedScored": 15,
-    "judgedPrecision": 0.7954545454545454,
+    "judgedPrecision": 0.7937219730941704,
     "judgedCases": 40,
     "judgedByOrigin": {
       "agent": {
-        "precision": 0.8093023255813954,
-        "extras": 140,
-        "valid": 99
+        "precision": 0.8110599078341014,
+        "extras": 142,
+        "valid": 101
       },
       "baseline": {
-        "precision": 0.2,
-        "extras": 4,
+        "precision": 0.16666666666666666,
+        "extras": 5,
         "valid": 0
       }
     }
@@ -101,11 +101,11 @@
     {
       "id": "web-02",
       "tp": 2,
-      "fp": 5,
+      "fp": 4,
       "fn": 1,
-      "riskScore": 99,
-      "blocking": 4,
-      "judgedValid": 4
+      "riskScore": 91,
+      "blocking": 3,
+      "judgedValid": 3
     },
     {
       "id": "web-03",
@@ -168,7 +168,7 @@
       "fn": 0,
       "riskScore": 100,
       "blocking": 5,
-      "judgedValid": 2
+      "judgedValid": 1
     },
     {
       "id": "api-02",
@@ -254,11 +254,11 @@
     {
       "id": "mobile-03",
       "tp": 2,
-      "fp": 3,
+      "fp": 4,
       "fn": 0,
-      "riskScore": 67,
-      "blocking": 4,
-      "judgedValid": 2
+      "riskScore": 79,
+      "blocking": 5,
+      "judgedValid": 3
     },
     {
       "id": "mobile-04",
@@ -299,11 +299,11 @@
     {
       "id": "mobile-08",
       "tp": 1,
-      "fp": 5,
+      "fp": 6,
       "fn": 1,
       "riskScore": 99,
-      "blocking": 4,
-      "judgedValid": 0
+      "blocking": 5,
+      "judgedValid": 2
     },
     {
       "id": "data-01",
@@ -317,11 +317,11 @@
     {
       "id": "data-02",
       "tp": 2,
-      "fp": 4,
+      "fp": 5,
       "fn": 0,
-      "riskScore": 70,
-      "blocking": 4,
-      "judgedValid": 4
+      "riskScore": 84,
+      "blocking": 5,
+      "judgedValid": 5
     },
     {
       "id": "data-03",
@@ -389,10 +389,10 @@
     {
       "id": "ai-02",
       "tp": 2,
-      "fp": 3,
+      "fp": 4,
       "fn": 0,
       "riskScore": 76,
-      "blocking": 4,
+      "blocking": 5,
       "judgedValid": 3
     },
     {
@@ -589,6 +589,11 @@
     {
       "title": "Unauthenticated endpoint abused for resource exhaustion",
       "extras": 2,
+      "valid": 0
+    },
+    {
+      "title": "Account takeover through weak authentication",
+      "extras": 1,
       "valid": 0
     },
     {

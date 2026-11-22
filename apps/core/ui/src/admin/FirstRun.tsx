@@ -104,6 +104,9 @@ export function FirstRun({ api, policy, onSaved }: { api: AdminApi; policy: Site
               <strong>Name the groups</strong>
               <Labeled text="Security champions group">{(fid) => <input id={fid} value={champions} onChange={(e) => setChampions(e.target.value)} style={field} />}</Labeled>
               <Labeled text="Tech leads group">{(fid) => <input id={fid} value={leads} onChange={(e) => setLeads(e.target.value)} style={field} />}</Labeled>
+              <p style={hint}>
+                Threatline does not create these groups. Create them (or name existing ones) in Atlassian Administration → Directory → Groups, and add yourself to the champions group: only its members confirm flagged threats. High and Critical risk acceptances need a second person to approve them. The setup checklist below checks the champions group.
+              </p>
               </div>
             </li>
             <li style={{ margin: 0 }}>Load demo data, copy the public key and check the setup checklist (below).</li>

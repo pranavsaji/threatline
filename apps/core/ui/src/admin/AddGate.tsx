@@ -12,6 +12,7 @@ const summary = (r: GateInstallDto): string => {
     added.length ? `Added the gate to ${added.join('; ')}.` : '',
     already.length ? `Already on ${already.join('; ')}.` : '',
     readOnly.length ? `Jira does not let anyone edit ${readOnly.join('; ')}: copy that workflow first, then add the gate.` : '',
+    r.failed?.length ? `Could not change ${r.failed.map((f) => `${f.projectKey} (${f.message})`).join('; ')}. The other projects were changed; try these again.` : '',
   ].filter(Boolean);
   return parts.length ? parts.join(' ') : 'No transition into the guarded status was found in these projects’ workflows.';
 };
