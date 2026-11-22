@@ -91,7 +91,7 @@ specific, not a duplicate) graded each threat outside the list: 45 of the 73 the
 **Less noise from the rule-based floor.** The judge rated only 2 of 58 extra rule-based threats valid on the full set:
 most were generic twins of a more specific threat the AI had already raised. A rule-based threat now stands back
 (state `covered`) when a trusted AI threat (majority-voted, quoted word for word, untouched by injection) of the same
-kind and on the same topic covers it, rated at most one level below it. It stays stored, its standards mappings move to the AI
+kind and on the same topic covers it, at least as severe (or one level below when its severity comes from a rating). It stays stored, its standards mappings move to the AI
 threat, and it comes back with its requirement if a champion dismisses that AI threat. Under suspected injection
 nothing is covered. Rule-based extras fell from 58 to 15 with recall unchanged. The floor still always runs, so a
 failed or poisoned agent run still leaves a fail-closed review. The eval report lists judged validity per rule.
@@ -123,7 +123,7 @@ enumeration), so it under-reports recall by about 8 points.
 | Severity of found threats vs the expert's | 38 same, 42 higher, 0 lower | 27 same, 52 higher, 1 lower |
 | Expert-High threats rated below High (would stop blocking) | 0 | 0 |
 | Blocking requirements per story (average) | 4.0 | 4.9 |
-| Precision, judged: threats the model proposed | 79.9% | 74.3% |
+| Precision, judged: threats the model proposed | 79.9% | 73.4% |
 | Citation grounding | 99.8% | 97.4% |
 
 What changed around the same model:
@@ -138,8 +138,9 @@ What changed around the same model:
 - **A quieter rule-based floor.** Tool misuse only when the AI can act, payment manipulation only when money moves,
   leaked credentials only when they are stored, logged or shared, third-party disclosure only when personal or health
   data goes to another company. Triggers stay monotonic: more text never switches a rule off. A rule-based threat stays
-  covered while its cover waits for a champion, and a specific threat rated one level lower can cover it. On the
-  v1.3.0 recordings the floor's extra threats fell from 17 to 3 with recall unchanged.
+  covered while its cover waits for a champion, and a specific threat whose severity comes from a rating can cover it
+  one level lower (a model's bare numbers never lower the floor). On the v1.3.0 recordings the floor's extra threats
+  fell from 17 to 4 with recall unchanged.
 - **Prompt v1.4.0** adds the rating and a three-item check (automated abuse, values the client sends that the server
   trusts, unauthenticated writes to internal channels).
 

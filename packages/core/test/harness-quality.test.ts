@@ -89,6 +89,9 @@ describe('assembly uses the rating', () => {
     expect(pii(assemble([medium, medium, medium]))?.state).toBe('covered');
     expect(pii(assemble([m, m, m]))?.state).toBe('covered');
     expect(pii(assemble([lower, lower, lower]))?.state).toBe('accepted');
+    // A model's bare numbers never lower the floor: the same Medium threat without a rating does not cover it.
+    const unrated = model([{ ...transcriptLeak, likelihood: 3, impact: 3 }]);
+    expect(pii(assemble([unrated, unrated, unrated]))?.state).toBe('accepted');
   });
   it('drops a malformed rating instead of rejecting the run', () => {
     const fitted = fitAgentModel({ ...refund({}), threats: [{ ...refundAbuse, rating: { attacker: 'martian' } }] }) as { threats: Array<Record<string, unknown>> };

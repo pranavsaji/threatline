@@ -277,6 +277,8 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     });
   }
   const baselineCount = threats.length;
+  /** AI threats whose severity every run computed from a rating (Threatline's table, not the model's own numbers). */
+  const ratedIds = new Set<string>();
 
   // 2. Agent threats: cluster across samples, keep majority.
   const { kept: majority, discarded: lowVotes } = consensus(clusterSamples(valid.map((m) => m.threats.map(rated))), voteBase);
@@ -331,8 +333,10 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
       continue;
     }
 
+    const id = claimId(idsOf(threats), i.review.id, 'agent', rep);
+    if (cluster.members.every((m) => m.rating)) ratedIds.add(id);
     threats.push({
-      id: claimId(idsOf(threats), i.review.id, 'agent', rep),
+      id,
       reviewId: i.review.id,
       stride: rep.stride,
       title: rep.title,
@@ -360,9 +364,10 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
   applySuppressions(threats, i.suppressions?.rules ?? [], { blockAtOrAbove: i.policy.blockAtOrAbove, injectionSuspected, now: i.now, unhidden: new Set(i.suppressions?.unhidden ?? []) });
 
   // 3. Noise: a generic rule-based threat stands back (state `covered`) when a trusted AI threat (majority-voted,
-  // quoted word for word, untouched by injection) of the same kind and on the same topic covers it, rated at most one
-  // level below it: the specific threat's rating (from the facts it states) replaces the generic rule's default severity,
-  // so "personal data exposed" (High by default) does not return as a High duplicate of a Medium user-enumeration threat.
+  // quoted word for word, untouched by injection) of the same kind and on the same topic covers it, at least as severe;
+  // or one level below when its severity comes from a rating (the facts it states, through Threatline's table), which
+  // then replaces the generic rule's default severity, so "personal data exposed" (High by default) does not return as
+  // a High duplicate of a Medium user-enumeration threat. A model's bare numbers never lower the floor.
   // It stays stored and comes back if that AI threat is dismissed. Its framework mappings move to the AI threat. Never
   // under suspected injection (attacker text must not steer what is shown), and never for a rule-based threat carried
   // from an earlier revision, whose triage stands.
@@ -370,7 +375,7 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     for (const b of threats) {
       if (b.origin !== 'baseline' || b.state !== 'accepted' || carried.has(b.id)) continue;
       const cover = threats.find(
-        (t) => t.origin === 'agent' && t.state === 'accepted' && t.grounding === 'supported' && severityRank(t.severity) >= severityRank(b.severity) - 1 && coveredByText(b.title, t),
+        (t) => t.origin === 'agent' && t.state === 'accepted' && t.grounding === 'supported' && severityRank(t.severity) >= severityRank(b.severity) - (ratedIds.has(t.id) ? 1 : 0) && coveredByText(b.title, t),
       );
       if (!cover) continue;
       cover.mappings = mergeMappings(cover.mappings, b.mappings);
