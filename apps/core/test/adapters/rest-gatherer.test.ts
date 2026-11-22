@@ -56,12 +56,17 @@ describe('restGatherer', () => {
       expect(a.confCalls.some((c) => /pages\/98305/.test(c.path))).toBe(false);
     });
 
-    it('re-publishing (a new page version) leaves the context hash as it was, even with no stored page record', async () => {
-      const v1 = await setup({ page: ownPage(1) }).g.gather('10042', ACTOR);
-      const v2 = await setup({ page: ownPage(2) }).g.gather('10042', ACTOR);
+    it('re-publishing (a new page version) leaves the context hash as it was', async () => {
+      const v1 = await setup({ page: ownPage(1), ownPage: '98305' }).g.gather('10042', ACTOR);
+      const v2 = await setup({ page: ownPage(2), ownPage: '98305' }).g.gather('10042', ACTOR);
       if (!v1.ok || !v2.ok) throw new Error('gather');
       expect(v1.value.facts.some((f) => f.sourceType === 'confluence_page')).toBe(false);
       expect(v2.value.contextHash).toBe(v1.value.contextHash);
+    });
+
+    it('a page merely titled and laid out like Threatline\'s is still read: nothing a user writes can hide a page from review', async () => {
+      const r = await setup({ page: ownPage(1) }).g.gather('10042', ACTOR);
+      expect(r.ok && r.value.facts.filter((f) => f.sourceType === 'confluence_page').length).toBeGreaterThan(0);
     });
 
     it("a design page that merely mentions a threat model is still read", async () => {

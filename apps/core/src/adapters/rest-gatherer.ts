@@ -22,16 +22,16 @@ export interface RestGathererDeps {
 
 /** The remote-link globalId Threatline gives the threat-model page it links on a work item (confluence-page.ts). */
 export const THREAT_MODEL_LINK_PREFIX = 'threatline-threat-model-';
-const THREAT_MODEL_TITLE = 'Threat model: ';
 
 /**
- * Threatline's own threat-model page for this work item: its published id, or a page titled and laid out as Threatline
- * renders it (when the record is unavailable, or for an earlier publish). Reading it as context would make every
- * re-publish change the context (its version), mark the review out of date, and feed the model its own output as evidence.
+ * Threatline's own threat-model page for this work item, known only by the page id Threatline recorded when it published
+ * (state no user can write). Reading it as context would make every re-publish change the context (its version), mark
+ * the review out of date, and feed the model its own output as evidence. Nothing a user controls (a page title, its
+ * headings, a remote link's globalId) can mark a page as Threatline's: that would let anyone hide a design page from
+ * review. Without the record (a failed read), the page is read like any other: stricter, never looser.
  */
-export function isOwnThreatModel(page: { id: string; title: string; storage: string }, issueKey: string, ownPageId: string | null): boolean {
-  if (ownPageId !== null && page.id === ownPageId) return true;
-  return page.title.startsWith(`${THREAT_MODEL_TITLE}${issueKey} `) && page.storage.includes('<h2>Owner notes</h2>') && page.storage.includes('<h2>Revision history</h2>');
+export function isOwnThreatModel(page: { id: string }, ownPageId: string | null): boolean {
+  return ownPageId !== null && page.id === ownPageId;
 }
 
 const MAX_PAGES = 10;
@@ -201,8 +201,6 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
       if (links.ok) {
         const pageLinks = new Map<string, string>();
         for (const l of links.value) {
-          const globalId = (l as { globalId?: unknown }).globalId;
-          if (typeof globalId === 'string' && globalId.startsWith(THREAT_MODEL_LINK_PREFIX)) continue;
           const id = pageIdFromUrl(l.url);
           if (id && id !== ownPage && !pageLinks.has(id)) pageLinks.set(id, l.url);
         }
@@ -229,7 +227,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
             continue;
           }
           // Threatline's own output is not evidence, and is neither shown, hashed nor watched for edits.
-          if (isOwnThreatModel(p.value, issue.key, ownPage)) continue;
+          if (isOwnThreatModel(p.value, ownPage)) continue;
           // Linked even when withheld: a restricted page's edits must still mark the review out of date.
           const linked = await d.issues.linkPage(issue.id, p.value.id);
           if (!linked.ok) reasons.push(`page_link_unsaved:${id}`);

@@ -95,8 +95,12 @@ export function splitText(text: string, max = MAX_EXCERPT, maxParts = MAX_PARTS)
 export function normalizeFacts(raw: RawFact): ContextFact[] {
   const text = htmlToText(raw.text);
   const title = htmlToText(raw.title);
-  const scan = scanForInjection(`${title}\n${text}`);
   const clean = (s: string) => redactSecrets(s.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, ''));
+  // Scanned twice: as written (hidden characters are themselves a reason) and exactly as the model will read it, so a
+  // character the cleaning removes ("ign\u00ADore previous instructions") cannot split a directive past the scanner.
+  const written = scanForInjection(`${title}\n${text}`);
+  const seen = scanForInjection(`${title.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, '')}\n${text.replace(INVISIBLE_CHARS, '').replace(SOFT_HYPHEN, '')}`);
+  const scan = { suspected: written.suspected || seen.suspected, reasons: [...new Set([...written.reasons, ...seen.reasons])] };
   const parts = splitText(clean(text));
   const cleanTitle = clean(title).slice(0, 480);
   return parts.map((excerpt, n) => ({
