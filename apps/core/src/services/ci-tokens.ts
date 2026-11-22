@@ -63,16 +63,29 @@ export async function createCiToken(deps: CoreDeps, actor: string, input: { proj
   return ok({ token, info });
 }
 
-/** Revokes a token: it leaves the list first (refused from then on), then its hash is deleted. Ledgered first. */
+/**
+ * Revokes a token: it leaves the list (refused from then on), then its hash is deleted. Ledgered first.
+ * Security: KVS reads can lag a write, so a list read just after a create may not show the token yet. Its hash is what
+ * authenticates it, so revoke deletes the hash whenever it exists, listed or not; not_found only when neither exists.
+ */
 export async function revokeCiToken(deps: CoreDeps, actor: string, id: string): Promise<Result<{ id: string }>> {
   if (!ID.test(id)) return err(appError('validation', 'That is not a CI token id.'));
   const list = await readList(deps);
   if (!list.ok) return list;
-  if (!list.value.some((t) => t.id === id)) return err(appError('not_found', 'CI token not found'));
+  const listed = list.value.some((t) => t.id === id);
+  if (!listed) {
+    let secret: unknown;
+    try {
+      secret = await deps.state.getSecret<unknown>(secretKey(id));
+    } catch (e) {
+      return upstream(e);
+    }
+    if (secret === undefined) return err(appError('not_found', 'CI token not found'));
+  }
   const row = await appendLedger(deps.ledger, deps.clock, 'ci_token.revoked', { tokenId: id }, actor);
   if (!row.ok) return row;
   try {
-    await deps.state.set(CI_TOKENS_KEY, list.value.filter((t) => t.id !== id));
+    if (listed) await deps.state.set(CI_TOKENS_KEY, list.value.filter((t) => t.id !== id));
     await deps.state.deleteSecret(secretKey(id));
   } catch (e) {
     return upstream(e);

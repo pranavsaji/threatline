@@ -60,6 +60,25 @@ describe('CI tokens (feature: verification from CI)', () => {
     expect(u.kv.data.get(CI_TOKENS_KEY)).toBeUndefined();
   });
 
+  it('revoking deletes the hash even when a stale list read does not show the token yet (KVS can lag a write)', async () => {
+    const t = coreDeps();
+    const r = await createCiToken(t.deps, ADMIN, { projects: [] });
+    if (!r.ok) throw new Error('create');
+    const realGet = t.deps.state.get.bind(t.deps.state);
+    t.deps.state.get = (async (k: string) => (k === CI_TOKENS_KEY ? [] : realGet(k))) as typeof t.deps.state.get;
+    expect(await revokeCiToken(t.deps, ADMIN, r.value.info.id)).toEqual({ ok: true, value: { id: r.value.info.id } });
+    expect(t.kv.secrets.has(`secret:ci-token:${r.value.info.id}`)).toBe(false);
+    t.deps.state.get = realGet;
+    expect(await authenticateCi(t.deps, `Bearer ${r.value.token}`)).toEqual({ ok: false, error: 'unauthorized' });
+    expect((await ledgerTypes(t)).at(-1)).toMatchObject({ eventType: 'ci_token.revoked', payload: { tokenId: r.value.info.id } });
+  });
+
+  it('a storage error while checking an unlisted token is upstream, not not_found', async () => {
+    const t = coreDeps();
+    t.deps.state.getSecret = async () => Promise.reject(new Error('kvs down'));
+    expect(await revokeCiToken(t.deps, ADMIN, '0123456789abcdef')).toMatchObject({ ok: false, error: { code: 'upstream' } });
+  });
+
   it('revoking an unknown token is not_found', async () => {
     const t = coreDeps();
     expect(await revokeCiToken(t.deps, ADMIN, '0123456789abcdef')).toMatchObject({ ok: false, error: { code: 'not_found' } });
