@@ -8,7 +8,7 @@ screenshot of the "Submitted" status) for the Devpost form.
 
 | Item | Why it matters | Status |
 |---|---|---|
-| **Developer-side AI spend ceiling** | Forge LLM usage is billed to the developer for every public install. Today the per-site budget (`budget.reviewsPerMonth`, token caps) is set by each site's admin, so an installer could raise it. Add a ceiling the developer controls (a Forge environment variable read by `budget.ts`) or default public installs to `rules_only`. | **Must do before listing** |
+| **Developer-side AI spend ceiling** | Forge LLM usage is billed to the developer for every public install. Site admins set their own budget on the admin page; the Forge variables `THREATLINE_MAX_REVIEWS_PER_MONTH`, `THREATLINE_MAX_TOKENS_IN_PER_REVIEW` and `THREATLINE_MAX_TOKENS_OUT_PER_REVIEW` cap it per site, and only the developer can set them (`forge variables set -e production THREATLINE_MAX_REVIEWS_PER_MONTH 50`). | Done (`kvs-config.ts`); set the variables before listing |
 | Install links stop for new installs once the listing is approved | Judges would install from Marketplace instead of `docs/JUDGE_GUIDE.md`. While the review is pending, the links keep working. Update the judge guide on approval. | Plan for it |
 | Developer Space publish is irreversible | It creates the Marketplace partner profile. | Your call |
 | Partner Verification (one-time) | Business or individual details, ID for the primary contact, Stripe Identity selfie, Partner Security Questionnaire, within **14 days** or the ticket is auto-rejected. | You only |

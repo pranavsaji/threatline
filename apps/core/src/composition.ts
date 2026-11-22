@@ -9,7 +9,7 @@ import { forgeMigrate } from './adapters/forge-migrate.js';
 import { forgeQueue } from './adapters/forge-queue.js';
 import { forgeSqlExecutor } from './adapters/forge-sql.js';
 import { jiraClient } from './adapters/jira.js';
-import { defaultsFromEnv, forgeKvs, kvsConfigStore, type KvsPort } from './adapters/kvs-config.js';
+import { ceilingFromEnv, defaultsFromEnv, forgeKvs, kvsConfigStore, type KvsPort } from './adapters/kvs-config.js';
 import { restGatherer } from './adapters/rest-gatherer.js';
 import { sqlRetention, sqlSuppressionRepo } from '@threatline/db';
 import { kvsSigningKeys } from './adapters/signing-keys.js';
@@ -53,7 +53,7 @@ export function composeCore(ctx?: ForgeContext): CoreDeps {
   const jira = jiraClient('app');
   const confluence = confluenceClient('app');
   const state = forgeKvs();
-  const config = kvsConfigStore(state, defaultsFromEnv(process.env));
+  const config = kvsConfigStore(state, defaultsFromEnv(process.env), ceilingFromEnv(process.env));
   // The gatherer reads incidents by the site's incident rule, so every gather (the queue's and the agent's) agrees.
   const incidentRule = async () => {
     const p = await config.site();
