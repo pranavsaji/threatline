@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SITE_POLICY } from '@threatline/core';
 import { signB64, verifyB64 } from '@threatline/crypto';
-import { defaultsFromEnv, kvsConfigStore } from '../../src/adapters/kvs-config.js';
+import { ceilingFromEnv, defaultsFromEnv, kvsConfigStore } from '../../src/adapters/kvs-config.js';
 import { memoryKvs } from '../support/memory-kvs.js';
 import { kvsSigningKeys } from '../../src/adapters/signing-keys.js';
 
@@ -66,6 +66,32 @@ describe('defaultsFromEnv', () => {
   it('parses THREATLINE_ENABLED_PROJECTS and drops anything that is not a project key', () => {
     expect(defaultsFromEnv({ THREATLINE_ENABLED_PROJECTS: ' pay, SEC ,bad key,PAY,' }).enabledProjects).toEqual(['PAY', 'SEC']);
     expect(defaultsFromEnv({}).enabledProjects).toEqual([]);
+  });
+});
+
+describe('developer budget ceiling', () => {
+  it('reads positive whole numbers from Forge variables and ignores anything else', () => {
+    expect(ceilingFromEnv({})).toEqual({});
+    expect(ceilingFromEnv({ THREATLINE_MAX_REVIEWS_PER_MONTH: ' 100 ', THREATLINE_MAX_TOKENS_IN_PER_REVIEW: '0', THREATLINE_MAX_TOKENS_OUT_PER_REVIEW: '1e9' })).toEqual({ reviewsPerMonth: 100 });
+    expect(ceilingFromEnv({ THREATLINE_MAX_TOKENS_IN_PER_REVIEW: '200000', THREATLINE_MAX_TOKENS_OUT_PER_REVIEW: '-5' })).toEqual({ tokensInPerReview: 200_000 });
+  });
+
+  it('caps a stored policy and the defaults, so a site admin cannot raise AI spend past it', async () => {
+    const kv = memoryKvs();
+    const store = kvsConfigStore(kv, DEFAULT_SITE_POLICY, { reviewsPerMonth: 100, tokensOutPerReview: 30_000 });
+    const d = await store.site();
+    expect(d.ok && d.value.budget).toEqual({ ...DEFAULT_SITE_POLICY.budget, reviewsPerMonth: 100, tokensOutPerReview: 30_000 });
+    await store.setSite({ ...DEFAULT_SITE_POLICY, budget: { tokensInPerReview: 9_000_000, tokensOutPerReview: 9_000_000, reviewsPerMonth: 100_000 } });
+    const s = await store.site();
+    expect(s.ok && s.value.budget).toEqual({ tokensInPerReview: 9_000_000, tokensOutPerReview: 30_000, reviewsPerMonth: 100 });
+  });
+
+  it('never raises a budget that is already below the ceiling', async () => {
+    const kv = memoryKvs();
+    const store = kvsConfigStore(kv, DEFAULT_SITE_POLICY, { reviewsPerMonth: 100 });
+    await store.setSite({ ...DEFAULT_SITE_POLICY, budget: { ...DEFAULT_SITE_POLICY.budget, reviewsPerMonth: 20 } });
+    const s = await store.site();
+    expect(s.ok && s.value.budget.reviewsPerMonth).toBe(20);
   });
 });
 

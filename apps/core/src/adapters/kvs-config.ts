@@ -34,8 +34,31 @@ export interface ConfigStore {
 const SITE_KEY = 'config:site';
 const upstream = (e: unknown) => err(appError('upstream', `kvs: ${e instanceof Error ? e.message : String(e)}`));
 
-/** `defaults` apply only while no policy is stored (the admin page writes one). */
-export function kvsConfigStore(store: KvsPort = forgeKvs(), defaults: SitePolicy = DEFAULT_SITE_POLICY): ConfigStore {
+/**
+ * Upper bounds on the AI budget that only the app developer controls (Forge environment variables), so a site admin
+ * cannot raise Forge LLM spend past them. Forge bills LLM usage of every install to the developer.
+ */
+export type BudgetCeiling = Partial<SitePolicy['budget']>;
+
+/** Each budget field is the smaller of the site's value and the developer's ceiling. */
+export function applyCeiling(policy: SitePolicy, ceiling: BudgetCeiling): SitePolicy {
+  const b = policy.budget;
+  const cap = (v: number, c: number | undefined) => (c === undefined ? v : Math.min(v, c));
+  return {
+    ...policy,
+    budget: {
+      tokensInPerReview: cap(b.tokensInPerReview, ceiling.tokensInPerReview),
+      tokensOutPerReview: cap(b.tokensOutPerReview, ceiling.tokensOutPerReview),
+      reviewsPerMonth: cap(b.reviewsPerMonth, ceiling.reviewsPerMonth),
+    },
+  };
+}
+
+/**
+ * `defaults` apply only while no policy is stored (the admin page writes one). `ceiling` applies to every read, stored
+ * or default, so the admin page shows (and saves) the effective budget.
+ */
+export function kvsConfigStore(store: KvsPort = forgeKvs(), defaults: SitePolicy = DEFAULT_SITE_POLICY, ceiling: BudgetCeiling = {}): ConfigStore {
   return {
     async site() {
       let raw: unknown;
@@ -44,9 +67,9 @@ export function kvsConfigStore(store: KvsPort = forgeKvs(), defaults: SitePolicy
       } catch (e) {
         return upstream(e);
       }
-      if (raw === undefined) return ok(defaults);
+      if (raw === undefined) return ok(applyCeiling(defaults, ceiling));
       const p = SitePolicySchema.safeParse(raw);
-      return p.success ? ok(p.data) : err(appError('schema', 'stored site policy is invalid', { issues: p.error.issues.slice(0, 5).map((i) => i.path.join('.')) }));
+      return p.success ? ok(applyCeiling(p.data, ceiling)) : err(appError('schema', 'stored site policy is invalid', { issues: p.error.issues.slice(0, 5).map((i) => i.path.join('.')) }));
     },
 
     async setSite(policy) {
@@ -77,4 +100,23 @@ export function defaultsFromEnv(env: Record<string, string | undefined>): SitePo
     .map((p) => p.trim().toUpperCase())
     .filter((p) => /^[A-Z][A-Z0-9_]{0,254}$/.test(p));
   return { ...DEFAULT_SITE_POLICY, enabledProjects: [...new Set(projects)] };
+}
+
+const CEILING_VARS = {
+  reviewsPerMonth: 'THREATLINE_MAX_REVIEWS_PER_MONTH',
+  tokensInPerReview: 'THREATLINE_MAX_TOKENS_IN_PER_REVIEW',
+  tokensOutPerReview: 'THREATLINE_MAX_TOKENS_OUT_PER_REVIEW',
+} as const;
+
+/**
+ * The developer's AI budget ceiling: `forge variables set -e production THREATLINE_MAX_REVIEWS_PER_MONTH 100`.
+ * A value that is not a positive whole number is ignored (that field has no ceiling).
+ */
+export function ceilingFromEnv(env: Record<string, string | undefined>): BudgetCeiling {
+  const out: BudgetCeiling = {};
+  for (const [field, name] of Object.entries(CEILING_VARS) as Array<[keyof BudgetCeiling, string]>) {
+    const raw = env[name]?.trim() ?? '';
+    if (/^[1-9]\d{0,9}$/.test(raw)) out[field] = Number(raw);
+  }
+  return out;
 }
