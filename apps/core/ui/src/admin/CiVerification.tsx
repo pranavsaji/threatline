@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import Button from '@atlaskit/button/new';
 import { token } from '@atlaskit/tokens';
 import { errorText, isError } from '../bridge.js';
-import type { ApiError, CiTokensDto } from '../types.js';
+import type { ApiError, CiTokenInfo, CiTokensDto } from '../types.js';
 import { useInFlight } from '../components/in-flight.js';
 import { field, label } from '../panel/form-styles.js';
 import type { CiApi } from './ci-api.js';
@@ -13,6 +13,9 @@ const small = { font: token('font.body.small'), color: token('color.text.subtle'
 /**
  * Verification from CI (docs/CI_VERIFICATION.md): the web trigger CI posts test results to, and the per-site CI tokens
  * it authenticates with. A new token is shown once; Threatline keeps only its hash. Revoking stops it at once.
+ *
+ * The token list lives in Forge KVS, whose reads can lag a write by a moment. So the page remembers what it just created
+ * or revoked until a read agrees, and a stale read never brings a revoked token back or hides a new one.
  */
 export function CiVerification({ api }: { api: CiApi }) {
   const id = useId();
@@ -22,11 +25,17 @@ export function CiVerification({ api }: { api: CiApi }) {
   const [revoking, setRevoking] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const { busy, run } = useInFlight();
+  const pending = useRef({ created: new Map<string, CiTokenInfo>(), revoked: new Set<string>() });
 
   const load = useCallback(async () => {
     const r = await api.tokens().catch((): ApiError => ({ error: 'unavailable' }));
     if (isError(r)) return setMessage(errorText(r));
-    setDto(r);
+    const { created, revoked } = pending.current;
+    const listed = new Set(r.tokens.map((t) => t.id));
+    for (const id of created.keys()) if (listed.has(id)) created.delete(id);
+    for (const id of revoked) if (!listed.has(id)) revoked.delete(id);
+    const tokens = [...r.tokens.filter((t) => !revoked.has(t.id)), ...[...created.values()].filter((t) => !revoked.has(t.id))];
+    setDto({ ...r, tokens });
   }, [api]);
   useEffect(() => {
     void load();
@@ -47,6 +56,7 @@ export function CiVerification({ api }: { api: CiApi }) {
       const keys = projects.split(/[\s,]+/).map((p) => p.trim().toUpperCase()).filter(Boolean);
       const r = await api.create(keys).catch((): ApiError => ({ error: 'unavailable' }));
       if (isError(r)) return setMessage(errorText(r));
+      pending.current.created.set(r.info.id, r.info);
       setCreated(r.token);
       setProjects('');
       setMessage(`Token ${r.info.id} created.`);
@@ -58,8 +68,10 @@ export function CiVerification({ api }: { api: CiApi }) {
     run(async () => {
       const r = await api.revoke(tokenId).catch((): ApiError => ({ error: 'unavailable' }));
       setRevoking(null);
-      if (isError(r)) return setMessage(errorText(r));
-      setMessage(`Token ${tokenId} revoked. CI reports sent with it are refused from now on.`);
+      if (isError(r) && r.error !== 'not_found') return setMessage(errorText(r));
+      pending.current.revoked.add(tokenId);
+      pending.current.created.delete(tokenId);
+      setMessage(isError(r) ? `Token ${tokenId} was already revoked.` : `Token ${tokenId} revoked. CI reports sent with it are refused from now on.`);
       await load();
     });
 

@@ -74,6 +74,38 @@ describe('Admin: CI verification (feature: verification from CI)', () => {
     expect(within(s).getByText(/No CI tokens yet/)).toBeTruthy();
   });
 
+  it('a stale read right after revoking does not bring the token back (Forge KVS can lag a write)', async () => {
+    const ci = ciApi({ tokens: async () => ({ url: URL_, tokens: [INFO] }) });
+    render(<AdminPage api={{ ...mockAdminApi(), ci }} />);
+    const s = await section();
+    await userEvent.click(await within(s).findByRole('button', { name: 'Revoke 0123456789abcdef' }));
+    await userEvent.click(within(s).getByRole('button', { name: 'Confirm revoke' }));
+    expect(await within(s).findByText(/Token 0123456789abcdef revoked/)).toBeTruthy();
+    await waitFor(() => expect(within(s).queryByRole('button', { name: 'Revoke 0123456789abcdef' })).toBeNull());
+    expect(within(s).getByText(/No CI tokens yet/)).toBeTruthy();
+  });
+
+  it('a stale read right after creating still lists the new token', async () => {
+    const ci = ciApi({ tokens: async () => ({ url: URL_, tokens: [INFO] }) });
+    render(<AdminPage api={{ ...mockAdminApi(), ci }} />);
+    const s = await section();
+    await userEvent.click(within(s).getByRole('button', { name: 'Create token' }));
+    await within(s).findByText(TOKEN);
+    const list = within(s).getByRole('list', { name: 'CI tokens' });
+    expect(within(list).getByText(/fedcba9876543210/)).toBeTruthy();
+    expect(within(list).getByText(/0123456789abcdef/)).toBeTruthy();
+  });
+
+  it('a token someone else already revoked leaves the list instead of showing an error', async () => {
+    const ci = ciApi({ revoke: async () => ({ error: 'not_found', message: 'CI token not found' }) });
+    render(<AdminPage api={{ ...mockAdminApi(), ci }} />);
+    const s = await section();
+    await userEvent.click(await within(s).findByRole('button', { name: 'Revoke 0123456789abcdef' }));
+    await userEvent.click(within(s).getByRole('button', { name: 'Confirm revoke' }));
+    expect(await within(s).findByText(/Token 0123456789abcdef was already revoked/)).toBeTruthy();
+    await waitFor(() => expect(within(s).queryByRole('button', { name: 'Revoke 0123456789abcdef' })).toBeNull());
+  });
+
   it('says so when the URL cannot be read, and shows the server’s errors', async () => {
     render(<AdminPage api={{ ...mockAdminApi(), ci: ciApi({ tokens: async () => ({ url: null, tokens: [] }), create: async () => ({ error: 'validation', message: 'A site can have at most 10 CI tokens.' }) }) }} />);
     const s = await section();
