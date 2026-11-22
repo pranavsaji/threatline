@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"No rate limiting enables testing many keys to find valid ones, distinct from key theft.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Cannot attribute actions with shared non-rotating keys, makes investigation impossible for sensitive data.\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Public API with no rate limiting enables unlimited key guessing attempts against valid credentials.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct from DoS threat: exploits no rate limiting for bulk data theft, not service exhaustion.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Discusses partner staff and investigation processes outside design scope.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,6 +15,11 @@
     },
     {
       "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "No rate limiting lets one key be used to scrape every customer email address"
+    },
+    {
+      "id": "x3",
       "stride": "Repudiation",
       "title": "Actions cannot be tied to a person because keys are shared and never rotated"
     }

@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct availability threat: deletion of backups in shared bucket with no retention, different from c1/c2 disclosure and tampering.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct repudiation threat: no audit trail for exfiltration by reporting team or compromised credentials, made material by shared access.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Deletion/DoS is distinct from c1 read access and c2 tampering; follows from shared bucket design.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Audit trail material given shared access design; harm differs from c1 (attribution vs exposure).\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],

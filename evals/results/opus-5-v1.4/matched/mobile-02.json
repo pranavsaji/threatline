@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe attacker using deep link to pre-fill payment to their account\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe malicious app registering same URL scheme to hijack requests\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe attacker-controlled deep link pre-filling payment to attacker's account to deceive victim\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe malicious app registering same URL scheme to hijack payment requests\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,8 +15,33 @@
     },
     {
       "id": "T2",
+      "stride": "Tampering",
+      "title": "Server trusts the payee and amount that arrived in the deep link"
+    },
+    {
+      "id": "T3",
       "stride": "Spoofing",
       "title": "A malicious app can register the same myapp:// scheme and capture or fake payment requests"
+    },
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link reaches the payment confirmation screen without any re-authentication"
+    },
+    {
+      "id": "T5",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "T6",
+      "stride": "DenialOfService",
+      "title": "A website can repeatedly force the payment screen open and make the app unusable"
+    },
+    {
+      "id": "T7",
+      "stride": "Repudiation",
+      "title": "No record of where the payment request came from, so disputes cannot be resolved"
     }
   ]
 }

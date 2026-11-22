@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows unencrypted backups in bucket shared across teams; concrete exposure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Shared bucket with no retention described; deletion of all backups is a concrete availability harm.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared write access and no integrity check; overwriting backup to poison restore is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared bucket access with no object-level logging; untraceable mass download is distinct from T1.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms unencrypted backups in bucket shared with reporting team; concrete actor, action, harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Shared bucket with no stated retention/immutability; deletion of all backups is a concrete availability attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Write access by other teams plus no integrity verification supports concrete backup-poisoning attack distinct from T1/T2.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared bucket access without logging; non-attributable mass backup exfiltration is a distinct harm from T1.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

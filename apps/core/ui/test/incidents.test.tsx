@@ -54,7 +54,7 @@ describe('admin: demo data', () => {
     render(<AdminPage api={{ ...mockAdminApi(), seed }} />);
     const f = await screen.findByRole('form', { name: 'Load demo data' });
     await userEvent.type(within(f).getByRole('textbox', { name: 'Jira project key' }), 'PAY');
-    await userEvent.type(within(f).getByRole('textbox', { name: 'Confluence space key' }), 'PAY');
+    await userEvent.type(within(f).getByRole('textbox', { name: 'Confluence space key (optional)' }), 'PAY');
     await userEvent.click(within(f).getByRole('button', { name: 'Load demo data' }));
     expect(await screen.findByText(/create a work item labelled incident on the support-agent component/)).toBeTruthy();
   });

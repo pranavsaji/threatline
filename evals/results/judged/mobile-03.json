@@ -3,20 +3,20 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Offline operation prevents server authentication; specific challenge of this feature on shared devices\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic session management hygiene; harms already covered by c1 (viewing) and c2 (attribution)\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Syncing tampered local database to server is specific offline sync risk; attack plausible\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Concurrent offline edits causing conflicts is offline-sync-specific; data loss is distinct harm\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Session persistence on shared devices enables unauthorized access; distinct from database-level attacks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Lack of offline authentication is distinct from session timeout; different attack mechanism.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Direct database tampering with sync propagation; distinct from disclosure or attribution issues.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (accessing SQLite database) and harm (exposing patient data).\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Conflict resolution data loss from concurrent offline edits; not covered by existing threats.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "Spoofing",
-      "title": "No device-level authentication for offline access"
+      "stride": "ElevationOfPrivilege",
+      "title": "No session timeout allows unauthorized access on shared devices"
     },
     {
       "id": "x2",
-      "stride": "ElevationOfPrivilege",
-      "title": "No session timeout allows unauthorized access on shared devices"
+      "stride": "Spoofing",
+      "title": "No device-level authentication for offline access"
     },
     {
       "id": "x3",
@@ -25,6 +25,11 @@
     },
     {
       "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Stolen or lost tablet exposes patient data"
+    },
+    {
+      "id": "x5",
       "stride": "Tampering",
       "title": "Malicious sync overwrites legitimate patient data"
     }

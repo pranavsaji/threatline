@@ -93,6 +93,13 @@ describe('assembly uses the rating', () => {
     const unrated = model([{ ...transcriptLeak, likelihood: 3, impact: 3 }]);
     expect(pii(assemble([unrated, unrated, unrated]))?.state).toBe('accepted');
   });
+  it('says why a review failed when no run produced an analysis (audit: a persistent cause looked retryable)', () => {
+    const out = assembleReview({ review, bundle, samples: [{ failed: 'upstream' }, { failed: 'upstream' }, { failed: 'timeout' }], samplesExpected: 3, priorDismissed: [], policy: DEFAULT_SITE_POLICY, promptVersion: 'v1.4.0', now: new Date('2026-11-15T00:00:00Z') });
+    expect(out.status).toBe('failed');
+    expect(out.failureReason).toBe('no analysis completed: the AI service was unavailable or refused the request; the AI timed out');
+    const one = assemble([model([refundAbuse]), { failed: 'schema' }, { failed: 'schema' }]);
+    expect(one.failureReason).toBe('only 1 of 3 analyses completed');
+  });
   it('drops a malformed rating instead of rejecting the run', () => {
     const fitted = fitAgentModel({ ...refund({}), threats: [{ ...refundAbuse, rating: { attacker: 'martian' } }] }) as { threats: Array<Record<string, unknown>> };
     expect(fitted.threats[0]!.rating).toBeUndefined();

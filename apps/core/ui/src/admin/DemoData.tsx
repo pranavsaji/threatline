@@ -43,9 +43,10 @@ export function DemoData({ api }: { api: AdminApi }) {
         </label>
         <input id={`${id}-p`} value={project} onChange={(e) => setProject(e.target.value)} placeholder="PAY" style={field} />
         <label style={label} htmlFor={`${id}-s`}>
-          Confluence space key
+          Confluence space key (optional)
         </label>
         <input id={`${id}-s`} value={space} onChange={(e) => setSpace(e.target.value)} placeholder="PAY" style={field} />
+        <p style={hint}>Without Confluence, leave it empty: the design goes into the epic and story descriptions.</p>
         {error && (
           <p role="alert" style={errorStyle}>
             {error}
@@ -61,9 +62,14 @@ export function DemoData({ api }: { api: AdminApi }) {
         {done && (
           <p style={{ margin: 0 }}>
             {`Epic ${done.epicKey}, stories ${done.storyKeys.join(', ')}, incidents ${done.incidentKeys.join(', ')}. `}
-            <a href={done.designPageUrl} target="_blank" rel="noreferrer" style={{ color: token('color.link') }}>
-              Open the design page
-            </a>
+            {done.addedReviewTypes && done.addedReviewTypes.length > 0 && `Threatline now also reviews ${done.addedReviewTypes.join(', ')} work items. `}
+            {done.designPageUrl ? (
+              <a href={done.designPageUrl} target="_blank" rel="noreferrer" style={{ color: token('color.link') }}>
+                Open the design page
+              </a>
+            ) : (
+              'The design is in the epic and story descriptions.'
+            )}
           </p>
         )}
         {done && (

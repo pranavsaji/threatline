@@ -1,9 +1,9 @@
 {
   "caseId": "data-04",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Design has unencrypted backups in cloud bucket; concrete misconfiguration exposure attack described\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Design has backup bucket; concrete deletion attack with credential compromise/insider threat specified\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Bucket sharing with reporting team makes audit logging concrete; undetected exfiltration scenario specific\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Backup files exist in design; concrete tampering attack distinct from disclosure/deletion/access threats\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": true,\n      \"reason\": \"Design explicitly shares bucket with reporting team; concrete least-privilege violation and compromise scenario\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms unencrypted backups; threat describes concrete attack with clear attacker, action, and harm.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Backup system exists in design; threat describes concrete DoS attack via deletion with clear harm.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Shared bucket exists; threat describes concrete repudiation scenario with undetectable access/tampering.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Cloud bucket with unencrypted backups exists; describes specific public misconfiguration attack scenario.\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": true,\n      \"reason\": \"Backup files exist; threat describes concrete tampering attack with undetected file modification.\"\n    },\n    {\n      \"id\": \"T6\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms reporting team bucket access; threat describes privilege violation with concrete harm.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: both threats describe customer PII exposure from public endpoint\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes field-level restrictions not stated in design; design doesn't distinguish field sensitivity\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Assumes batching capability not mentioned in design specification\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Generic flooding; not specific beyond c1's resource exhaustion coverage\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: both describe unauthorized customer profile access and PII theft via enumeration\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Valid distinct DoS: query breadth/size exhaustion differs from c1's nesting depth attack mechanism\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: same PII exposure issue, design doesn't specify field-level access distinctions\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes query batching feature not mentioned in the design specification\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,18 +15,18 @@
     },
     {
       "id": "x2",
+      "stride": "DenialOfService",
+      "title": "No query complexity limits allow resource exhaustion"
+    },
+    {
+      "id": "x3",
       "stride": "ElevationOfPrivilege",
       "title": "Field-level authorization bypass on sensitive profile fields"
     },
     {
-      "id": "x3",
-      "stride": "DenialOfService",
-      "title": "Query batching abuse for resource exhaustion"
-    },
-    {
       "id": "x4",
       "stride": "DenialOfService",
-      "title": "Unauthenticated endpoint abused for resource exhaustion"
+      "title": "Query batching abuse for resource exhaustion"
     }
   ]
 }

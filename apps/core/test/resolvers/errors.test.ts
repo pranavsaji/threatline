@@ -40,3 +40,16 @@ describe('upstream refusals are shown as plain messages, with the detail kept in
     expect(apiError(v)).toEqual({ error: 'validation', message: v.message });
   });
 });
+
+describe('other failures say what kind they are (audit: every fault used to read as "still finishing its install")', () => {
+  it('tells a slow or busy Jira from an internal fault, and keeps the detail in the logs', () => {
+    const logs: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((s: string) => void logs.push(s));
+    expect(apiError(appError('timeout', 'gather timed out'))).toEqual({ error: 'unavailable', message: expect.stringMatching(/took too long/) });
+    expect(apiError(appError('upstream', 'GET /rest/api/3/issue/1 → 503', { upstream: 'Jira', status: 503 }))).toEqual({ error: 'unavailable', message: 'Jira did not answer just now. Try again in a minute.' });
+    const internal = apiError(appError('internal', 'sql: relation reviews does not exist (table secret_x)'));
+    expect(internal).toMatchObject({ error: 'unavailable', message: expect.stringMatching(/\(internal\).*app logs/) });
+    expect((internal as { message: string }).message).not.toContain('secret_x');
+    expect(logs.join('\n')).toContain('secret_x');
+  });
+});

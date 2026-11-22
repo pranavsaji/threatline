@@ -49,28 +49,79 @@ export function sameThreat(a: AgentThreat, b: AgentThreat): boolean {
   return e && (componentsMatch(a, b) || t >= LOOSE_TITLE_THRESHOLD || jaccard(`${a.title} ${a.scenario}`, `${b.title} ${b.scenario}`) >= LOOSE_TEXT_THRESHOLD);
 }
 
+const CROSS_STRIDE_THRESHOLD = 0.4;
+
+/**
+ * The same attack filed under a different STRIDE category by another run: runs disagree on the category of about one
+ * threat in five ("any service can mint tokens" is Spoofing in one run and Elevation of privilege in the next), and a
+ * strict category match then splits one threat into two minority clusters that both get voted out. Stricter than
+ * `sameThreat`: the same passage, and titles or scenarios that overlap clearly. Only used across runs, never to merge
+ * two threats one run reported separately.
+ */
+export function sameThreatAnyCategory(a: AgentThreat, b: AgentThreat): boolean {
+  if (a.stride === b.stride) return sameThreat(a, b);
+  if (!sameEvidence(a, b)) return false;
+  return jaccard(a.title, b.title) >= CROSS_STRIDE_THRESHOLD || jaccard(`${a.title} ${a.scenario}`, `${b.title} ${b.scenario}`) >= CROSS_STRIDE_THRESHOLD;
+}
+
 export interface Cluster {
   representative: AgentThreat;
   members: AgentThreat[];
+  /** The run each member came from (parallel to `members`). */
+  memberSamples: number[];
   sampleIndexes: number[];
 }
 
+const RESTATED_THRESHOLD = 0.3;
+
+/**
+ * One run listing the same threat twice: a match by the usual rule whose titles nearly agree, or whose titles and
+ * scenarios overlap clearly (a restatement, such as "account takeover via email change without the password" and "no
+ * email verification enables account hijacking"). Measured on the recorded runs: Opus 5 never restates (its same-run
+ * pairs citing one passage overlap at most 0.19), Sonnet 4.5 often does (0.3 and up), and two different threats on one
+ * passage ("no stated authentication" and "other customers' invoices by changing the id") sit at 0.24.
+ */
+const repeated = (a: AgentThreat, b: AgentThreat) =>
+  sameThreat(a, b) && ((jaccard(a.title, b.title) >= TITLE_THRESHOLD && componentsMatch(a, b)) || jaccard(`${a.title} ${a.scenario}`, `${b.title} ${b.scenario}`) >= RESTATED_THRESHOLD);
+
 const richness = (t: AgentThreat): [number, number] => [t.evidence.length, t.scenario.length];
 
-/** Greedy clustering across samples; a cluster's votes are the distinct samples it appears in. */
+/** The category most members gave; on a tie, the first member's. */
+function majorityStride(c: Cluster): Stride {
+  const count = new Map<Stride, number>();
+  for (const m of c.members) count.set(m.stride, (count.get(m.stride) ?? 0) + 1);
+  let best = c.members[0]!.stride;
+  for (const [stride, n] of count) if (n > count.get(best)!) best = stride;
+  return best;
+}
+
+/**
+ * Greedy clustering across samples; a cluster's votes are the distinct samples it appears in. A threat joins a cluster
+ * its run has not contributed to yet: one of its own category first, then one of another category (see
+ * `sameThreatAnyCategory`). It joins a cluster its run already contributed to only when it repeats that member (the
+ * run listed one threat twice): two different threats one run reported, citing the same passage, stay two threats
+ * (live finding: "read other customers' invoices" and "no stated authentication" were chained into one). The cluster
+ * then takes the category most of its members gave.
+ */
 export function clusterSamples(samples: ReadonlyArray<readonly AgentThreat[]>): Cluster[] {
   const clusters: Cluster[] = [];
   samples.forEach((sample, idx) => {
     for (const threat of sample) {
-      const c = clusters.find((cl) => cl.members.some((m) => sameThreat(m, threat)));
+      const fresh = (cl: Cluster) => !cl.sampleIndexes.includes(idx);
+      const c =
+        clusters.find((cl) => fresh(cl) && cl.members.some((m) => sameThreat(m, threat))) ??
+        clusters.find((cl) => fresh(cl) && cl.members.some((m) => sameThreatAnyCategory(m, threat))) ??
+        clusters.find((cl) => cl.members.some((m, i) => cl.memberSamples[i] === idx && repeated(m, threat)));
       if (c) {
         c.members.push(threat);
+        c.memberSamples.push(idx);
         if (!c.sampleIndexes.includes(idx)) c.sampleIndexes.push(idx);
-      } else clusters.push({ representative: threat, members: [threat], sampleIndexes: [idx] });
+      } else clusters.push({ representative: threat, members: [threat], memberSamples: [idx], sampleIndexes: [idx] });
     }
   });
   for (const c of clusters) {
-    c.representative = c.members.reduce((best, m) => {
+    const stride = majorityStride(c);
+    c.representative = c.members.filter((m) => m.stride === stride).reduce((best, m) => {
       const [be, bs] = richness(best);
       const [me, ms] = richness(m);
       return me > be || (me === be && ms > bs) ? m : best;

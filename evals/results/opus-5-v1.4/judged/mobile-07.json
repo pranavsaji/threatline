@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Flag set in release enables network MITM to steal credentials. Distinct from x2.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Attacker modifies bundle to set flag and enable MITM. Different attack.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicates x2's tampering harm; same attack and harm with more detail.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Network attacker impersonates the backend because the app can be told to accept any certificate"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Anyone with the app package can flip the bundled flag to turn off certificate checking"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Fake backend can feed the app altered responses and change what it does"
+    }
+  ]
+}

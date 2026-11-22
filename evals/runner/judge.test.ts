@@ -124,3 +124,20 @@ describe('LLM judge for threats outside the must-find list (offline eval only, T
     expect(reportMarkdown(r.value)).toMatch(new RegExp(`incomplete: ${withExtras.length} not judged`));
   });
 });
+
+describe('one retry after a malformed judge reply', () => {
+  it('asks again naming the ids, and uses the second reply', async () => {
+    const asked: string[] = [];
+    const replies = ['{"verdicts":[{"id":"x1","valid":true}]}', '{"verdicts":[{"id":"x1","valid":true,"reason":"r"},{"id":"x2","valid":false,"reason":"r"}]}'];
+    const llm: LlmPort = { complete: async (req: LlmRequest) => (asked.push(req.user), ok({ text: replies.shift()!, modelId: 'test', tokensIn: 1, tokensOut: 1 })) };
+    const r = await judgeExtras(llm, theCase, [], [item('x1', 'Forges a token'), item('x2', 'Replays a link')]);
+    expect(r.ok && r.value.map((v) => v.valid)).toEqual([true, false]);
+    expect(asked[1]).toMatch(/exactly one entry for each of: x1, x2/);
+  });
+  it('does not retry an error that is not about the reply format', async () => {
+    let calls = 0;
+    const llm: LlmPort = { complete: async () => (calls++, err(appError('timeout', 'slow'))) };
+    expect((await judgeExtras(llm, theCase, [], [item('x1', 'Forges a token')])).ok).toBe(false);
+    expect(calls).toBe(1);
+  });
+});

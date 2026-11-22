@@ -116,8 +116,9 @@ export function panelApiOver(invoke: Invoke): PanelApi {
 export interface SeedResult {
   epicKey: string;
   storyKeys: string[];
-  designPageUrl: string;
+  designPageUrl: string | null;
   incidentKeys: string[];
+  addedReviewTypes?: string[];
 }
 export interface GateInstallDto {
   projects: Array<{ projectKey: string; added: string[]; already: string[]; readOnly: string[] }>;

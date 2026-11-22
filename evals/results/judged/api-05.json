@@ -3,40 +3,35 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Audit logging material to PII export feature; specific harm when data misuse occurs.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same vulnerability (insufficient org ID authorization) and harm (cross-org PII access).\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"MFA requirement is generic authentication hygiene, not specific to this feature's design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Too generic; doesn't follow specific design (admin-only endpoint exporting org users, not customer records).\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Resource exhaustion from bulk exports material to design; specific attack and harm described.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Assumes specific implementation (file storage, URLs) not mentioned in design; too narrow.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: both describe cross-org access via manipulating org ID in request\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic authentication hygiene (MFA, step-up) not specific to this design\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic auditing hygiene not made material by this design\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Assumes implementation details (file storage, URLs) not mentioned in design\"},{\"id\":\"x5\",\"valid\":false,\"reason\":\"Generic rate limiting hygiene not made material by design\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "Repudiation",
-      "title": "PII exports are not auditable"
-    },
-    {
-      "id": "x2",
       "stride": "ElevationOfPrivilege",
       "title": "Admin can export users from any organization by manipulating org ID"
     },
     {
-      "id": "x3",
+      "id": "x2",
       "stride": "Spoofing",
       "title": "Weak authentication for high-privilege PII export"
     },
     {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "PII exports are not auditable"
+    },
+    {
       "id": "x4",
       "stride": "InformationDisclosure",
-      "title": "Personal data exposed to unauthorised users"
+      "title": "Exported CSV files lack access controls"
     },
     {
       "id": "x5",
       "stride": "DenialOfService",
       "title": "Unbounded export requests can exhaust server resources"
-    },
-    {
-      "id": "x6",
-      "stride": "InformationDisclosure",
-      "title": "Exported CSV files lack access controls"
     }
   ]
 }

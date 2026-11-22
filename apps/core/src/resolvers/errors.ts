@@ -34,5 +34,17 @@ export function apiError(e: AppError): ApiError {
   if (e.code === 'not_found') return { error: 'not_found' };
   if (e.code === 'budget') return { error: 'rate_limited', message: e.message };
   if (SHOWN.has(e.code)) return { error: e.code as ApiErrorCode, message: shownMessage(e) };
-  return { error: 'unavailable' };
+  return { error: 'unavailable', message: unavailableMessage(e) };
+}
+
+/**
+ * Which kind of "could not do it" this is, so a person can tell a busy Jira from a fault that a retry will not fix.
+ * The detail goes to the logs; the person sees the kind and the error code only.
+ */
+function unavailableMessage(e: AppError): string {
+  const service = e.details?.upstream;
+  if (e.code === 'timeout') return 'This took too long to answer. Try again in a minute.';
+  if (e.code === 'upstream' && (service === 'Jira' || service === 'Confluence')) return `${service} did not answer just now. Try again in a minute.`;
+  log('resolver.failed', { code: e.code, detail: e.message.slice(0, 500) });
+  return `Threatline hit an error it could not recover from (${e.code}). If Threatline was installed in the last few minutes, wait a minute and try again; if it keeps failing, an admin can find the cause in the app logs.`;
 }

@@ -152,7 +152,7 @@ SQL implementation (`packages/core/test/contracts`).
 
 | Store | What |
 | --- | --- |
-| Forge SQL | `reviews`, `review_stages` (doubles as the run trace), `agent_samples`, `context_facts`, `threats`, `review_discarded`, `requirements`, `feedback`, `issues`, `issue_pages`, `attestations`, `ledger`, `merkle_heads`, `posture_snapshots`, `usage_monthly`. Reviews are purged after 400 days; the ledger never is. |
+| Forge SQL | `reviews`, `review_stages` (doubles as the run trace), `agent_samples`, `context_facts`, `threats`, `review_discarded`, `requirements`, `feedback`, `issues`, `issue_pages`, `attestations`, `ledger`, `merkle_heads`, `posture_snapshots`, `usage_monthly`, `rate_limits`, `suppression_rules`, `suppression_matches`. Reviews are purged after 400 days; the ledger never is. |
 | KVS | Verdicts (what the gate reads), site and project policy and its version, rate-limit counters, single-use submission tokens. |
 | Forge secret storage | The Ed25519 signing key (generated on install, never sent to the UI; rotation keeps old keys verifying for a grace period). |
 | Issue property `threatline.verdict` | Searchable copy of the verdict for JQL and dashboards. It is never read by the gate, because users can edit issue properties. |
@@ -161,8 +161,8 @@ SQL implementation (`packages/core/test/contracts`).
 
 Every acceptance, approval, revocation, confirmation, break-glass, warn-only switch and policy change is appended to
 `ledger` with `entryHash = SHA-256(prevHash ‖ canonical entry)`; there is no update or delete path. Once a day Threatline
-builds an RFC 9162 Merkle tree over the entry hashes, signs the tree head with the attestation key, stores it and posts
-it to a Confluence page. An admin can download a proof for any entry (inclusion in the signed tree, plus consistency
+builds an RFC 9162 Merkle tree over the entry hashes, signs the tree head with the attestation key, stores it and, once a digest space is set under
+Notifications, posts it to a Confluence page. An admin can download a proof for any entry (inclusion in the signed tree, plus consistency
 with the last published head) and anyone can check it offline with `node scripts/verify-ledger-proof.mjs proof.json`,
 which uses only Node built-ins. A proof carries its own public key, so pin Threatline's published key with
 `--public-key <key>` (from the Confluence tree-head page or **Threatline admin → Signing keys**); the verifier also

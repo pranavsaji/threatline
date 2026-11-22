@@ -207,7 +207,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
           )}
           {dto.review?.modelIds.some((m) => m === 'threatline-rules' || m === 'redline-rules') && (
             <SectionMessage appearance="information" title="Rule-based review">
-              AI review is off on this site, so these threats come from Threatline's built-in checks only. An admin can turn on AI review under Threatline admin → Review mode once Rovo is available.
+              AI review is off on this site, so these threats come from Threatline's built-in checks only. An admin can turn on AI review under Threatline admin → Review mode: Threatline Engine needs no Rovo.
             </SectionMessage>
           )}
           {dto.review && <WhatIf api={api} />}
@@ -223,6 +223,9 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               actions={rerunActions('Retry review')}
             >
               Threatline could not finish this review, so Done and merge stay blocked until it runs again.
+              {dto.review?.failureReason && dto.review.failureReason !== 'budget' && (
+                <p style={{ margin: '6px 0 0' }}>Cause: {dto.review.failureReason}. If retrying gives the same cause, an admin can check Threatline admin → Recent runs.</p>
+              )}
               {needsEdit}
             </SectionMessage>
           )}

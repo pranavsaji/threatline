@@ -3,25 +3,40 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe API keys leaking via URL into logs and browser history\"},{\"expected\":\"E2\",\"reported\":\"T1\",\"reason\":\"Both describe permanent access from stolen non-expiring keys\"},{\"expected\":\"E3\",\"reported\":\"T4\",\"reason\":\"Both describe denial of service from missing rate limits on public endpoint\"}]}\n```",
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe API keys leaking through query string URLs into logs and proxies\"},{\"expected\":\"E2\",\"reported\":\"T1\",\"reason\":\"Both describe stolen non-expiring keys being reused for permanent unauthorized access\"},{\"expected\":\"E3\",\"reported\":\"T4\",\"reason\":\"Both describe denial of service attacks enabled by missing rate limits\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
-    {
-      "id": "T2",
-      "stride": "InformationDisclosure",
-      "title": "API key in the query string leaks through logs, proxies and browser history"
-    },
     {
       "id": "T1",
       "stride": "Spoofing",
       "title": "Keys never expire, so a stolen key works forever"
     },
     {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "API key in the query string leaks through logs, proxies and browser history"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Unlimited guessing of API keys against a public endpoint"
+    },
+    {
       "id": "T4",
       "stride": "DenialOfService",
       "title": "Unthrottled public endpoints let anyone exhaust API and database capacity"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "No rate limiting lets one key be used to scrape every customer email address"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "Actions cannot be tied to a person because keys are shared and never rotated"
     }
   ]
 }

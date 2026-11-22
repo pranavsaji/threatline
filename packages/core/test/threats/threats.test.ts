@@ -112,8 +112,33 @@ describe('clusterSamples: the same threat in different words (live finding, PAY-
     expect(clusters[0]!.sampleIndexes).toEqual([0, 1, 2]);
   });
 
-  it('does not merge different STRIDE categories, or same-category threats with unrelated evidence and titles', () => {
-    expect(clusterSamples([[run('Magic links never expire', 'auth', Q)], [run('Magic links never expire', 'auth', Q, 'InformationDisclosure')]])).toHaveLength(2);
+  it('merges one threat that two runs filed under different STRIDE categories, taking the majority category (live finding, api-06)', () => {
+    const clusters = clusterSamples([
+      [run('Magic links never expire', 'auth', Q)],
+      [run('Magic links never expire', 'auth', Q, 'InformationDisclosure')],
+      [run('Magic links never expire, so old links work', 'auth', Q, 'InformationDisclosure')],
+    ]);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0]!.sampleIndexes).toEqual([0, 1, 2]);
+    expect(clusters[0]!.representative.stride).toBe('InformationDisclosure');
+  });
+
+  it('does not merge different categories without the same passage and clearly similar wording', () => {
+    expect(clusterSamples([[run('Magic links never expire', 'auth', Q)], [run('Magic links never expire', 'auth', 'Links are emailed to the user.', 'InformationDisclosure')]])).toHaveLength(2);
+    expect(clusterSamples([[run('Magic links never expire', 'auth', Q)], [{ ...run('No record of who used a link', 'audit', Q, 'Repudiation'), scenario: 'Nobody can tell later who signed in.' }]])).toHaveLength(2);
+  });
+
+  it('keeps two threats one run reported apart even when they cite the same passage (live finding, web-04)', () => {
+    const idor = { ...run('Any customer can read another customer\'s invoice by changing the id', 'download', Q, 'InformationDisclosure'), scenario: 'A signed-in customer edits the number in the URL and downloads a stranger\'s invoice.' };
+    const enumerate = { ...run('Sequential ids reveal how many customers there are', 'download', Q, 'InformationDisclosure'), scenario: 'A competitor counts upward through the numbers to learn the order volume.' };
+    const clusters = clusterSamples([[idor, enumerate], [idor, enumerate], [idor]]);
+    expect(clusters.map((c) => c.sampleIndexes)).toEqual([[0, 1, 2], [0, 1]]);
+    // A run that lists the same threat twice, or restates it in other words, still counts once.
+    expect(clusterSamples([[idor, { ...idor, title: 'Any customer can read another customer\'s invoices by changing the id' }]])).toHaveLength(1);
+    expect(clusterSamples([[idor, { ...idor, title: 'Invoice ids are not checked against the signed-in customer' }]])).toHaveLength(1);
+  });
+
+  it('does not merge same-category threats with unrelated evidence and titles', () => {
     expect(
       clusterSamples([[run('Magic links never expire', 'auth', Q)], [run('Support staff impersonate customers', 'admin console', 'Support staff can sign in as any customer from the admin console.')]]),
     ).toHaveLength(2);

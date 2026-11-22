@@ -1,9 +1,9 @@
 {
   "caseId": "web-05",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Design shows role attribute used for admin access decisions\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Design uses SAML authentication, replay targets this\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Design specifies corporate IdP, threat targets IdP validation\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Design uses SAML, signature wrapping is distinct attack from T1\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": true,\n      \"reason\": \"Design uses SAML requiring XML parsing, concrete DoS attack\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Design reads role attributes from SAML assertions for access control; threat attacks this specific mechanism.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Design uses SAML SSO authentication; threat attacks signature validation, a core SAML security requirement.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Design specifies corporate IdP for SAML; threat attacks missing validation of which IdP issued assertions.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Design parses SAML XML with role attributes; threat exploits XML signature wrapping to manipulate parsed content.\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Generic TLS/certificate validation hygiene; applies to any internet service, not specific to SAML design.\"\n    },\n    {\n      \"id\": \"T6\",\n      \"keep\": true,\n      \"reason\": \"Design processes SAML XML from internet; threat attacks XML parser with entity expansion, SAML-specific vulnerability.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

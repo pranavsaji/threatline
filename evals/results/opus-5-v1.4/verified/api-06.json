@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design quote confirms 7-day token lifetime; threat describes concrete replay attack with no revocation path.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms shared HS256 secret; forging peer-service tokens is a concrete attack on this design.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms 7-day token lifetime; replay of stolen token with no revocation is distinct from T1.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

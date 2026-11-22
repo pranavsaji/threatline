@@ -177,6 +177,8 @@ export interface EvalOptions {
     recordingFor?: (caseId: string) => Recording | null;
     /** Write the rated items into recordings that lack them (run once with the review code that made the recording). */
     annotateDir?: string;
+    /** A live judge for cases whose recording lists items that no longer match today's extras (re-judged and re-saved). */
+    live?: LlmPort | null;
   };
   /** Off only to re-create how reviews looked before rule-based coverage existed (see judge.annotateDir). */
   coverage?: boolean;
@@ -285,7 +287,8 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
           const rec0 = judge.recordingFor?.(c.id) ?? null;
           const key = (x: { stride: string; title: string }) => `${x.stride}|${x.title}`;
           if (rec0?.items && rec0.replies[0]) {
-            const parsed = parseJudge(rec0.replies[0].text, rec0.items.map((x) => x.id));
+            // The last reply is the one that counted (an earlier one may be a malformed reply that was retried).
+            const parsed = parseJudge(rec0.replies[rec0.replies.length - 1]!.text, rec0.items.map((x) => x.id));
             if (parsed.ok) {
               const byKey = new Map(rec0.items.map((it) => [key(it), parsed.value.find((v) => v.id === it.id)?.valid ?? false] as const));
               if (extras.every((e) => byKey.has(key(e)))) {
@@ -303,7 +306,14 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
               }
             }
           }
-          const base = judge.llmFor(c.id);
+          // A recording that names the items it rated, but not today's: replaying its verdicts by position would grade
+          // other threats. Re-judge live when a live judge is given; otherwise say so instead of scoring stale verdicts.
+          const stale = Boolean(rec0?.items);
+          if (stale && !judge.live) {
+            failures.push(`judge ${c.id}: stale (the recorded verdicts rate other threats; re-judge with --judge claude-code --resume)`);
+            return;
+          }
+          const base = stale ? judge.live! : judge.llmFor(c.id);
           if (!base) {
             failures.push(`judge ${c.id}: not_found (no recorded judge reply)`);
             return;

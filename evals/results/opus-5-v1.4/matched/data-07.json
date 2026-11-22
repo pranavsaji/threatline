@@ -3,15 +3,35 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe sensitive credentials being written to logs through request body logging.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No reported threat describes log injection or tampering via crafted request content.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Passwords written to central log system matches expected threat\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No reported threat describes log injection attacks via request bodies\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
-      "id": "T3",
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "One year of full bodies keeps every customer's personal data exposed long after it is needed for debugging"
+    },
+    {
+      "id": "T2",
       "stride": "InformationDisclosure",
       "title": "Passwords from login requests are written to the central log system in clear text"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Session tokens captured in logged bodies let a log reader act as any user"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Full payment details are copied into logs, putting card data in a system not built for it"
+    },
+    {
+      "id": "T5",
+      "stride": "DenialOfService",
+      "title": "Logging every full body lets a caller drive log storage cost and volume"
     }
   ]
 }

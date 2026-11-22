@@ -225,6 +225,17 @@ function addCitations(into: Citation[], extra: Citation[]): Citation[] {
 /** A threat with a rating gets Threatline's likelihood and impact for it; the model's own numbers are a fallback. */
 const rated = (t: AgentThreat): AgentThreat => (t.rating ? { ...t, ...boundedScores(ratedScores(t.rating), t) } : t);
 
+/** Plain words for why an AI run produced no analysis, shown on a failed review. */
+const FAILURE_WORDS: Record<string, string> = {
+  upstream: 'the AI service was unavailable or refused the request',
+  timeout: 'the AI timed out',
+  schema: 'the AI answer did not match the threat model format',
+  invalid_json: 'the AI answer was not valid JSON',
+  no_json: 'the AI answered without a threat model',
+  validation: 'the request to the AI was malformed',
+  forbidden: 'the AI is not available on this site',
+};
+
 /** The median of 1–5 scores; with an even count, the upper of the two middle values (never below a majority). */
 export function centralScore(xs: readonly number[]): number {
   const s = [...xs].sort((a, b) => a - b);
@@ -395,7 +406,11 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
   if (i.mode === 'final') status = enough ? 'ready' : 'agent_timeout';
   else if (received < i.samplesExpected) status = 'awaiting_agent';
   else status = enough ? 'ready' : 'failed';
-  const failureReason = (status === 'failed' || status === 'agent_timeout') && valid.length > 0 ? shortfall : undefined;
+  // With no valid run, say what went wrong (a persistent cause, such as every model refusing, otherwise looks like
+  // something a retry would fix).
+  const causes = [...new Set(i.samples.filter(isFailedSample).map((s) => FAILURE_WORDS[s.failed] ?? s.failed))];
+  const failureReason =
+    status === 'failed' || status === 'agent_timeout' ? (valid.length > 0 ? shortfall : causes.length > 0 ? `no analysis completed: ${causes.join('; ')}` : undefined) : undefined;
 
   return {
     threats,

@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states keys never expire; permanent access from leaked key is a concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Query-string key placement is in design; log/proxy leakage leading to data access is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public endpoint plus no rate limiting supports brute-force key guessing attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No rate limiting on public endpoint supports flooding/capacity exhaustion; distinct harm from T3.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared non-expiring org-level key supports attribution/investigation failure; harm differs from T1.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states keys never expire; concrete permanent-access attack on partner orders and emails.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Key in query string per design; concrete log/proxy leak enabling partner data access.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public API with no rate limiting supports brute-force key guessing attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No rate limiting on public endpoint supports concrete flooding/capacity exhaustion attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct harm from T4: bulk scraping of customer emails via unthrottled endpoint.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Org-wide long-lived keys per design; concrete attribution loss during investigation.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

@@ -18,7 +18,7 @@ describe('Admin: demo data (Task 24)', () => {
     const form = await screen.findByRole('form', { name: 'Load demo data' });
     await userEvent.clear(within(form).getByRole('textbox', { name: 'Jira project key' }));
     await userEvent.type(within(form).getByRole('textbox', { name: 'Jira project key' }), 'pay');
-    await userEvent.type(within(form).getByRole('textbox', { name: 'Confluence space key' }), 'PAY');
+    await userEvent.type(within(form).getByRole('textbox', { name: 'Confluence space key (optional)' }), 'PAY');
     await userEvent.click(within(form).getByRole('button', { name: 'Load demo data' }));
     expect(seed).toHaveBeenCalledWith('PAY', 'PAY');
     expect(await screen.findByText(/Epic PAY-100, stories PAY-101, PAY-102, incidents PAY-103, PAY-104/)).toBeTruthy();
@@ -29,7 +29,7 @@ describe('Admin: demo data (Task 24)', () => {
     const seed = vi.fn(async () => ({ error: 'validation' as const, message: 'Project NOPE was not found.' }));
     render(<AdminPage api={{ ...mockAdminApi(), seed }} />);
     const form = await screen.findByRole('form', { name: 'Load demo data' });
-    await userEvent.type(within(form).getByRole('textbox', { name: 'Confluence space key' }), 'X');
+    await userEvent.type(within(form).getByRole('textbox', { name: 'Confluence space key (optional)' }), 'X');
     await userEvent.click(within(form).getByRole('button', { name: 'Load demo data' }));
     expect(await screen.findByText('Project NOPE was not found.')).toBeTruthy();
   });

@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe SSRF fetching internal metadata and services, causing information disclosure from within VPC.\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe oversized or slow images exhausting resizer memory and CPU, causing denial of service.\"}]}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe SSRF to internal services and cloud metadata from within VPC\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe resource exhaustion from oversized or slow images\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,8 +15,28 @@
     },
     {
       "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Non-HTTP URL schemes let a caller read local files and container secrets"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Unauthenticated internal callers can drive the fetcher"
+    },
+    {
+      "id": "T4",
       "stride": "DenialOfService",
       "title": "Oversized images and decompression bombs exhaust memory and CPU"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Redirect and DNS rebinding bypass any URL check done before the fetch"
+    },
+    {
+      "id": "T6",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service acts as a confused deputy to reach internal endpoints that require no authentication"
     }
   ]
 }

@@ -21,12 +21,12 @@ export const INGEST_LAST_AT_KEY = 'ingest:lastAt';
 export const BITBUCKET_KEY_COPIED_KEY = 'setup:bitbucketKeyCopied';
 
 const DAY = 86_400_000;
-const SeedSchema = z.object({ projectKey: z.string().regex(/^[A-Z][A-Z0-9_]{0,254}$/), spaceKey: z.string().regex(/^[A-Za-z0-9~_-]{1,255}$/) });
+const SeedSchema = z.object({ projectKey: z.string().regex(/^[A-Z][A-Z0-9_]{0,254}$/), spaceKey: z.union([z.literal(''), z.string().regex(/^[A-Za-z0-9~_-]{1,255}$/)]).optional() });
 
 export async function requireAdmin(deps: CoreDeps, a: Admin): Promise<ApiError | null> {
   if (!a.accountId) return { error: 'forbidden', message: 'Only a Jira administrator can do this.' };
   const r = await deps.jira.isAdmin(a.accountId);
-  if (!r.ok) return { error: 'unavailable' };
+  if (!r.ok) return apiError(r.error);
   return r.value ? null : { error: 'forbidden', message: 'Only a Jira administrator can do this.' };
 }
 
@@ -35,8 +35,8 @@ export async function adminSeed(deps: CoreDeps, a: Admin, payload: unknown): Pro
   const denied = await requireAdmin(deps, a);
   if (denied) return denied;
   const p = SeedSchema.safeParse(payload);
-  if (!p.success) return { error: 'validation', message: 'Give a Jira project key (like PAY) and a Confluence space key.' };
-  const r = await seedDemo(deps, p.data, a.accountId);
+  if (!p.success) return { error: 'validation', message: 'Give a Jira project key (like PAY), and a Confluence space key if the site has Confluence.' };
+  const r = await seedDemo(deps, { projectKey: p.data.projectKey, ...(p.data.spaceKey ? { spaceKey: p.data.spaceKey } : {}) }, a.accountId);
   return r.ok ? r.value : apiError(r.error);
 }
 

@@ -3,43 +3,33 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same prompt injection attack via email, same forwarding and drafting harms\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same malicious email attack, same forwarding to attacker harm\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Mentions inputs not in design: chat messages, order notes, pages, tool results\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Mentions capabilities not in design: refunds and data lookup tools not mentioned\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Different attack vector (spoofing vs injection) with unique harms: internal forwarding, accepting false claims\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Unique repudiation concern: audit trail gap for agent actions, not covered by manipulation threats\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS via email flood consuming LLM resources, not duplicate of manipulation threats\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: same attack (crafted email) and harm (agent leaks confidential data in responses)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: explicitly describes the same prompt injection attack causing forwards and harmful replies\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Spoofing assumes sender-based trust not in design; harmful outcomes from malicious content already covered by c2\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Describes missing control (audit trail), not specific attack; doesn't name attacker or attack action\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS attack via email flood consuming LLM tokens; delays legitimate sales inquiries; not covered\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Agent leaks confidential information in summaries or replies"
+    },
+    {
+      "id": "x2",
       "stride": "Tampering",
       "title": "Prompt injection via malicious email content"
     },
     {
-      "id": "x2",
-      "stride": "ElevationOfPrivilege",
-      "title": "Unauthorized email forwarding to external addresses"
-    },
-    {
       "id": "x3",
-      "stride": "ElevationOfPrivilege",
-      "title": "Agent goal hijack through injected instructions"
-    },
-    {
-      "id": "x4",
-      "stride": "Tampering",
-      "title": "Tool misuse by an over-privileged agent"
-    },
-    {
-      "id": "x5",
       "stride": "Spoofing",
       "title": "Attacker impersonates trusted sender to manipulate agent"
     },
     {
-      "id": "x6",
+      "id": "x4",
       "stride": "Repudiation",
       "title": "No audit trail for automated agent actions"
     },
     {
-      "id": "x7",
+      "id": "x5",
       "stride": "DenialOfService",
       "title": "Resource exhaustion via malicious email flood"
     }

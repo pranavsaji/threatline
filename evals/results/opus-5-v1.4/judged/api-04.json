@@ -3,25 +3,30 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes URL validation not in design; duplicate SSRF attack reaching internal services as c1\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; same SSRF attack reaching internal services, only consequence differs\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; describes same SSRF attack from different caller position\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"File scheme attacks local resources, distinct from c1 network SSRF\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Same SSRF harm as c1, lack of auth is enabling factor\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Same internal access harm as c1, redirect bypasses non-existent validation\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Write/action privilege escalation distinct from c1 read-only information disclosure\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Non-HTTP URL schemes let a caller read local files and container secrets"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Unauthenticated internal callers can drive the fetcher"
+    },
+    {
+      "id": "x3",
       "stride": "Tampering",
       "title": "Redirect and DNS rebinding bypass any URL check done before the fetch"
     },
     {
-      "id": "x2",
+      "id": "x4",
       "stride": "ElevationOfPrivilege",
       "title": "Service acts as a confused deputy to reach internal endpoints that require no authentication"
-    },
-    {
-      "id": "x3",
-      "stride": "Spoofing",
-      "title": "Unauthenticated internal callers can drive the fetcher"
     }
   ]
 }

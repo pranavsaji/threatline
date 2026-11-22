@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design has no user-facing requests; threat describes customer-to-customer access not in scope\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Attacks job scheduler and network components not mentioned in design; generic job authentication\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Copy operation is in design; integrity failure specific to export with material analyst impact\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes network components not mentioned in design\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes storage implementation details not in design\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Assumes job scheduler components not in design\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Direct consequence of nightly copies without deletion\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific to copy operation; analysts using corrupted data\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -11,15 +11,25 @@
     {
       "id": "x1",
       "stride": "InformationDisclosure",
-      "title": "Personal data exposed to unauthorised users"
+      "title": "Customer data transmitted without encryption"
     },
     {
       "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Customer PII stored unencrypted in analytics warehouse"
+    },
+    {
+      "id": "x3",
       "stride": "Spoofing",
       "title": "Export job runs without authenticated identity"
     },
     {
-      "id": "x3",
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "No data retention policy causes indefinite accumulation of old PII"
+    },
+    {
+      "id": "x5",
       "stride": "Tampering",
       "title": "No integrity verification of exported customer data"
     }

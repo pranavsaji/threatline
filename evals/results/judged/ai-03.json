@@ -3,15 +3,15 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes missing audit trail not specified in design; generic hygiene not made material\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Specific secrets exfiltration harm different from c1; design implies token exists\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1 prompt injection; references chat/orders not in design\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS harm distinct from c1's access/control; concrete attack patterns\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"References tools/refunds/data lookups not mentioned in design\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct vulnerability: command injection via shell metacharacters in filenames, separate from prompt injection attacks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: secrets exfiltration is implicit consequence of arbitrary command execution already described.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene: audit logging requirement, not specific attack on feature with attacker and harm.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: resource exhaustion is implicit consequence of arbitrary command execution already described.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "Repudiation",
-      "title": "Missing attribution links agent actions to human initiators"
+      "stride": "ElevationOfPrivilege",
+      "title": "Shell metacharacters in repository metadata enable command injection"
     },
     {
       "id": "x2",
@@ -20,18 +20,13 @@
     },
     {
       "id": "x3",
-      "stride": "ElevationOfPrivilege",
-      "title": "Agent goal hijack through injected instructions"
+      "stride": "Repudiation",
+      "title": "Missing attribution links agent actions to human initiators"
     },
     {
       "id": "x4",
       "stride": "DenialOfService",
       "title": "Malicious commands cause resource exhaustion and system crashes"
-    },
-    {
-      "id": "x5",
-      "stride": "Tampering",
-      "title": "Tool misuse by an over-privileged agent"
     }
   ]
 }

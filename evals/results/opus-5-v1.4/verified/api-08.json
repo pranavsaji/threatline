@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows PATCH /users/{id} copying all fields with no ownership check; concrete privilege takeover attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct mass-assignment attack: suspended user self-reactivates via accountStatus field, bypassing moderation.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack and harm as T1: id enumeration to edit other users' records including role.\",\"duplicateOf\":\"T1\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows handler copies all fields including role; concrete privilege escalation attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows {id} path param with no ownership check described; concrete cross-user edit attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"accountStatus field explicitly quoted; distinct attack and harm (suspension bypass/lockout) from T1.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Mass-assignment evidence supports identity field overwrite; distinct harm (account takeover via reset).\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

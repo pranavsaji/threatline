@@ -3,23 +3,18 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Overlaps c2; mentions pages and tool results not in design; too generic for stated feature.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Follows directly from automatic writing of anything users say; specific harm from sensitive data retention.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Follows from unbounded automatic writing; specific DoS via storage, latency, and cost inflation.\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Plausible cross-user data leak from unspecified retrieval scoping; distinct from c1's retention/breach concern\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Unbounded automatic writes cause resource exhaustion; follows from no described cap; distinct DoS threat\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "ElevationOfPrivilege",
-      "title": "Agent goal hijack through injected instructions"
+      "stride": "InformationDisclosure",
+      "title": "Memories from one customer surface in another customer's answers"
     },
     {
       "id": "x2",
-      "stride": "InformationDisclosure",
-      "title": "Secrets and special-category data are silently persisted forever"
-    },
-    {
-      "id": "x3",
       "stride": "DenialOfService",
       "title": "Unbounded automatic memory writing inflates storage, prompt size and model cost"
     }

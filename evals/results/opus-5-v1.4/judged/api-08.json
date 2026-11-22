@@ -3,15 +3,20 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack (no ownership check, edit others via id) and harm (privilege escalation).\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Valid: bypassing suspension via accountStatus is distinct harm from c1's privilege escalation and c2's identity compromise.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: same attack (unauthorized modification) and harm (identity/account compromise) despite added password reset detail.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "Tampering",
+      "title": "User changes accountStatus to bypass suspension or lock other accounts"
+    },
+    {
+      "id": "x2",
       "stride": "Spoofing",
-      "title": "Any user can edit another user's record by changing the id in the URL"
+      "title": "Identity fields such as email can be overwritten, enabling account takeover by password reset"
     }
   ]
 }

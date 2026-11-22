@@ -3,30 +3,30 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Speculates implementation accepts client-submitted account ID; design states token in link, standard interpretation: token identifies account.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic data access threat; design describes password reset only, not requesting or exposing personal data records.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from 'logged in immediately' with no mention of invalidating other sessions or requiring re-verification after reset.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Follows from 'link contains token'; URLs inherently leak through browser history, server logs, Referer headers - distinct from c1 email interception.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Follows from public endpoint accepting email addresses; response differences reveal account existence for phishing and credential stuffing.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design omits session invalidation; existing sessions persist after password reset, distinct from token reusability.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"24-hour validity enables email interception attacks before link is opened by legitimate user.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"URL-based token leaks via browser history, logs, and referrers after opening; distinct from email interception.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Design doesn't specify token strength; public endpoint and 24-hour window enable brute-force attempts.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Public email-based request form enables account enumeration if design doesn't specify consistent response behavior.\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "ElevationOfPrivilege",
-      "title": "Reset page may trust an account identifier sent by the client"
-    },
-    {
-      "id": "x2",
-      "stride": "InformationDisclosure",
-      "title": "Personal data exposed to unauthorised users"
-    },
-    {
-      "id": "x3",
       "stride": "Spoofing",
       "title": "Automatic login after reset leaves the attacker's or victim's other sessions alive"
     },
     {
-      "id": "x4",
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Reset link stays valid for a full day, so a stolen link takes over the account"
+    },
+    {
+      "id": "x3",
       "stride": "InformationDisclosure",
       "title": "Reset token travels in the URL and leaks through history, referrers and logs"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "Reset token can be guessed or brute forced over a 24 hour window"
     },
     {
       "id": "x5",

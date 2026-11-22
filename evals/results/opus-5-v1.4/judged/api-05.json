@@ -3,23 +3,28 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Follows synchronous bulk export design; specific resource exhaustion attack; not duplicate of data access or injection threats.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Account compromise plus authorized feature use; re-auth and notifications are generic hygiene, not design-specific.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Audit logging is generic hygiene; detecting cross-tenant access depends on already-counted c1.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Missing role check: design states admins call it but describes no authorization enforcement\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Expensive operation with no rate limiting or async handling enables resource exhaustion DoS\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Describes admin feature working as designed when admin compromised, not a design flaw\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Missing audit trail material here: cannot detect cross-org attack from c1 without logging\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any member, not just an admin, can pull the whole user directory"
+    },
+    {
+      "id": "x2",
       "stride": "DenialOfService",
       "title": "Repeated full-directory export requests exhaust database and server resources"
     },
     {
-      "id": "x2",
+      "id": "x3",
       "stride": "InformationDisclosure",
       "title": "Unbounded bulk PII export gives one compromised admin account the whole directory in one request"
     },
     {
-      "id": "x3",
+      "id": "x4",
       "stride": "Repudiation",
       "title": "No record of who exported which organisation's personal data"
     }

@@ -3,23 +3,28 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: unauthorized access to driver location via delivery ID, enabling tracking and stalking.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: stalking via delivery ID access is already covered, regardless of attacker type.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Valid DoS threat: GPS flooding and map polling are distinct from information disclosure and tampering.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Legitimate customers misusing exposed phone numbers to harass drivers, distinct from unauthorized access in c1.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack via delivery ID enumeration, same harm tracking drivers and addresses.\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Assumes data retention not in design; privacy harm from unauthorized tracking already covered by c1.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific DoS attack on GPS updates and map endpoint described in design, not duplicate.\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Driver phone numbers exposed to customers enable harassment"
+    },
+    {
+      "id": "x2",
       "stride": "ElevationOfPrivilege",
       "title": "Missing authorization allows access to any delivery's driver location"
     },
     {
-      "id": "x2",
+      "id": "x3",
       "stride": "InformationDisclosure",
-      "title": "Real-time customer access to driver location enables stalking"
+      "title": "Real-time GPS tracking exposes sensitive location history"
     },
     {
-      "id": "x3",
+      "id": "x4",
       "stride": "DenialOfService",
       "title": "Unlimited location updates and map requests risk resource exhaustion"
     }

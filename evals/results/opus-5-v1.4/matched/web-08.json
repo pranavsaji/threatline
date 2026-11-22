@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe unrestricted impersonation scope allowing any support staff to target any customer account\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe actions appearing as customer's own with no operator identity recorded for attribution\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe customer personal data exposure to support staff without consent or masking\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe unrestricted ability to impersonate any customer without authorization controls\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe actions during impersonation attributed to customer not impersonating employee\"},{\"expected\":\"E3\",\"reported\":\"T2\",\"reason\":\"Both describe support staff viewing customer personal data through impersonation\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -14,14 +14,29 @@
       "title": "Any employee with the support role can take over any customer account"
     },
     {
-      "id": "T5",
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Unrestricted view of a customer's personal data with no consent or masking"
+    },
+    {
+      "id": "T3",
       "stride": "Repudiation",
       "title": "Actions taken while impersonating are indistinguishable from the customer's own actions"
     },
     {
-      "id": "T2",
-      "stride": "InformationDisclosure",
-      "title": "Unrestricted view of a customer's personal data with no consent or masking"
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Impersonating a privileged or staff account to reach admin functions"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Impersonation issues a full customer session, so admins can change the account, not just view it"
+    },
+    {
+      "id": "T6",
+      "stride": "ElevationOfPrivilege",
+      "title": "Impersonation session is unbounded in time and survives after the support interaction ends"
     }
   ]
 }

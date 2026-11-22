@@ -3,23 +3,33 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design describes user changing own settings only, not accessing other users' records or data.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c3: both describe email change enabling password reset to uncontrolled address and account takeover.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c3: both describe session hijack, email change, password reset, and account takeover path.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":false,\n    \"reason\":\"Speculates about implementation flaw not indicated by design; logged-in user implies proper session binding.\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":false,\n    \"reason\":\"Generic and vague; design is about editing own settings, not viewing others' records.\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":true,\n    \"reason\":\"Immediate-change design enables unverified email, redirecting account communications to attacker's mailbox.\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":true,\n    \"reason\":\"Immediate address change without password lets hijacked session divert pending or repeat shipments.\"\n  },\n  {\n    \"id\":\"x5\",\n    \"valid\":true,\n    \"reason\":\"No notification to old email means hijacked session can change email undetected, enabling stealthy takeover.\"\n  }\n]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Server may trust a user identifier sent by the settings form"
+    },
+    {
+      "id": "x2",
       "stride": "InformationDisclosure",
       "title": "Personal data exposed to unauthorised users"
     },
     {
-      "id": "x2",
+      "id": "x3",
       "stride": "Tampering",
       "title": "New email address is accepted without proving the user owns it"
     },
     {
-      "id": "x3",
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Shipping address can be rewritten to divert goods"
+    },
+    {
+      "id": "x5",
       "stride": "Repudiation",
       "title": "Email change is silent, so a hijack goes unnoticed and undisputed"
     }

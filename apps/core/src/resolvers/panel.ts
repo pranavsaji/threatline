@@ -72,7 +72,7 @@ export interface PanelDto {
   diagram?: DiagramDto;
 }
 
-type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited' };
+type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited'; message?: string };
 
 const bySeverity = (a: Threat, b: Threat) => severityRank(b.severity) - severityRank(a.severity) || b.votes - a.votes || a.title.localeCompare(b.title);
 
@@ -275,22 +275,32 @@ export async function panelThreats(deps: CoreDeps, v: Viewer, p: { cursor?: unkn
   return { threats: page, cursor: from + PAGE_SIZE < listed.length ? from + PAGE_SIZE : null };
 }
 
-/** (Re-)adds the threatline-review label (visible in Jira; starts the Automation re-run rule) and queues the gather. */
+/**
+ * Queues the gather; in Rovo agent mode it also (re-)adds the threatline-review label, which starts the Automation
+ * re-run rule. Threatline Engine and rule-based reviews need no rule, so they leave the work item's labels alone.
+ */
 export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true } | Denied> {
   const auth = await authorise(deps, v, 'edit');
   if ('error' in auth) return auth;
   const limit = await checkRerunLimit(deps, v.accountId);
   if (!limit.ok) return { error: limit.error.code === 'budget' ? 'rate_limited' : 'unavailable' };
-  // Automation's "Labels changed" trigger only fires on a change, so a label left over from the last re-run is removed first.
-  if (auth.issue.labels.includes(RERUN_LABEL)) {
-    const removed = await deps.jira.removeLabel(v.issueId, RERUN_LABEL);
-    if (!removed.ok) log('panel.rerun.label_failed', { issueId: v.issueId, code: removed.error.code });
-  }
-  const label = await deps.jira.addLabel(v.issueId, RERUN_LABEL);
-  if (!label.ok) log('panel.rerun.label_failed', { issueId: v.issueId, code: label.error.code });
+  const policy = await deps.config.site();
+  // Unknown mode (policy unreadable): label as before, so an Automation rule that may exist still fires.
+  const needsRule = !policy.ok || (policy.value.reviewMode !== 'engine' && policy.value.reviewMode !== 'rules_only');
+  if (needsRule) await relabel(deps, v.issueId, auth.issue.labels);
   // The issue trigger ignores the app's own edits, so the gather is queued here as well.
   const pushed = await deps.queue.push([{ kind: 'gather', issueId: v.issueId, reason: 'rerun', actorAccountId: v.accountId }]);
-  return pushed.ok ? { ok: true } : { error: 'unavailable' };
+  return pushed.ok ? { ok: true } : { error: 'unavailable', message: 'Threatline could not queue the review. Try again in a minute.' };
+}
+
+async function relabel(deps: CoreDeps, issueId: string, labels: readonly string[]): Promise<void> {
+  // Automation's "Labels changed" trigger only fires on a change, so a label left over from the last re-run is removed first.
+  if (labels.includes(RERUN_LABEL)) {
+    const removed = await deps.jira.removeLabel(issueId, RERUN_LABEL);
+    if (!removed.ok) log('panel.rerun.label_failed', { issueId, code: removed.error.code });
+  }
+  const label = await deps.jira.addLabel(issueId, RERUN_LABEL);
+  if (!label.ok) log('panel.rerun.label_failed', { issueId, code: label.error.code });
 }
 
 export interface ThreatExplanation {
