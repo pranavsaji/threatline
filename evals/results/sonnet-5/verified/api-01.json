@@ -1,0 +1,10 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows overbroad key scope granting full access; concrete over-privilege attack with clear harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms key in query string, enabling leakage via logs/referrers; distinct attack vector from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence confirms no rate limiting, enabling scraping/DoS; distinct mechanism from T1/T2.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Repeats T1's harm (full access to orders/emails) without new attack mechanism.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

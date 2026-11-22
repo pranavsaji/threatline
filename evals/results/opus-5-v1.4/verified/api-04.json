@@ -1,0 +1,10 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms URL fetch from inside VPC next to metadata service; classic SSRF attack with concrete harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design confirms download and resize of attacker-chosen image; decompression bomb DoS is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Attacks the fetcher's redirect/DNS resolution behaviour supported by quoted 'downloads from that URL'; distinct bypass mechanism.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Confused-deputy write/action on internal endpoints differs from T1 read disclosure; VPC position evidenced.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Absence of authentication on endpoint; attack is unauthorized caller abusing fetcher with no attribution.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

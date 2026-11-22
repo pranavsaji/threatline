@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Tampering via local modification and sync conflicts both follow from offline SQLite design; specific; not duplicate.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Session persistence on shared devices is plausible spoofing vector; specific attack and harm; distinct from c2.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Same sync conflict attack and data loss harm as x1 describes; duplicate despite different label.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Offline edits to patient notes can be altered or conflict during sync without integrity checks"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Shared device allows a nurse to act as the previously logged-in user during handover"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Sync conflicts on reconnect can silently overwrite or lose patient note updates"
+    }
+  ]
+}

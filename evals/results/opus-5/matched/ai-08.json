@@ -1,0 +1,17 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe malicious MCP server from public registry being installed and executed\"},{\"expected\":\"E2\",\"reported\":null,\"reason\":\"No threat specifically addresses tools running with full agent privileges as architectural weakness\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Agent installs a malicious MCP server from the public registry and runs its code"
+    }
+  ]
+}

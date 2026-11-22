@@ -1,0 +1,10 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows open Kafka topic with no producer auth; fabricated event injection is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Quotes confirm broad consumption of card BIN/last four/customer id by any internal service.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack (compromised low-trust consumer reading payment data) and harm as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Restates T2's insider/compromised-consumer read of combined payment fields and fraud harm.\",\"duplicateOf\":\"T2\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

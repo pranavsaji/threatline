@@ -1,0 +1,32 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design only describes published events, not payment request/execution flow before publication.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Follows from shared topic without controls; specific DoS attack; distinct from c1/c2.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from broadcast to all consumers; different attack vector than c1 (compromising secondary storage vs subscribing).\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2; describes forensic consequences of same unauthenticated publishing attack, not separate threat.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "A shared payment topic any service can write to can be flooded, stalling payment processing"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Card data spreads into every consumer's own stores and logs"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Payment events carry no verifiable origin, so forged records cannot be told apart"
+    }
+  ]
+}

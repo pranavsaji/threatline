@@ -1,0 +1,10 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows broad analyst read access to PII; concrete actor and harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows nightly job copies raw PII verbatim; distinct from T1's access-control attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Export job exists in design; tampering with copy logic/data is concrete enough.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared read access supported; lack of query attribution is a distinct accountability harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

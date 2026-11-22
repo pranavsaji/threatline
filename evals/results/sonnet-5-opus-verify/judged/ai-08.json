@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic prompt injection threat; design doesn't describe what else agent processes beyond MCP discovery/installation.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Design describes internal agent reading public registry, doesn't mention internet-facing endpoint requiring protection.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    }
+  ]
+}

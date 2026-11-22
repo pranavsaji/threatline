@@ -1,0 +1,22 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicates c1 for admin cross-org access; contradicts security model for regular user scenario.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Audit logging material for sensitive PII bulk export; enables incident response; not duplicate.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Bulk export exposes PII with no stated authorization check"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No record of who performed a bulk PII export"
+    }
+  ]
+}

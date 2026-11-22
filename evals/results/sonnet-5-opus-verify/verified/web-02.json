@@ -1,0 +1,10 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Rich-text comments rendered to all visitors supports concrete stored XSS attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Rich-text links on public pages support concrete phishing attack on shoppers; distinct harm from XSS.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Image embedding in comments rendered to all visitors supports concrete IP/fingerprint leakage attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Moderator admin delete screen is in design; CSRF/unauthorized deletion is concrete attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unlimited rich-text/image comment posting in design; flooding degrades rendering for visitors.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

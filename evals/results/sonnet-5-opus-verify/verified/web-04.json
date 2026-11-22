@@ -1,0 +1,10 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms sequential invoice IDs and download endpoint; concrete IDOR enumeration attack with clear harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design confirms PDF contains name, address, card last-four; distinct disclosure-via-shared-file concern, not duplicate of T1.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

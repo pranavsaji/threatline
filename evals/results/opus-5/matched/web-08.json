@@ -1,0 +1,27 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe over-broad impersonation letting any support staff act as any customer\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe actions during impersonation being non-attributable, logged as customer's actions\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe customer personal data exposure to support staff through impersonation\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any employee with the support role can take over any customer account"
+    },
+    {
+      "id": "T2",
+      "stride": "Repudiation",
+      "title": "Actions taken while impersonating look like the customer's own actions"
+    },
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Broad employee access to full customer personal data with no consent or notice"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Describes consequences of c1 (inability to audit or prove purchases) rather than a distinct attack vector; lacks specific attacker action.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Repudiation",
+      "title": "No verifiable record ties the unlocked entitlement to a validated purchase"
+    }
+  ]
+}

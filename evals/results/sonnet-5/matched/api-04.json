@@ -1,0 +1,10 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe SSRF attack reaching internal metadata/databases; same exploit despite STRIDE category difference\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe DoS via huge files/bombs exhausting resizer resources\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

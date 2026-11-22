@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms org id from request body; concrete cross-org export attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack surface and PII disclosure harm as T1's cross-org export.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"CSV export of user names supported by evidence; concrete formula injection attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Export endpoint exists; lack of audit trail for PII export is concrete and distinct.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

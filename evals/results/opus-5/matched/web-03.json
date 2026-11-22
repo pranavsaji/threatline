@@ -1,0 +1,27 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe account takeover via email change without password re-authentication, then password reset.\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe CSRF attack on settings endpoint lacking anti-CSRF token or SameSite protection.\"},{\"expected\":\"E3\",\"reported\":\"T6\",\"reason\":\"Both describe 30-day session cookie stolen and reused for weeks without timeout or re-authentication.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Stolen session lets an attacker take over the account by changing the email"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Cross-site request can change contact details with no re-authentication"
+    },
+    {
+      "id": "T6",
+      "stride": "Spoofing",
+      "title": "Thirty-day cookie keeps a stolen session alive far beyond use"
+    }
+  ]
+}

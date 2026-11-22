@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Real attack but too vague on harm: 'redirected to act for attacker' doesn't specify what damage occurs\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"No tools beyond retrieval in design; 'unauthorized action' either duplicates c1 or assumes capabilities not mentioned\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    }
+  ]
+}

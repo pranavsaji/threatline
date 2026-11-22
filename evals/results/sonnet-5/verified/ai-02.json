@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms HR/finance pages indexed without permission filtering, enabling unauthorized access to restricted data.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

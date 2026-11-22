@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows server trusts client flag without store validation, enabling receipt replay/forgery.\"},{\"id\":\"T2\",\"keep\":false,\"duplicateOf\":\"T1\",\"reason\":\"Same root cause and same unvalidated-unlock issue as T1, just framed as repudiation.\"},{\"id\":\"T3\",\"keep\":false,\"duplicateOf\":\"T1\",\"reason\":\"Same replay attack on same unvalidated receipt flow already captured in T1.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

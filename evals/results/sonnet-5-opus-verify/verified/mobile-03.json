@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows local SQLite cache of patient notes on shared devices; concrete stale-cache disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Offline sync and local cache supported by evidence; tampering with cached notes pre-sync is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared-device evidence supports session reuse enabling misattribution of clinical actions.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Repeats T2's silent overwrite/corruption of notes during sync conflicts.\",\"duplicateOf\":\"T2\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared device plus offline cache supports distinct repudiation/attribution harm not covered by T3's spoofing.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

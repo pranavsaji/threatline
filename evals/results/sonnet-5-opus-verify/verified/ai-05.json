@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows LLM-generated SQL executes directly with no validation; concrete injection-to-destructive-SQL attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence supports direct execution on shared analytics DB; distinct resource-exhaustion attack and harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

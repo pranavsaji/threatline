@@ -1,0 +1,10 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":null,\"reason\":\"T2 mentions replay/forgery only in passing; focuses on internet exposure, not SAML validation weakness.\"},{\"expected\":\"E2\",\"reported\":\"T1\",\"reason\":\"T1 exactly describes role attribute manipulation granting admin access via IdP-supplied role claim.\"},{\"expected\":\"E3\",\"reported\":null,\"reason\":\"Neither threat describes brute-force or flooding denial-of-service attacks on the portal.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

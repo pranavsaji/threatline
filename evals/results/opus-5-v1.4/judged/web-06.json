@@ -1,0 +1,32 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Follows from links never expire and no revocation mechanism in design\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Unrestricted uploads not supported by design which only mentions users upload documents\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"File upload with viewing implies rendering no content restrictions mentioned enables script execution\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Anonymous access makes audit trail absence material enables undetectable abuse and investigation failures\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Links never expire, so a leaked link grants permanent access with no way to revoke"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated downloads and unrestricted uploads run up S3 storage and egress cost"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Uploaded HTML or SVG served from the share domain runs attacker script in viewers' browsers"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Anonymous access leaves no record of who read a shared file"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states all internal services consume topic containing BIN, last four, customer id; concrete disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Single shared payment topic in design; flooding by internal producer stalling consumers is concrete and plausible.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Card data in events fanned out to all consumers; secondary-store compromise is a distinct propagation harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared publish path with no stated producer auth; forged payment events corrupting downstream consumers is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Event schema quoted shows only business fields; lack of origin attribution is a distinct non-repudiation harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

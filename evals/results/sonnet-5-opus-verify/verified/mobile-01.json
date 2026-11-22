@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms refresh token in plain app storage; concrete attacker, action, and impersonation harm described.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

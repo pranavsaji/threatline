@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design installs third-party MCP servers at runtime; exfiltration of data passed to server is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unvetted public-registry install of attacker-controlled server is directly supported by evidence.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T2's unvetted-install attack and harm; adds only missing-review framing.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: code execution on agent host via installed package, reaching local secrets.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Tool metadata from registry enters agent context; prompt-injection goal hijack is distinct attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Resource exhaustion via agent-driven repeated installs is concrete and tied to runtime self-install.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"No deploy record of runtime tools; attribution/containment harm is distinct from other threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

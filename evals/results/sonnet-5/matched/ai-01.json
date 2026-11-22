@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe prompt injection redirecting agent behavior from its intended purpose.\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Both describe agent manipulated to perform unauthorized actions with attacker-chosen tool arguments.\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Both describe agent leaking other customers' personal data through order history queries.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

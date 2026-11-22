@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe unauthenticated queue messages impersonating planner to trigger unauthorized payments\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe tampering with message content to change payment amount before payments agent processes it\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Spoofing",
+      "title": "Anyone who can reach the queue can impersonate the planner and trigger card charges"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Queue messages can be modified in flight to change amount, card or payee"
+    }
+  ]
+}

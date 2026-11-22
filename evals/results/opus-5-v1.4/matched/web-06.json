@@ -1,0 +1,27 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe leaked links with no expiry granting permanent access to files.\"},{\"expected\":\"E2\",\"reported\":\"T5\",\"reason\":\"Both describe malicious uploaded content being served to and harming viewers.\"},{\"expected\":\"E3\",\"reported\":\"T3\",\"reason\":\"Both describe misconfigured S3 bucket exposing all stored files to unauthorized access.\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Links never expire, so a leaked link grants permanent access with no way to revoke"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Uploaded HTML or SVG served from the share domain runs attacker script in viewers' browsers"
+    },
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Misconfigured or directly addressable S3 bucket exposes all stored files"
+    }
+  ]
+}

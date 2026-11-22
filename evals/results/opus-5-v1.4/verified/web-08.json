@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows impersonation open to all support role holders with no per-case authorisation; concrete takeover attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: unauthorised viewing/harvesting of customer personal data without consent, supported by 'see exactly what a customer sees'.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence of full customer session issuance supports distinct tampering attack modifying account data.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Session issuance quoted; design shows no scoping/expiry/revocation, supporting persistent-session abuse attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Ordinary customer session carries no operator identity; concrete attribution/repudiation harm distinct from prior threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

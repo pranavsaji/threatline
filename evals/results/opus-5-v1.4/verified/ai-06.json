@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Flights agent processing external supplier text is plausible within the delegation chain; concrete injection-to-charge attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unauthenticated queue and card-charging payments agent both quoted; concrete spoofing attack and harm.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Standing card authority with no per-charge confirmation or cap is supported and a distinct attack path.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Unauthenticated shared queue supports read access by any subscriber; distinct disclosure harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"No message integrity on quoted queue; in-flight modification of amount/payee is distinct from forging messages.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Writable unauthenticated queue feeding agent workers supports flooding; harm is delayed bookings and cost.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Lack of authenticated sender on payment-triggering queue makes charge attribution impossible; tied to this design.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

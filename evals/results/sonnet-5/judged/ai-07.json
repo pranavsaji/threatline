@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design mentions no agent or tools; threat is generic privilege concern not specific to this memory feature.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Automatic memory writing enables prompt injection via planted memories; specific attack on this feature's design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "User can plant fake memories that silently steer future answers"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Compromised ETL service inherits full admin DB rights, enabling broad data access/manipulation.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same root cause and harm (credential/account over-privilege leading to full DB access) as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack: unreviewed schema/table changes due to lack of permission gating, different harm than T1/T2.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same shared admin account issue as T1; repudiation harm is a variant of the same over-privilege flaw.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

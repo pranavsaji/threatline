@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms parser imports partner CSV fields into orders database; concrete injection/corruption attack described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states files can be several gigabytes; resource exhaustion of parser/SFTP storage is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design has partners uploading to a shared SFTP server; cross-partner data exposure is a concrete attack.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Quote only shows database import; no file-path derivation, extraction or archiving behaviour in design evidence.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

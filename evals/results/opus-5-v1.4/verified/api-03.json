@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Public unauthenticated webhook marking orders paid; concrete forged-payment attack for free goods.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows body taken at face value; cross-order tampering and corrupted records distinct from T1's free goods.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Any JSON body accepted supports unconstrained status values and illegal transitions re-shipping refunded orders.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Webhook event processing with no idempotency; replay duplicates fulfilment and corrupts reconciliation.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Public endpoint with no cheap auth check; flood delays genuine provider callbacks.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public endpoint accepting arbitrary order ids enables enumeration via response differences; plausible disclosure.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Design records no event provenance for status changes; disputes and forgeries untraceable on unauthenticated endpoint.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

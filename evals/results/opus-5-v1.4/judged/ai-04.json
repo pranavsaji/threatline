@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct social engineering via summary manipulation; targets human approval, not direct agent action like c1.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Resource exhaustion from public access; specific to unrestricted internet exposure, not covered by disclosure threats.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Attribution gap for agent-generated vs human actions; distinct accountability concern, not duplication of disclosure.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Misleading summaries steer the sales team into approving attacker-chosen actions"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Public inbox lets anyone drive unbounded LLM processing and outbound mail"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Mail sent on behalf of the sales team cannot be attributed to agent or person"
+    }
+  ]
+}

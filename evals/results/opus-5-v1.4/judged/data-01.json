@@ -1,0 +1,27 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design specifies read access for analysts; threat assumes write access not granted by design\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Whole table copy is in design; harm about data proliferation differs from c1's access control\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic credential security concern applying to any service, not specific to this feature design\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Unverified writes into the warehouse tables can poison analytics and reporting"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Whole table is copied instead of only the fields analytics needs"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Export job credentials give standing full read on the production customers table"
+    }
+  ]
+}

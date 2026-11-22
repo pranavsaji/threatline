@@ -1,0 +1,17 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Same vulnerability and harm as c1—customer profiles accessible without authentication—just different GraphQL query syntax.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Public endpoint exposes customer profile fields with no authentication requirement stated"
+    }
+  ]
+}

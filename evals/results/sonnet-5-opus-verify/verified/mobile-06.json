@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows notifications with order contents and address on lock screen by default; concrete proximity attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack (unauthenticated lock-screen notification read) and same disclosure harm as T1.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

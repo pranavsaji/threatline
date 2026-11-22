@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Repackaging attack on bundled config is plausible; specific; not duplicate.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Misconfigured production flag is plausible; network attack is specific; distinct threat.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Flag lives in a bundled config file, so a repackaged/sideloaded app could re-enable insecure mode"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Release build can be forced to accept any TLS certificate, enabling MITM"
+    }
+  ]
+}

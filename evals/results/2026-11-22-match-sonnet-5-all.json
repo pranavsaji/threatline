@@ -1,0 +1,26 @@
+{
+  "set": "sonnet-5",
+  "subset": "all",
+  "model": "claude-sonnet-4-5",
+  "version": "match-v1",
+  "date": "2026-11-22",
+  "totals": {
+    "found": 64,
+    "expected": 82,
+    "highFound": 48,
+    "highExpected": 57,
+    "severity": {
+      "higher": 20,
+      "same": 41,
+      "lower": 3
+    }
+  },
+  "keyword": {
+    "found": 62,
+    "expected": 82
+  },
+  "missing": [
+    "api-02: schema",
+    "mobile-02: schema"
+  ]
+}

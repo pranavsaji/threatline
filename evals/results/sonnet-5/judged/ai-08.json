@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic prompt injection risk; not specific to tool installation feature or how it enables new attacks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design describes internal agent; mentions no internet-facing endpoint to attack.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    }
+  ]
+}

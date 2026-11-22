@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Config file bundled in release build can be tampered/repackaged to flip insecure flag, concrete attack and harm described.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Duplicates T1's core harm (MITM via flag enabling cert bypass) without a new attack vector beyond network positioning.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic secret management, not specific to this feature's design\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic authorization concern, design only describes user modifying own data\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific to email change feature, distinct from c1 (detection vs attack)\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific to shipping address feature, distinct harm from c1\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Credentials or secrets leaked"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No notification to the old email when account email is changed"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Shipping address change enables silent order/delivery redirection"
+    }
+  ]
+}

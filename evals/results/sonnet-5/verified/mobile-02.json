@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Deep link pre-fills payment screen with attacker-chosen recipient/amount from any website, as quoted.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack and harm as T1: unauthorized deep link constructing payment requests.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same core issue as T1: outsider dictating payment params via deep link bypassing normal flow.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: URL params leaking payment details via logs/history/referrers, not covered by T1.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe malicious CSV injection into orders database\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe huge files exhausting import job resources\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

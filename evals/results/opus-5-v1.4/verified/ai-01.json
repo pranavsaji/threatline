@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Public chat with refund and PII tools, no authentication described; concrete spoofing attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"LLM tool-calling refund decision in public chat; prompt injection to trigger ineligible refunds is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Cap evidenced; bypass by repeated/split refunds is distinct from goal hijack eligibility attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Order lookup returns emails/addresses with no scoping; disclosure of other customers' PII is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shipping address field read into agent context; indirect injection via attacker-supplied order data is concrete.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public chat endpoint with LLM and tool fan-out; cost/availability flooding attack is concrete.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Direct Stripe API access evidenced; over-scoped credential enabling non-refund operations is a concrete escalation.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Agent-initiated money movement with no described audit trail; repudiation of refunds is design-linked.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

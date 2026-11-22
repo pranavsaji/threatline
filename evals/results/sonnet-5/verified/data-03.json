@@ -1,0 +1,10 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows unrestricted publish surface; no producer auth mentioned, concrete injection attack described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms broad consumption of sensitive fields by every internal service.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same flat trust/broad access attack and harm as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same broad-readability data exposure harm as T2, just reframed as reconstruction risk.\",\"duplicateOf\":\"T2\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

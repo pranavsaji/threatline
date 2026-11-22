@@ -1,0 +1,22 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe forged SAML assertion bypassing signature validation to gain unauthorized access.\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Both describe manipulating role attribute in assertion to gain admin privileges.\"},{\"expected\":\"E3\",\"reported\":null,\"reason\":\"No reported threat addresses DoS via brute force or flooding; T3 is about authorization not availability.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Forged SAML assertion accepted because the signature is not fully validated"
+    },
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Admin access granted from a role attribute the user can influence"
+    }
+  ]
+}

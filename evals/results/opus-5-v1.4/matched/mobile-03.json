@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe reading cached health records from lost or shared device.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe inability to attribute offline edits to individual nurses on shared devices.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Patient notes cached on a shared tablet can be read by anyone who holds the device"
+    },
+    {
+      "id": "T3",
+      "stride": "Repudiation",
+      "title": "Offline notes cannot be attributed to the individual nurse who wrote them"
+    }
+  ]
+}

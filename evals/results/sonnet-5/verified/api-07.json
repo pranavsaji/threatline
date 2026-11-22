@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"SQL concatenation supports error-based info disclosure attack on this endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Sort column concatenated directly, distinct injection vector from generic T1/T3.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Same flaw but distinct DoS harm via expensive queries, not duplicate of info disclosure.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"T1 describes map endpoint exposing driver phone and location to any customer with delivery id.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"T3 describes spoofed location updates via unauthenticated GPS ingest, same attack as E2.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Driver's personal phone number is handed to every customer by default"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Location ingest accepts position reports without proving which driver is reporting"
+    }
+  ]
+}

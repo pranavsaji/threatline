@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms flag read from bundled config file; repackaging attack to re-enable insecure mode is concrete and distinct.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms app accepts any TLS cert when flag set; network MITM attack with concrete harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

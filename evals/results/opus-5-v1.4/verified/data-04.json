@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows unencrypted backups in bucket shared across teams; concrete exposure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Shared bucket with no retention described; deletion of all backups is a concrete availability harm.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared write access and no integrity check; overwriting backup to poison restore is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared bucket access with no object-level logging; untraceable mass download is distinct from T1.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

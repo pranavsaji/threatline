@@ -1,0 +1,10 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design specifies HS256 signing without verifier algorithm pinning; alg-confusion forgery is a concrete attack on this JWT logic.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"7-day lifetime quoted; leaked-token impersonation window with no revocation is concrete and distinct.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states shared secret in each service's environment variables; leakage compromising system-wide trust is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared secret across services supported by quote; inability to attribute token issuer is a distinct repudiation harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

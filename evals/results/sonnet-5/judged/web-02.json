@@ -1,0 +1,27 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific attack using design's link feature to exploit visitor trust on product pages\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Specific attack using design's image feature to track visitors via browser requests\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS attack via mass rich-text comments affecting all visitors' page rendering\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Phishing links embedded in rich-text comments"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Tracking/exfiltration via attacker-controlled image URLs in comments"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded rich-text/image comment flooding degrades page rendering"
+    }
+  ]
+}

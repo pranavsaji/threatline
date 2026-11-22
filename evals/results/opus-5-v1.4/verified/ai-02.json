@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Index of all pages with no re-index/deletion path; stale restricted content remains retrievable. Concrete attack and harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows all-space indexing and similarity-only retrieval; permission bypass disclosure is distinct from stale-index issue.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"LLM/embedding per-query cost supported by design; unbounded querying causing outage and cost spike is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Retrieved wiki page text passed into LLM prompt; editable pages enable indirect prompt injection steering answers.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Logging gap tied to this assistant being the disclosure path for HR/finance spaces; distinct harm (non-attribution).\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

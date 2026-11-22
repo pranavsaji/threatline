@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design describes no record retrieval or data viewing functionality to attack\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Mass self-referral follows directly from easy signup and credit grants with no fraud detection\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No way to detect or reverse fraudulent credit grants"
+    }
+  ]
+}

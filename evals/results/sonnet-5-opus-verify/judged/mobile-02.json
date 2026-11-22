@@ -1,0 +1,42 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (untrusted website triggers deep link) and harm (pre-filled payment screen)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Too vague: design mentions only pre-filling screen, no mechanism for tampering 'between request and execution'\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: malformed/invalid parameter values causing corruption/bypass, not legitimate-looking malicious values\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes 'normal flow' and contacts system not in design; harm duplicates c1 (external pre-fill)\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Distinct information disclosure: financial details leaked via URL logging in browser/server logs, not payment manipulation\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Deep links aren't internet-facing HTTP endpoints; require user with installed app to trigger, can't be directly flooded\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "No verification that the deep link sender is authorized to initiate payment requests"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Amount and recipient parameters are not validated before display"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link bypasses normal payment initiation authorization flow"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Payment recipient and amount leak via URL in logs, history, and referrers"
+    },
+    {
+      "id": "x6",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    }
+  ]
+}

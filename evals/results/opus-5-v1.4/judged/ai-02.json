@@ -1,0 +1,32 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Permission bypass distinct from c1's stale-data issue; specific unauthorized access to HR/finance content.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c2; same prompt injection attack, design only describes wiki pages as injection source.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Cost-based DoS specific to paid LLM/embedding calls with large retrieved pages and no described limits.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Missing audit trail material to sensitive data disclosure; ties to HR/finance abuse cases, not generic logging.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Assistant answers from HR and finance pages the asker is not allowed to read"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent goal hijack through injected instructions"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded querying runs up LLM and embedding cost or starves the service"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of which sensitive pages were revealed to which employee"
+    }
+  ]
+}

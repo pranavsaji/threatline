@@ -1,0 +1,27 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't describe third-party data sharing beyond S3; too generic without specific provider or scenario.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"DoS is generic hygiene for unauthenticated endpoints; design doesn't make resource exhaustion particularly material here.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't state uploads are unauthenticated; assumes no upload accountability without design support.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No accountability for who uploaded or accessed a file"
+    }
+  ]
+}

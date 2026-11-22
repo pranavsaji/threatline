@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has per-user memory store with unspecified retrieval scoping; concrete cross-tenant read attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Automatic writing of arbitrary user text into persistent store supports sensitive-data retention exposure.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Automatic unbounded memory writes and retrieval into prompts support storage/token cost exhaustion attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Memories written from user text and fed into later prompts; concrete persistent prompt-injection attack.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same attack (poisoned memory steering later answers) and harm as T4.\",\"duplicateOf\":\"T4\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

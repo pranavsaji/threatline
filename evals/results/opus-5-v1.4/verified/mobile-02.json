@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows pre-filled payment deep link triggerable by any website; concrete attacker-payee fraud attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Custom scheme registration is in design; scheme hijacking by malicious app is a concrete distinct attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design shows deep link lands directly on confirmation screen; missing re-auth attack is concrete and distinct from T1.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Evidence confirms any website can trigger link; repeated invocation DoS is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design pre-fills payment from external link with no origin recording; dispute/fraud-detection harm plausible.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

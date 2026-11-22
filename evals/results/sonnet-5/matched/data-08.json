@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe unrestricted SQL editor reading any production data with no access controls.\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe expensive ad-hoc queries exhausting production replica resources.\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

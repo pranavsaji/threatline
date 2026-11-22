@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Service credentials reasonably interpreted as shared account; privilege escalation and permission bypass are specific harms from design.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Design specifies no query limits, cost controls, or timeouts; unbounded query DoS follows directly from unlimited execution.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"No read-only restriction, statement allow-list, or preview mentioned; destructive SQL execution is direct consequence of design.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Design states SQL is shown, not results. Threat assumes result summarization and re-transmission to LLM provider not mentioned.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Shared credentials interpretation from x1 means attribution is impossible; specific repudiation concern follows from that design choice.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shared service credentials give every question the union of all data access"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "A single question can generate an unbounded query that exhausts the analytics database"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "LLM-written SQL runs with no review, so destructive statements execute"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Question text and query results are sent to the LLM provider"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Database activity cannot be tied back to the analyst who asked"
+    }
+  ]
+}

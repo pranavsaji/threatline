@@ -1,0 +1,22 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe reporting team reading unencrypted backups through shared bucket access, bypassing intended controls.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe modification of backups by someone with write access to the shared bucket.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Sharing the backup bucket bypasses in-application access controls on the database"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Someone with bucket write access can modify a backup and poison the restored database"
+    }
+  ]
+}

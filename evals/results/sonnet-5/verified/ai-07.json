@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Memory store spans users per-conversation with no stated isolation; cross-user leakage is a concrete attack on this feature.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Automatic memory writing from arbitrary user input enables injected fake memories that steer future answers—distinct attack from T1.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

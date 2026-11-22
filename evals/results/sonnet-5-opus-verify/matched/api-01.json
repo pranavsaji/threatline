@@ -1,0 +1,10 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe API keys leaking through query strings into logs, proxies, browser history\"},{\"expected\":\"E2\",\"reported\":null,\"reason\":\"T2 mentions non-expiring keys but focuses on leakage; no threat primarily addresses reuse\"},{\"expected\":\"E3\",\"reported\":\"T3\",\"reason\":\"Both describe abuse enabled by lack of rate limiting on the API\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms copies retained in warehouse, logs, backups; concrete disclosure attack on deleted customers' data.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows support directly flags deletion with no approval or limit; mass-deletion abuse is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence shows request intake and support action with no verification step; impersonation attack concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Retained copies plus flag-only deletion support insider restoration attack; distinct harm from T1 disclosure.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Manual privileged deletion with no logging described in quoted design; non-attribution harm is specific.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

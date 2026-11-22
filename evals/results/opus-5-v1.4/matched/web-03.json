@@ -1,0 +1,27 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe account takeover via email change without password re-authentication\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe CSRF attack on settings endpoint to change user details\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe long-lived session cookie captured and reused, cannot be invalidated\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Hijacked session becomes full account takeover because email change needs no password"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Cross-site request forgery can change a victim's email and address"
+    },
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "30-day cookie keeps old sessions alive after the account details change"
+    }
+  ]
+}

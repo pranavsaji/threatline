@@ -1,0 +1,17 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Assumes signed-in users but design describes no authentication system, only public endpoint.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Nesting from products or reviews reaches another customer's profile (IDOR)"
+    }
+  ]
+}

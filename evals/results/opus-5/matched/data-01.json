@@ -1,0 +1,22 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe analysts having unrestricted read access to bulk customer PII in warehouse\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T6\",\n      \"reason\": \"Both describe lack of query attribution preventing identification of who accessed personal data\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Every analyst can read all customer emails, phones and purchase history"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "No way to tell which analyst read which customers' personal data"
+    }
+  ]
+}

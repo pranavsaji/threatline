@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Shared-device evidence supports session inheritance attack with concrete misattribution and unauthorized access harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states local SQLite cache of medical history on shared tablets; concrete device-in-hand disclosure.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Offline authoring on shared devices supports non-attribution of clinical notes; distinct harm from T1.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Offline cache synced to backend supports crafted payload tampering with patient ids and record corruption.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Offline work plus shared devices supports stale-sync overwrite losing clinical notes; distinct from T4.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe unvalidated CSV input causing database corruption and SQL injection\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe huge files exhausting resources and stalling the import job\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "Unvalidated CSV content is imported straight into the orders database"
+    },
+    {
+      "id": "T2",
+      "stride": "DenialOfService",
+      "title": "Multi-gigabyte or compressed-bomb uploads exhaust disk and stall all partner imports"
+    }
+  ]
+}

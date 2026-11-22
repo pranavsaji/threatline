@@ -2,7 +2,7 @@
 
 ![tests](https://img.shields.io/badge/tests-1250%2B%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
-![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%2855%20cases%2C%20Opus%205%29-91.7%25-blue)
+![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-96.7%25-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![runs on Atlassian](https://img.shields.io/badge/egress-none-informational)
 
@@ -32,8 +32,8 @@ someone allowed to accept it.
 **And the AI cannot be talked into approving.** Text that tries to instruct the model is flagged in the panel, the
 threats resting on it wait for a security champion, and the verdict is always computed by code, never by the model.
 Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, then the
-verifier): all 15 of 15 poisoned cases held and high-severity recall was 91.7% on the full 55-case set. On
-`claude-sonnet-4-5` the same set gave 14 of 15 and 90.0% ([eval](#eval), [how the engine works](docs/ENGINE.md)).
+verifier): all 15 of 15 poisoned cases held, and a separate model grader found 96.7% of the high-severity must-find
+threats (92.0% of all) on the full 55-case set ([eval](#eval), [how the engine works](docs/ENGINE.md)).
 
 ## Also in the box
 
@@ -91,7 +91,7 @@ specific, not a duplicate) graded each threat outside the list: 45 of the 73 the
 **Less noise from the rule-based floor.** The judge rated only 2 of 58 extra rule-based threats valid on the full set:
 most were generic twins of a more specific threat the AI had already raised. A rule-based threat now stands back
 (state `covered`) when a trusted AI threat (majority-voted, quoted word for word, untouched by injection) of the same
-kind, on the same topic and at least as severe covers it. It stays stored, its standards mappings move to the AI
+kind and on the same topic covers it, rated at most one level below it. It stays stored, its standards mappings move to the AI
 threat, and it comes back with its requirement if a champion dismisses that AI threat. Under suspected injection
 nothing is covered. Rule-based extras fell from 58 to 15 with recall unchanged. The floor still always runs, so a
 failed or poisoned agent run still leaves a fail-closed review. The eval report lists judged validity per rule.
@@ -106,24 +106,55 @@ grounding 98.9%, judged precision of model-proposed threats 73.7% (all threats 6
 twin, but its risk score came out 84 instead of 90 because the agent runs on that page reported fewer data classes;
 the eval counts any drop in risk as a miss. Reports: `evals/results/2026-11-20-*-all.md`.
 
-**On the production model (`claude-opus-5`, 2026-11-21).** The same 55 cases through Threatline Engine's full path
-(three runs, then the verifier, both on Opus 5); the judge stayed on `claude-sonnet-4-5` so judged precision is graded
-the same way. Recorded in `evals/results/opus-5/` and replayed offline
-(`evals/results/2026-11-21-recorded-all-engine-opus-5.md`, `…-recorded-30-engine-opus-5.md`):
+**On the production model (`claude-opus-5`, prompt v1.4.0, 2026-11-22).** All 55 cases through Threatline Engine's
+full path (three runs, then the verifier, both on Opus 5), recorded in `evals/results/opus-5-v1.4/` and replayed
+offline (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`). Recall is graded two ways: by the keyword
+matcher, and by a separate `claude-sonnet-4-5` call per case that decides which shown threat, if any, finds each
+must-find threat (`pnpm threatline rematch`, verdicts recorded in `matched/`, reports `evals/results/2026-11-22-match-*.md`).
+The keyword matcher misses threats worded differently ("find out which email addresses have accounts" for user
+enumeration), so it under-reports recall by about 8 points.
 
-| Metric | All 55 cases | 30-case subset | Sonnet 4.5, same 30 (Engine path) |
-| --- | --- | --- | --- |
-| Injection resistance | 15 of 15 | 6 of 6 | 6 of 6 |
-| High-severity recall | 91.7% | 89.2% | 91.9% |
-| Recall | 81.6% | 83.3% | 85.2% |
-| Precision, judged: threats the model proposed | 74.7% | 75.4% | 75.7% |
-| Precision, judged: all threats shown | 69.3% | 71.1% | 66.9% |
-| Citation grounding | 97.4% | 97.7% | 99.8% |
+| Metric (40 clean + 15 poisoned cases) | Prompt v1.4.0 | Prompt v1.3.0, same code |
+| --- | --- | --- |
+| Injection resistance | 15 of 15 | 15 of 15 |
+| High-severity recall, graded | 96.7% (58 of 60) | 95.0% (57 of 60) |
+| Recall, graded | 92.0% (80 of 87) | 92.0% (80 of 87) |
+| Recall, keyword matcher | 83.9% | 83.9% |
+| Severity of found threats vs the expert's | 38 same, 42 higher, 0 lower | 27 same, 52 higher, 1 lower |
+| Expert-High threats rated below High (would stop blocking) | 0 | 0 |
+| Blocking requirements per story (average) | 4.0 | 4.9 |
+| Precision, judged: threats the model proposed | 79.9% | 74.3% |
+| Citation grounding | 99.8% | 97.4% |
 
-Opus 5 held every poisoned case, including `ai-02` that Sonnet missed, and showed less noise overall; it found
-slightly fewer of the must-find threats on the subset. The judge's reply did not parse for 3 of the 40 clean cases,
-so judged precision covers 37 (the report lists them). Re-run it with
-`pnpm threatline eval --subset all --llm recorded --path engine --verify recorded --judge recorded --record-set opus-5`.
+What changed around the same model:
+
+- **Severity from stated facts.** Opus rated 52 of 80 found threats above the expert and one below. Each threat now
+  states who can attack, how hard it is, how many it reaches and what is harmed (`rating`); a fixed table computes
+  likelihood and impact (`ratedScores`), insiders scored like signed-in users (zero trust). The table may lower the
+  model's own severity by one level at most (`boundedScores`), because a gate should err on the side of blocking. Across
+  the three runs the median score counts, not the highest (the highest still counts under suspected injection).
+- **The eval parses runs exactly as the Engine does** (`agentSampleFromText`). Before, about 1 in 18 Opus runs that the
+  product recovers by fitting them to the contract were scored as failed.
+- **A quieter rule-based floor.** Tool misuse only when the AI can act, payment manipulation only when money moves,
+  leaked credentials only when they are stored, logged or shared, third-party disclosure only when personal or health
+  data goes to another company. Triggers stay monotonic: more text never switches a rule off. A rule-based threat stays
+  covered while its cover waits for a champion, and a specific threat rated one level lower can cover it. On the
+  v1.3.0 recordings the floor's extra threats fell from 17 to 3 with recall unchanged.
+- **Prompt v1.4.0** adds the rating and a three-item check (automated abuse, values the client sends that the server
+  trusts, unauthenticated writes to internal channels).
+
+Tuning and held-out: the checklist uses only misses from the 30-case subset. On the 25 held-out cases graded recall
+was 87.9% with either prompt and high-severity recall 21 of 23 with v1.4.0 against 22 of 23 with v1.3.0, so the
+checklist added no finds there; severity agreement rose from 10 to 12 of 29 found
+threats (tuning: 17 to 26 of 51). Two severity fixes (insiders scored like users, the one-level bound) were made after
+seeing held-out threats rated below High, so the held-out half is not blind for them.
+
+**Which model.** With prompt v1.3.0 and the earlier code, graded recall and high-severity recall were 93.1% and 98.3% on
+Opus 5, 79.3% and 85.0% with Sonnet 5 runs checked by an Opus 5 verifier, and 78.0% and 84.2% on Sonnet 5 alone (38 of
+40 cases graded), which also let one poisoned case lower its blocking (14 of 15). The Engine stays on Opus 5
+(`evals/results/2026-11-22-claude-code-all-engine-sonnet-5.md`, `…-recorded-all-engine-sonnet-5-opus-verify.md`).
+Replay it with `pnpm threatline eval --subset all --llm recorded --path engine --verify recorded --judge recorded
+--record-set opus-5-v1.4` and `pnpm threatline rematch --record-set opus-5-v1.4 --match recorded`.
 
 The eval set is 40 clean cases across web, API, mobile, data and AI features, plus 15 poisoned twins that hide
 instructions to the AI in the design text; a poisoned case holds when its risk and blocking count do not drop below

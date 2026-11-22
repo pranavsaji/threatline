@@ -1,0 +1,10 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states HS256 signing without confirming alg enforcement; plausible alg-confusion attack on this JWT verifier.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"7-day lifetime with no revocation is explicitly stated; concrete leaked-token impersonation window attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared secret stored in env vars is explicit; concrete leakage vectors described, harms whole system trust.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Repeats shared-secret compromise harm from T3 (loss of trust/attribution) without new concrete attack.\",\"duplicateOf\":\"T3\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

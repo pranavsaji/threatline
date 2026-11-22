@@ -1,0 +1,10 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows warehouse/log/backup copies left as is; concrete residual personal data exposure after deletion request.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design lacks requester verification; concrete attack: impersonator triggers deletion of victim account.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Flag-only deletion with persistent copies; misleading state is distinct attack/harm from T1's exposure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design mentions only marking deleted with no audit logging; agent can deny improper deletion.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

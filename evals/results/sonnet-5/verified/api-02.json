@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows nested queries can traverse into customer profiles on a public endpoint, supporting unauthorized access attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence supports public endpoint with nestable queries enabling resource exhaustion DoS; distinct harm from T1.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Duplicates T1's unauthenticated access to customer profile PII via public GraphQL endpoint.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

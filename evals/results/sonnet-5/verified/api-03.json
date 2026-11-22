@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows public endpoint accepting arbitrary order id/status, enabling forged paid orders.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same unauthenticated endpoint flaw and harm (unauthorized order status manipulation) as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack vector: replay of captured legitimate events, no idempotency mentioned in evidence.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: volumetric flooding/DoS on order service, not spoofing a single order's status.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

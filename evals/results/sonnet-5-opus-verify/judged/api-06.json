@@ -1,0 +1,32 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design covers service-to-service JWT auth; threat describes user accounts, guessed credentials, session tokens not mentioned.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Algorithm confusion attack follows from HS256 mention without verification enforcement; specific attacker action and harm to service identity.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Seven-day validity and no revocation follow from design; specific leaked-token impersonation attack distinct from secret leak in c1.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Shared secret in design prevents attribution; specific harm to incident investigation; different from c1's leak threat.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "No mention of algorithm pinning, enabling alg-confusion attacks"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Seven-day token lifetime gives a leaked token a long window of full service impersonation"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Shared secret across services removes any way to attribute which service actually issued a token"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Speculates implementation accepts client-submitted account ID; design states token in link, standard interpretation: token identifies account.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic data access threat; design describes password reset only, not requesting or exposing personal data records.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from 'logged in immediately' with no mention of invalidating other sessions or requiring re-verification after reset.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Follows from 'link contains token'; URLs inherently leak through browser history, server logs, Referer headers - distinct from c1 email interception.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Follows from public endpoint accepting email addresses; response differences reveal account existence for phishing and credential stuffing.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Reset page may trust an account identifier sent by the client"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Automatic login after reset leaves the attacker's or victim's other sessions alive"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Reset token travels in the URL and leaks through history, referrers and logs"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Reset request reveals whether an email address has an account"
+    }
+  ]
+}

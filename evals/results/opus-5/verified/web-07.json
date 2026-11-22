@@ -3,7 +3,7 @@
   "promptVersion": "v1.3.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows client-side discount computation; concrete attack on code stacking/expiry bypass, distinct harm to promo budget.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows server charges browser-supplied final price; concrete price tampering attack with revenue loss.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence supports charge amount originating from browser; repudiation/no authoritative pricing record is a distinct harm.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms browser-supplied final price charged via Stripe; concrete interception attack with revenue loss.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Client-side discount computation is in design; distinct attack on code rules (expiry, stacking, reuse).\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Server stores only browser-supplied amount per quote; distinct harm of unreconcilable disputes and no authoritative record.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Checkout code entry is in design; enumeration of valid codes is a distinct attack and harm.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

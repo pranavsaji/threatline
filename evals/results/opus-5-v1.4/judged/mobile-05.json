@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Ten-second update rate with no capacity controls directly stated; volume DOS is specific and plausible.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Continuous GPS without stated stop condition or endpoint time limit enables post-delivery tracking and surveillance.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Ten-second updates from every driver plus live polling can overwhelm the location pipeline"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "No stated end to tracking, so drivers are followed home after the delivery"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Credential and source exfiltration via shell follows from design; distinct harm from c1's branch tampering.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes CI runners and other teams not mentioned in design; goes beyond stated components.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Shared token prevents attribution; plausible harm following from single-credential design; distinct from c1-c3.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Agent shell access can read the write token and all source code and send them out"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "A looping or baited agent run consumes build capacity and model spend"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "All agent pushes look the same, so nobody can tell which run or which developer caused a change"
+    }
+  ]
+}

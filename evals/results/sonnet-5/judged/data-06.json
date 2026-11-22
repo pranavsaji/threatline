@@ -1,0 +1,17 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Assumes ETL access control and review processes not in design\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Convenience-driven permission model lets anyone create tables without review"
+    }
+  ]
+}

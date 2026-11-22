@@ -1,0 +1,17 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Concerns IdP authentication and session management, not the SSO feature. Generic credential hygiene not material to this design.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    }
+  ]
+}

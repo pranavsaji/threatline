@@ -1,0 +1,22 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Directly follows from design's permission model, specific attack on structural change approval gap, distinct from credential compromise scenarios.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Follows from shared credential design, identifies attribution loss harm, distinct from c1/c2 which address unauthorized access not accountability.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Convenience-driven permission model lets anyone create tables without review"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "Shared admin service account obscures which job or person made a change"
+    }
+  ]
+}

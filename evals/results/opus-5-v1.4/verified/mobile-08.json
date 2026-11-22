@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows email-only sign-up and dual $10 credit; concrete mass farming attack on credit budget.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Referral codes exist in design; enumeration/guessing attack distinct from farming own code.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Client submits referral code at sign-up; concrete tampering to inflate credit or redirect payout.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Self-referral both-sides payout distinct enough; design lacks differentiation rule between referrer and referee.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Email-only sign-up supports account enumeration disclosure; distinct harm from credit fraud.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Email-only records plausibly prevent attributing fraudulent redemptions; distinct non-repudiation harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

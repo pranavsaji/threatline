@@ -1,0 +1,17 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe every internal service reading payment data from the topic.\"},{\"expected\":\"E2\",\"reported\":null,\"reason\":\"No reported threat specifically about fake event publishing due to lack of producer authorization.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Every internal service can read cardholder and customer data from the payments topic"
+    }
+  ]
+}

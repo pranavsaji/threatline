@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows links never expire and no auth required, concrete persistent-access attack described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms S3 storage and public unauthenticated access; distinct attack via key enumeration, not link leakage.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence confirms no login for upload/view; distinct harm of unaccountable abuse, not overlapping with disclosure threats.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

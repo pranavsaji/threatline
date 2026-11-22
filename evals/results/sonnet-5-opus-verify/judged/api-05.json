@@ -1,0 +1,27 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic restatement of c1; no specific attack mechanism\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Cross-org case duplicates c1; regular user is generic\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Logging bulk PII exports is material; repudiation risk specific\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Bulk export exposes PII with no stated authorization check"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No record of who performed a bulk PII export"
+    }
+  ]
+}

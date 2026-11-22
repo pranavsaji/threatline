@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms a password login precedes biometric enrolment; credential stuffing attack on that endpoint is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design explicitly stores refresh token in plain app storage; disclosure path is design-created.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states biometrics only unlock the screen; local-only check bypass is a concrete distinct attack.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same attack (read token from plain storage) and harm (account takeover) as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design's non-server-verified biometric and non-device-bound token support the attribution/revocation gap.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

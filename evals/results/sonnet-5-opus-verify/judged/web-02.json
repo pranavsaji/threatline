@@ -1,0 +1,27 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Specific phishing attack via legitimate link feature; distinct from XSS.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Information disclosure via image loading; design enables this tracking vector.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"DoS from unlimited comment posting; design lacks stated rate/size limits.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Phishing links embedded in rich-text comments"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Tracking/exfiltration via attacker-controlled image URLs in comments"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded rich-text/image comment flooding degrades page rendering"
+    }
+  ]
+}

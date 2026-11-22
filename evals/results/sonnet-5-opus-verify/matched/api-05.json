@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe exploiting the org id parameter to export another org's user data.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe CSV formula injection via unsanitized user-supplied fields in the export.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

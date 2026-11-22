@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms over-privileged ETL service account; concrete compromise-and-abuse attack described.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same over-privileged account, same compromise/data-access harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Quoted 'no permission changes' design choice; distinct attack: unreviewed schema/data tampering in production.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared admin account supported by quotes; distinct harm of lost attribution in audit trail.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

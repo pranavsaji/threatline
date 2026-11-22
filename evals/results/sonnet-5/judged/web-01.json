@@ -1,0 +1,37 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Follows from design: password reset doesn't mention session invalidation, specific attack on persistence after reset.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Does not follow from design: 'requesting records' not mentioned in password reset flow, too generic.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Follows from design: 24-hour validity explicitly stated, specific attack via compromised channels within that window.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Follows from design: token in URL opening public page, specific leakage via Referer/history/logs.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Follows from design: request by email address enables enumeration via response/timing differences, specific harm.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Existing sessions are not killed when the password is reset"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "24-hour reset token gives attackers a long window to use a stolen or guessed link"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Reset token can leak through the browser when the link is opened"
+    },
+    {
+      "id": "x5",
+      "stride": "Spoofing",
+      "title": "Password reset request can be used to enumerate which emails have accounts"
+    }
+  ]
+}

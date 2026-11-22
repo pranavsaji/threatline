@@ -34,8 +34,10 @@ Threatline makes security review part of "Done". One story shows all of it:
 **The AI cannot be talked into approving.** Text that tries to instruct the model is flagged, the threats resting on it
 wait for a security champion, the verifier never runs on flagged material, and code, not the model, computes the
 verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the product runs, through
-Threatline Engine's full path: all 15 of 15 poisoned cases held and high-severity recall was 91.7% (on
-`claude-sonnet-4-5`: 14 of 15 and 90.0%). Every run is recorded in the repository and replays offline.
+Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found 96.7% of the
+high-severity must-find threats (92.0% of all). Severity comes from facts each threat states, by a fixed table, so
+Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
+replays offline.
 
 **Also:** CI verification (tests named after a requirement pass in CI and close it, with the run as evidence);
 incidents that reopen the reviews of open work on the same component; a champion inbox across projects; a data-flow

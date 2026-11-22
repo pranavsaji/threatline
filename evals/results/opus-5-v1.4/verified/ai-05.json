@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has LLM generating SQL from plain-English questions executed directly; injection hijacking generation is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence quotes service credentials; broad access via crafted questions is a concrete privilege attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Unbounded LLM-generated SQL running directly on analytics DB; resource exhaustion attack is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Evidence shows SQL shown only after it runs; destructive statement execution is distinct from T2/T3.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"LLM integration implied by design; sending internal schema/questions to external provider is concrete disclosure.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared service credential decouples execution identity from requester, supporting attribution-loss threat distinct from T2.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe permanent exposure when non-expiring share links leak through various channels\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe malicious file upload served as active content to anonymous viewers\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Both describe misconfigured S3 bucket allowing direct access bypassing application controls\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Anyone who gets hold of a share link can read the document, forever"
+    },
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "Malicious uploads served back to viewers as active content"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "Direct S3 object access bypasses the share link entirely"
+    }
+  ]
+}

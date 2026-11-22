@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows endpoint returns phone number with location, concrete exposure to customers.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: continuous tracking/stalking via persisting delivery id, not just one-time phone disclosure.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence shows GPS updates from driver phone with no mention of validation, concrete spoofing attack.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific to password reset flow; session persistence attack not covered by c1.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design mentions no user data display or record retrieval beyond password reset.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from explicit 24-hour validity; specific window-of-opportunity attack on this feature.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Token-in-URL leakage specific to link-based reset; distinct from x3's time window.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: brute-force is guessing credentials, same attack and harm.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Enumeration via reset form specific to this feature; not covered by c1/c2.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Existing sessions are not killed when the password is reset"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "24-hour reset token gives attackers a long window to use a stolen or guessed link"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Reset token can leak through the browser when the link is opened"
+    },
+    {
+      "id": "x5",
+      "stride": "Spoofing",
+      "title": "Internet-facing login page is exposed to brute-force and credential stuffing"
+    },
+    {
+      "id": "x6",
+      "stride": "Spoofing",
+      "title": "Password reset request can be used to enumerate which emails have accounts"
+    }
+  ]
+}

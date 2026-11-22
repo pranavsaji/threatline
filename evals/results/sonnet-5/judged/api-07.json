@@ -1,0 +1,17 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct DoS harm via resource exhaustion, different from c2's data extraction/tampering focus.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Resource exhaustion via injected expensive queries"
+    }
+  ]
+}

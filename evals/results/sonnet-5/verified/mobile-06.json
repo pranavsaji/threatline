@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Lock screen shows full order and address notifications; evidence directly supports physical-access disclosure attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack and harm (lock-screen notification exposure of order/address) as T1.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

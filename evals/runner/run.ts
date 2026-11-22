@@ -8,7 +8,7 @@ import {
   buildReviewContext,
   contextHash,
   DEFAULT_SITE_POLICY,
-  extractAgentJson,
+  agentSampleFromText,
   groundQuote,
   normalizeFact,
   renderReviewContext,
@@ -45,9 +45,10 @@ async function agentSample(llm: LlmPort, b: ContextBundle): Promise<{ sample: Sa
   const ctx = renderReviewContext(buildReviewContext(b, { revision: 1 }));
   const r = await llm.complete({ system: agentPrompt(), user: `${automationPrompt(b.issueKey)}\n\nResult of get-review-context:\n${ctx}`, tier: 'balanced', maxOutputTokens: 8000, purpose: 'propose' });
   if (!r.ok) return { sample: { failed: r.error.code }, tokensIn: 0, tokensOut: 0, quotes: [] };
-  const m = extractAgentJson(r.value.text, b.issueKey);
-  const quotes = m.ok ? m.value.threats.flatMap((t) => t.evidence.map((e) => e.quote)) : [];
-  return { sample: m.ok ? m.value : { failed: m.error.code }, modelId: r.value.modelId, tokensIn: r.value.tokensIn, tokensOut: r.value.tokensOut, quotes };
+  // Parsed exactly as the Engine parses a run (strict, then fitted to the contract), so the eval scores what ships.
+  const sample = agentSampleFromText(r.value.text, b.issueKey);
+  const quotes = 'threats' in sample ? sample.threats.flatMap((t) => t.evidence.map((e) => e.quote)) : [];
+  return { sample, modelId: r.value.modelId, tokensIn: r.value.tokensIn, tokensOut: r.value.tokensOut, quotes };
 }
 
 export interface CaseRun {
@@ -180,7 +181,12 @@ export interface EvalOptions {
   /** Off only to re-create how reviews looked before rule-based coverage existed (see judge.annotateDir). */
   coverage?: boolean;
   /** Path `engine`: the verifier per case (a replay, or a live model whose replies are saved to recordDir). */
-  verify?: { llmFor: (caseId: string) => LlmPort | null; recordDir?: string };
+  verify?: {
+    llmFor: (caseId: string) => LlmPort | null;
+    recordDir?: string;
+    /** True for a case whose verifier replies are a replay: they are not saved again (that would relabel them). */
+    replayed?: (caseId: string) => boolean;
+  };
 }
 
 export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
@@ -225,7 +231,7 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
       outs.forEach((r, j) => {
         const c = batch[j]!;
         const vr = verifyRecorders.get(c.id);
-        if (r.ok && vr && opts.verify?.recordDir && vr.replies().length > 0) saveRecording(opts.verify.recordDir, { caseId: c.id, promptVersion: PROMPT_VERSION, replies: vr.replies() });
+        if (r.ok && vr && opts.verify?.recordDir && vr.replies().length > 0 && !opts.verify.replayed?.(c.id)) saveRecording(opts.verify.recordDir, { caseId: c.id, promptVersion: PROMPT_VERSION, replies: vr.replies() });
         done++;
         opts.onProgress?.(done, total);
         if (!r.ok) {

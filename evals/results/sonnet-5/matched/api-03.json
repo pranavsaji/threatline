@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe forging webhooks to mark unpaid orders paid without authentication\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe replaying legitimate webhook events due to missing replay protection\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

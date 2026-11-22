@@ -1,0 +1,10 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":false,\"reason\":\"Same SSRF attack and internal data disclosure harm as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows URL fetch inside VPC near metadata service; concrete SSRF attack described.\",\"duplicateOf\":null},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design confirms downloading and resizing arbitrary URL content; resource exhaustion attack is concrete.\",\"duplicateOf\":null}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

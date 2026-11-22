@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe poisoning memories to steer later chatbot behavior via unvalidated user input\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe cross-user memory leakage through inadequate isolation on retrieval\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "User-supplied text becomes a permanent memory that steers all later answers"
+    },
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "One user's memories leak into another user's conversation"
+    }
+  ]
+}

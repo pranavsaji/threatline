@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows public endpoint with nested traversal into customer profiles; concrete unauthorized PII access attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Nested queries on public endpoint support resource-exhaustion attack; distinct harm from disclosure threats.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Introspection enabled in production is quoted; schema mapping attack is distinct and concrete.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same attack and harm as T1: unauthenticated querying of customer profile PII via public endpoint.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

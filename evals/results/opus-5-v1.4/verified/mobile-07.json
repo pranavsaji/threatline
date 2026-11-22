@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows cert validation bypass flag; concrete MITM attack stealing tokens is supported.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Flag in bundled config supports attacker flipping it in repackaged build; distinct tampering attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Same bypass but distinct harm: attacker-controlled responses altering app data and decisions.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

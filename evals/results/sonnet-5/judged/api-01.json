@@ -1,0 +1,22 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: compromised key → access to all data already covered. Blast radius same as c1 describes.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1+c2: key compromise and mass email exfiltration already covered; PII emphasis doesn't create distinct threat.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "A single key grants access to all of a partner's orders and customer PII, not just what's needed"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Public endpoint directly returns customer email addresses (PII) with no apparent minimization"
+    }
+  ]
+}

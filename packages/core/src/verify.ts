@@ -82,7 +82,9 @@ export function applyVerification(
     changed.set(u.id, u);
     return u;
   });
-  const active = new Set(next.filter((t) => t.state === 'accepted').map((t) => t.id));
+  // A threat sent to a person (needs_human) is still in force: it gates Done and stays visible, so what it covers stays
+  // covered. Only a dismissed or covered cover brings the covered threat back.
+  const active = new Set(next.filter((t) => t.state === 'accepted' || t.state === 'needs_human').map((t) => t.id));
   const out = next.map((t) => {
     if (t.state !== 'covered' || (t.coveredBy && active.has(t.coveredBy))) return t;
     const { coveredBy: _c, ...rest } = t;

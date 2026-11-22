@@ -1,0 +1,22 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct availability threat: deletion of backups in shared bucket with no retention, different from c1/c2 disclosure and tampering.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct repudiation threat: no audit trail for exfiltration by reporting team or compromised credentials, made material by shared access.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Backups can be deleted or overwritten, leaving no recovery point"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No way to tell who copied a backup out of the shared bucket"
+    }
+  ]
+}

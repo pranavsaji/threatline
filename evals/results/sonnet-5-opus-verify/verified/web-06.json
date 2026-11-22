@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms non-expiring unauthenticated public links; concrete leaked-link attack with indefinite access.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"S3 storage and unauthenticated links quoted; enumeration of guessable keys is a distinct attack vector.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"No-login upload/view quoted; concrete loss of attribution harming abuse investigation.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

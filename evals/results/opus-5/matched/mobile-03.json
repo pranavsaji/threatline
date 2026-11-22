@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe health records readable from shared device due to no authentication\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe clinical edits on shared tablets cannot be attributed to specific nurse\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Spoofing",
+      "title": "No login on a shared device lets anyone act as a nurse"
+    },
+    {
+      "id": "T4",
+      "stride": "Repudiation",
+      "title": "Clinical notes written on a shared tablet cannot be attributed to a person"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms per-user memory store; cross-user leakage via missing scoping is a concrete attack on this feature.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design confirms automatic memory writes reused in later answers; memory poisoning is a concrete distinct attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

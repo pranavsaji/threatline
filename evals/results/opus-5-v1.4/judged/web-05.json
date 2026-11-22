@@ -1,0 +1,32 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design mentions SAML but not RelayState or redirect handling\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Assumes assertion structure and IdP configuration beyond design\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"One-time role check implies no revalidation; material risk\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Duplicate of c1; specific signature validation failure mode\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "RelayState used after login sends employees to an attacker's site"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Admin access granted from a role attribute the user can influence"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Revoked or demoted employees keep admin access because roles are only read at login"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "XML signature wrapping lets an attacker swap assertion contents past signature checks"
+    }
+  ]
+}

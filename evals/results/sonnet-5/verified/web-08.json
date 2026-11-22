@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows admin issued a real customer session with no mention of distinct audit attribution, enabling repudiation of admin actions.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows admin silently views customer account with no notification mechanism mentioned, distinct harm from T1's attribution issue.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

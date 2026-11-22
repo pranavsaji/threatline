@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic credential hygiene; design does not mention secrets in database, logs or prompts.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Design describes LLM generating SQL, not an agent with multiple tools.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Follows from direct SQL execution; distinct from c1 (resource exhaustion vs destruction).\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Credentials or secrets leaked"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded LLM-generated queries can exhaust the shared analytics database"
+    }
+  ]
+}

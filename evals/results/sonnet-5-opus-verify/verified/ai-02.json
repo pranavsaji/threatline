@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms HR/finance spaces indexed together; concrete attack: employee queries assistant to obtain restricted data.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

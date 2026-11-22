@@ -1,0 +1,27 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Wrong users gaining dashboard access distinct from c1's authorized users having excessive query privileges\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Auditing gap specific to arbitrary SQL on production data. User extracts data, denies action.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design clearly read-only (reporting, replica, reports). Threat assumes unstated misconfiguration beyond design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Dashboard access scope is undefined, risking broader access than intended"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No attribution of who ran which query against sensitive production data"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "SQL editor connection may allow write/DDL statements against production data"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe IDOR attack: sequential IDs allow accessing other customers' invoices without authorization check.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"Neither reported threat addresses shared proxy caching; T2 focuses on data aggregation, not infrastructure caching.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

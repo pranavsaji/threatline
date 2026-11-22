@@ -1,0 +1,10 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design grants all analysts read access to warehouse holding full customer PII; concrete insider exfiltration attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows wholesale copy of identifiers; distinct minimisation/masking gap and alternate access paths, not just analyst access.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Nightly job must hold production read credentials; concrete credential reuse to dump live table.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Ties missing query/export logging to the specific all-analyst PII dataset; untraceable leak is concrete harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Export write path exists in design; unauthenticated row insertion corrupting reports is a concrete attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Nightly repeated copies with no stated retention; concrete scenario of PII persisting after production deletion.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

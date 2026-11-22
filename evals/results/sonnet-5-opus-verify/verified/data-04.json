@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows unencrypted backups in bucket shared with reporting team; concrete exposure attack described.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Shared bucket plus full backups supported by quotes; distinct escalation attack via compromised reporting account.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Quotes support shared bucket and no encryption; distinct tampering attack overwriting backups harming restore integrity.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

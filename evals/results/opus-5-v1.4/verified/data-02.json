@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design imports CSV contents directly into orders DB; concrete row-forgery attack on this importer.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Partner SFTP upload is in design; no auth mechanism stated, spoofed upload attack is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared SFTP server for multiple partners supported by quote; cross-partner read/overwrite is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design explicitly states multi-gigabyte files; resource exhaustion of parser/storage is design-specific.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Parser imports files into orders DB with no provenance recorded; attribution/dispute harm distinct from T1.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

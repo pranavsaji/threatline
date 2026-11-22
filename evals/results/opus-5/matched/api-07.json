@@ -1,0 +1,22 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"SQL injection via sort parameter enabling data tampering, matches E1's scope and harm type.\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Database errors leaking schema information, exact match to E2's expected threat.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Sort column parameter is concatenated into SQL and cannot be parameterized"
+    },
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Database error text reveals schema and confirms injection points"
+    }
+  ]
+}

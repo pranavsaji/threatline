@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":null,\"reason\":\"No threat addresses over-broad authorization scope of impersonation feature\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"T2 describes actions attributed to customer not admin, matching attribution failure\"},{\"expected\":\"E3\",\"reported\":\"T3\",\"reason\":\"T3 describes support staff viewing customer data, matching information disclosure harm\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

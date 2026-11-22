@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack (unauthorized charge via unauthenticated queue), narrower scope doesn't make it distinct\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Design doesn't mention how planner processes flight data or prompt injection vulnerability; assumes component weakness not in design\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Distinct from c1: repudiation concern about inability to trace fraudulent charges, not the spoofing itself\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Information disclosure distinct from c1/c2: confidentiality of queue messages, not spoofing or tampering\"},{\"id\":\"x5\",\"valid\":false,\"reason\":\"Duplicate of c2: same attack (tampering with payment amount/recipient on queue) described with different wording\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Flights agent can directly cause card charges it shouldn't have authority over (ASI03 Identity and Privilege Abuse)"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Malicious flight-search content could hijack the planner agent into issuing unauthorized payments"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No attributable sender identity means fraudulent charges cannot be traced back to their origin"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Payment and trip details on the shared queue are readable by anything with queue access"
+    },
+    {
+      "id": "x5",
+      "stride": "Tampering",
+      "title": "Unauthenticated queue allows message tampering to change charge amount or recipient"
+    }
+  ]
+}

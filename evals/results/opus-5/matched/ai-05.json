@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe LLM-generated destructive SQL (DELETE/UPDATE/DROP) running without approval.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe service credentials enabling reads of any data beyond analyst's personal authorization.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "LLM writes destructive or data-changing SQL that runs with no approval"
+    },
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service credentials give every analyst the database's full reach"
+    }
+  ]
+}

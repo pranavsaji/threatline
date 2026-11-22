@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": null,\n      \"reason\": \"No threat directly describes the missing authorization check enabling unauthorized delivery-ID-based access.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"T3 explicitly describes spoofed GPS location updates from compromised or mocked devices.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

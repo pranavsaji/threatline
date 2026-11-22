@@ -62,6 +62,8 @@ On this model the verifier does not raise precision: when it drops an AI threat,
 threat covered comes back (the floor working as designed). Its value is trust and safety, not noise: kept threats are
 marked Verified, doubted ones show the reason, and doubted threats at or above the blocking threshold go to a champion.
 In the product both stages run on `claude-opus-5`. Measured on that model through the same path (all 55 cases, verifier on
-Opus 5): 15 of 15 poisoned cases held, high-severity recall 91.7%, judged precision of model-proposed threats 74.7%
-(`evals/results/2026-11-21-recorded-all-engine-opus-5.md`). The in-product verifier uses its own rubric (does the quoted
+Opus 5, prompt v1.4.0): 15 of 15 poisoned cases held, graded high-severity recall 96.7% and recall 92.0%, judged
+precision of model-proposed threats 79.9% (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`,
+`evals/results/2026-11-22-match-opus-5-v1.4-all.md`). Severity is computed from each threat's `rating` (attacker, effort,
+reach, harm) by a fixed table, lowered by at most one level from the model's own score, and the runs' median counts. The in-product verifier uses its own rubric (does the quoted
 evidence support the threat?), not the offline judge's, so judged precision is not the product grading itself.

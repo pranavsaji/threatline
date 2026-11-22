@@ -1,0 +1,10 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms deletion only covers main DB, leaving warehouse/log/backup copies with personal data exposed.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design shows deletion request/flow with no identity verification mentioned, enabling spoofed requests.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same underlying flaw and harm as T1 (incomplete deletion misleads about data state).\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design shows support action with no logging of who performed deletion, distinct repudiation concern.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

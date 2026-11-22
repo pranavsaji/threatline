@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows any website can trigger pre-filled payment deep link; concrete attacker, action, harm.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack (untrusted website triggering payment deep link) and harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design passes to/amount params into confirmation screen; unvalidated parameter injection is a distinct attack.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Restates T1: external party dictating recipient/amount via deep link bypassing in-app flow.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Quotes confirm financial details in URL parameters; leakage via history/logs is a distinct concern.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

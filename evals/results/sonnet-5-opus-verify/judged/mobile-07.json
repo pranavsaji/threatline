@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific attack: repackage app, flip flag, distribute modified build, enabling MITM on those users.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Network MITM follows when flag enabled; design bundles flag in release, making scenario plausible.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Flag lives in a bundled config file, so a repackaged/sideloaded app could re-enable insecure mode"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Release build can be forced to accept any TLS certificate, enabling MITM"
+    }
+  ]
+}

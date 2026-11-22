@@ -1,0 +1,10 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Admin delete screen and rich-text comments both in design; concrete privilege-abuse attack via moderator session.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Stored rich text rendered for every visitor supports classic stored XSS; distinct public-page surface and harm.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Links on public pages and single manual moderation screen support concrete spam/phishing flooding attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Post and delete endpoints exist; CSRF forcing victim-attributed posts or deletions is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Attacker-controlled image embeds rendered to all visitors; concrete visitor IP/user-agent leakage to attacker server.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack (lock-screen access), same disclosure (address, orders), lost/stolen explicitly covered in c1\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Shared or lost/stolen device exposes delivery address and purchase history"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe malicious MCP server installed from public registry with no vetting or allowlist.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe new tools inheriting agent's full privileges and permissions without human review.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Malicious MCP server from the public registry is installed with no vetting"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "No human approval gate before a new tool gains the agent's permissions"
+    }
+  ]
+}

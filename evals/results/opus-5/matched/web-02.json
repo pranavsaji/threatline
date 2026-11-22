@@ -1,0 +1,22 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe stored XSS through rich-text comments, same vulnerability and attack vector\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"T1 mentions moderator hijacking but already matched to E1; no separate threat for this\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T7\",\n      \"reason\": \"Both describe missing audit trail for comment deletion, same weakness and consequence\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "Stored cross-site scripting through rich-text comment markup"
+    },
+    {
+      "id": "T7",
+      "stride": "Repudiation",
+      "title": "Moderator deletions leave no record of who removed what"
+    }
+  ]
+}

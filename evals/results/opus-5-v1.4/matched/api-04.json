@@ -1,0 +1,22 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe SSRF fetching internal metadata and services, causing information disclosure from within VPC.\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe oversized or slow images exhausting resizer memory and CPU, causing denial of service.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Server-side request forgery: caller makes the service read internal services and cloud metadata"
+    },
+    {
+      "id": "T2",
+      "stride": "DenialOfService",
+      "title": "Oversized images and decompression bombs exhaust memory and CPU"
+    }
+  ]
+}

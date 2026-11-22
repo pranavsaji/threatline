@@ -1,0 +1,10 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows over-broad key scope; concrete blast-radius attack from one compromised key.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states key in query string; leak via logs/referrer is concrete and supported.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design confirms no rate limiting; rapid exfiltration/flooding is a distinct concrete attack.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Repeats T2/T1 attack and harm: compromised key harvesting customer emails.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

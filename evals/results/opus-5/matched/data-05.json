@@ -1,0 +1,17 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T3\",\"reason\":\"Both describe personal data persisting in warehouse, logs and backups after deletion request\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Deleted customers' personal data stays readable in the warehouse, logs and backups"
+    }
+  ]
+}

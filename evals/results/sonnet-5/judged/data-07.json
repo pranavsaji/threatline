@@ -1,0 +1,22 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Not from logging design. Generic auth weakness exists independently of logging feature.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Not from logging design. Payment tampering is unrelated to request/response body logging.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    }
+  ]
+}

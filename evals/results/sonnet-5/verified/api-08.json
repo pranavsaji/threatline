@@ -1,0 +1,10 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows PATCH /users/{id} updates records with no mention of authorization check on caller vs target id.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same root cause and harm (mass assignment of role/account fields) as T1, overlapping attack.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

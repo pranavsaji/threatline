@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe attacker-controlled deep link pre-filling payment to attacker's account\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe malicious app hijacking the custom URL scheme to intercept payments\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "Any website can pre-fill a payment to the attacker's account and trick the user into confirming"
+    },
+    {
+      "id": "T2",
+      "stride": "Spoofing",
+      "title": "A malicious app can claim the myapp:// scheme and phish payments"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows runtime install without deploy; concrete attack via poisoned registry/prompt leading to unapproved tool execution.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Public registry discovery supported by evidence; typosquatting selection attack is distinct from missing approval gate.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

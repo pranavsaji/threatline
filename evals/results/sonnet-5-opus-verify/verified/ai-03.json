@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms agent reads issue comments and has shell access; concrete prompt-injection to command execution attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack vector (attacker-controlled content read by agent causing command execution) and harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Over-scoped token is explicit in design; distinct harm of pushes to unrelated repositories.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shell read access and branch pushes supported by design; distinct secret-leakage harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared token with no per-developer attribution follows from quoted design; concrete traceability harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

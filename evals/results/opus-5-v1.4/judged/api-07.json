@@ -1,0 +1,22 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct DoS harm via resource exhaustion; c1 covers data tampering, not availability.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1: same SQL injection attack and unauthorized data access harm, different parameter only.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Automated search traffic and injected expensive queries exhaust the products database"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Client-supplied sort column is trusted and cannot be fixed by parameterization"
+    }
+  ]
+}

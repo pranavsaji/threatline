@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic description; forwarding with attacker-chosen address is already covered by c2\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicates c1 prompt injection; specific examples already counted in c2\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1/c2: spoofs sender identity rather than injecting agent commands\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Design says draft not send replies; attribution hygiene not material\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS attack from public inbox design, distinct from exfiltration threats\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Email content hijacks the agent into acting against instructions"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Agent treats unauthenticated sender claims as trustworthy facts"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No clear attribution for agent-sent replies vs human-sent replies"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Unbounded public inbox exposure lets an attacker flood the triage agent"
+    }
+  ]
+}

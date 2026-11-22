@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe scripting fake accounts with disposable emails to farm referral credit.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No threat describes service disruption from automated sign-ups; T1 covers automation for fraud, not DoS.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Self-referral farming with throwaway emails because sign-up needs nothing but an email"
+    }
+  ]
+}

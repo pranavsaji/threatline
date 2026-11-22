@@ -1,0 +1,32 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Tampering with admin rights is distinct from gaining those rights in c2.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Resource exhaustion harm is new, not covered by c1 or c2.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Credential access enabling database operations already covered by c1; spoofing not independent harm.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Attribution failure is distinct repudiation harm, specific to shared admin account.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "A faulty or malicious ETL job can rewrite or drop any production table"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Admin-level ETL can lock or exhaust production databases"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "One shared admin account can be reused by anyone who learns it"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Shared service account makes database actions unattributable"
+    }
+  ]
+}

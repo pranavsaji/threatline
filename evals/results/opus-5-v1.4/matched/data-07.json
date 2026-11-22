@@ -1,0 +1,17 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe sensitive credentials being written to logs through request body logging.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No reported threat describes log injection or tampering via crafted request content.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Passwords from login requests are written to the central log system in clear text"
+    }
+  ]
+}

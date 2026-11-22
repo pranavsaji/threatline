@@ -1,0 +1,17 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic hygiene about third-party data handling, not a specific attack with attacker, action, and harm.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    }
+  ]
+}

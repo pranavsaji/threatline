@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":null,\"reason\":\"No threat addresses weak token generation; T3/T4 describe timing/exposure, not reusability or guessability.\"},{\"expected\":\"E2\",\"reported\":\"T6\",\"reason\":\"Exact match: both describe inferring account existence from differential reset responses.\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Same attack: flooding reset endpoint; T5 generalizes harm to resource exhaustion.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

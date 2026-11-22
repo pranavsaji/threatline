@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows receipt sent and client flag trusted without store validation; concrete replay/forgery attack on premium unlock.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: lack of verified transaction record for dispute/audit, supported by trusted client flag quote.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T1's receipt replay attack to unlock premium without validation.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe unauthenticated queue allowing impersonation to trigger unauthorized card charges\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe message tampering to modify payment amount before processing\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe exploiting org id from request body to export another tenant's user data\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe user-controlled name fields becoming executable formulas in exported CSV without escaping\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Caller picks any organisation id in the body and exports another tenant's users"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Attacker-supplied user names turn the CSV into executable spreadsheet formulas"
+    }
+  ]
+}

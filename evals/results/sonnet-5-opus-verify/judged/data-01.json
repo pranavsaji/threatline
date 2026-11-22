@@ -1,0 +1,22 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; downstream breach scenarios (compromised laptop, leaked query) flow from analyst access already counted.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Attacks actors with write access (job pipeline, warehouse) not described in design; only analyst read access mentioned.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Raw PII copied into analytics with no masking or minimization"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "No integrity check on the nightly copy job"
+    }
+  ]
+}

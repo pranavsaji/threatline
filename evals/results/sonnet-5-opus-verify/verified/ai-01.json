@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows public agent, order lookup with PII, refund capability, no auth; concrete attack and harm.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack (unauthorized order lookup) and PII disclosure harm already covered by T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design shows unauthenticated chat issuing refunds; attribution/dispute harm is distinct from T1's access attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

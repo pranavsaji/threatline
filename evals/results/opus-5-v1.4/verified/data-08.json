@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Free SQL editor on production replica supports unrestricted read of unrelated sensitive tables.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Connection privilege level unspecified; concrete escalation to writes/DDL on replica instance.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Unbounded ad-hoc queries on replica plausibly exhaust resources; distinct harm from T1/T2.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Attribution gap concretely tied to arbitrary production reads via shared dashboard connection.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

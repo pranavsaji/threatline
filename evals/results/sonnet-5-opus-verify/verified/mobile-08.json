@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms $10 credit grant per signup; self-referral/bot abuse with no clawback is a concrete attack on this feature.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows runtime install from public registry without deploy, supporting missing approval gate attack via prompt/registry manipulation.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: typosquatting in registry causing selection of malicious server, not duplicate of T1's prompt-injection scenario.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}
