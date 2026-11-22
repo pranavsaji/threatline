@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Spoofed planner message on unauthenticated queue triggers unauthorized charge; supported by evidence.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Repeats same lack-of-authorization/privilege misuse harm as T1 (payments agent trusting any queue sender).\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack vector: prompt injection via flight data manipulating planner, not direct queue spoofing.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: lack of traceability/forensics, not unauthorized charge itself.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct harm: confidentiality/PII exposure via queue reading, not charge manipulation.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Tampering to alter charge amount duplicates T1's core harm of unauthorized/altered charge via unauthenticated queue.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

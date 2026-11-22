@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows agent reads issue comments and repo, has shell access; prompt injection hijack is concrete and supported.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Duplicate mechanism and harm (arbitrary command execution via repo content) as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence explicitly shows single token with write access to all repos; distinct harm of cross-repo blast radius.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Evidence shows shell+repo read and branch push; distinct harm of secret disclosure, not covered elsewhere.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Evidence shows shared token across tasks; distinct harm of lacking attribution/traceability, not covered elsewhere.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

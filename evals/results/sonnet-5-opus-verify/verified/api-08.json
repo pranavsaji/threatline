@@ -1,0 +1,10 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows {id}-targeted mass-assignment with no ownership check; concrete attack on another user's role/status.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: no field allow-list enables overwriting non-role fields like email for account hijack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

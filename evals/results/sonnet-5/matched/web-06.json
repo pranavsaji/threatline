@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe links being obtained and used indefinitely due to lack of expiration\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe malicious file uploads executing code when served to viewers\"},{\"expected\":\"E3\",\"reported\":null,\"reason\":\"No reported threat addresses bucket access control misconfiguration; T2 covers predictable identifiers instead\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

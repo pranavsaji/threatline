@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows agent ingests issue comments/repo files and runs shell commands with write token; concrete injection attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Org-wide write token is in design; over-broad scope enabling cross-repo modification is a distinct concern.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shell execution plus token on host supports distinct exfiltration attack and harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent pushes branches with write token; unreviewed merge to production is a distinct tampering harm.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Agent run loops from bug reports plausible given shell/build cycles; resource exhaustion harm is concrete enough.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared token attribution gap follows from single org-wide token; distinct repudiation harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

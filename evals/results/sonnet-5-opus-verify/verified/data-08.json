@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Free SQL editor on production replica supports unrestricted read of out-of-scope sensitive data.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Ad-hoc unbounded queries against production replica is a concrete resource-exhaustion attack on this feature.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Generic missing-access-model concern; no authz component in quotes, and overlaps T1's unrestricted access harm.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Concrete lack of query attribution for sensitive data extraction via the described editor.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Free SQL editor with unspecified read-only restriction supports concrete write/DDL tampering attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

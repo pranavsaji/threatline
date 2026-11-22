@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows unconditional $10 grant with no fraud detection/reversal, supporting abuse scenario described.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

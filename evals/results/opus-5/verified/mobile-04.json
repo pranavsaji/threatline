@@ -3,7 +3,7 @@
   "promptVersion": "v1.3.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms server trusts client-supplied purchased flag; concrete self-grant attack with revenue loss.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states server trusts client 'purchased' flag; concrete self-grant of premium, revenue loss.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Receipt is posted to endpoint with no validation described; forged/sandbox receipt attack distinct from flag spoofing.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Client-flag entitlement implies no authoritative transaction record; distinct harm of unreconcilable disputes.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

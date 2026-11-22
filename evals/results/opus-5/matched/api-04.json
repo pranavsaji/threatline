@@ -1,0 +1,22 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"SSRF fetching metadata endpoint from VPC steals internal credentials\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Decompression bomb or huge image exhausts memory and CPU during resize\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Attacker makes the service fetch the cloud metadata endpoint and steal its credentials"
+    },
+    {
+      "id": "T4",
+      "stride": "DenialOfService",
+      "title": "Decompression bomb or huge image exhausts memory and CPU during resize"
+    }
+  ]
+}

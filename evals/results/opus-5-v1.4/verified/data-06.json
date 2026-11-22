@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Admin rights on all production DBs support tampering/drop-table attack via pipeline jobs.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: unauthorized reads of unrelated production data via admin ETL credentials.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Admin ETL account plausibly locks/exhausts production databases; distinct availability harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Evidence directly quotes admin service account; privilege escalation from ETL foothold to all production.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared long-lived service account supports credential reuse/impersonation attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared account identity prevents attribution of destructive actions; distinct harm from others.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

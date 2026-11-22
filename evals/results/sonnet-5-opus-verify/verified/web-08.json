@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms admin receives customer session; attribution/audit-trail repudiation attack is concrete to this feature.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms silent 'log in as customer' view; lack of customer notification is a distinct disclosure concern.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

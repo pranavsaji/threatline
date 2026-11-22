@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states 30-day session cookie; long-lived session reuse with no invalidation on contact change is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"CSRF on no-password profile update endpoint supported by quoted cookie session and immediate change evidence.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Email change without password re-entry enables session-hijack takeover; distinct from CSRF vector in T2.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No email ownership verification; immediate effect quoted, harm of binding account to unverified mailbox is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Lack of notification/audit of email change is a distinct repudiation issue tied to immediate-change design.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

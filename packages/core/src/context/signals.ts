@@ -8,11 +8,17 @@ export interface Signals {
   dataClasses: DataClass[];
   exposure: Exposure;
   llmFeatures: boolean;
+  /** The AI feature can act (tools, shell, outbound actions), not only answer. */
+  agentTools: boolean;
+  /** Money moves (charges, refunds, transfers, payouts), not only payment data being mentioned. */
+  paymentFlow: boolean;
+  /** Secrets or credentials are stored, logged, embedded or shared somewhere they could leak from. */
+  secretHandling: boolean;
   fileUpload: boolean;
   auth: boolean;
   payment: boolean;
   thirdParty: string[];
-  /** Keys: a data class name, 'exposure', 'llmFeatures', 'fileUpload', 'auth', or `thirdParty:<name>`. */
+  /** Keys: a data class name, 'exposure', 'llmFeatures', 'agentTools', 'paymentFlow', 'secretHandling', 'fileUpload', 'auth', or `thirdParty:<name>`. */
   evidence: Record<string, Evidence>;
 }
 
@@ -27,6 +33,9 @@ export const SIGNAL_KEYWORDS = {
   partner: ['partner*', 'b2b', 'vendor portal', 'third-party integration*'],
   // "agent" alone counts unless a person is meant ("support agents", "sales agent"): see HUMAN_AGENT.
   llm: ['llm*', 'gpt*', 'claude', 'language model*', 'ai agent*', 'ai assistant*', 'agentic', 'agent', 'agents', 'rag', 'embedding*', 'tool call*', 'prompt', 'prompts', 'system prompt*', 'chatbot*', 'copilot*', 'genai', 'generative ai'],
+  agentTools: ['tool', 'tools', 'tool call*', 'function call*', 'shell', 'mcp', 'plugin*', 'execut*', 'runs commands', 'run commands', 'sql', 'refund*', 'book*', 'send*', 'forward*', 'install*', 'api call*', 'calls the api', 'browse*', 'writes to', 'creates tickets', 'takes actions'],
+  paymentFlow: ['refund*', 'checkout', 'charge', 'charges', 'charged', 'charging', 'payout*', 'pay out', 'transfer*', 'amount*', 'price*', 'pays', 'paid', 'payments', 'stripe', 'paypal', 'wallet*', 'store credit', 'discount*'],
+  secretHandling: ['hard-coded', 'hardcoded', 'plain text', 'plaintext', 'environment variable*', 'config file*', 'stored in', 'stores passwords', 'log file*', 'log system*', 'logs full', 'logs the', 'logged to', 'written to log*', 'shared secret*', 'embedded', 'in the url', 'query string', 'api key*', 'secret key*', 'private key*', 'signing key*', 'access token*', 'refresh token*'],
   fileUpload: ['upload*', 'attachment*', 'file import*'],
   auth: ['authenticat*', 'login*', 'log in', 'sign in', 'session*', 'oauth', 'sso', 'jwt*', 'mfa', 'single sign-on'],
   thirdParty: ['stripe', 'paypal', 'twilio', 'sendgrid', 'openai', 'anthropic', 'salesforce', 'slack', 'zendesk', 'shopify', 's3', 'google'],
@@ -87,12 +96,15 @@ export function extractSignals(facts: readonly ContextFact[]): Signals {
   const partner = pub ? undefined : findFirst(facts, 'partner');
   const exposure: Exposure = pub ? 'public' : partner ? 'partner' : 'internal';
   if (pub ?? partner) evidence.exposure = (pub ?? partner)!;
-  const flag = (key: 'llm' | 'fileUpload' | 'auth', name: string): boolean => {
+  const flag = (key: 'llm' | 'agentTools' | 'paymentFlow' | 'secretHandling' | 'fileUpload' | 'auth', name: string): boolean => {
     const ev = findFirst(facts, key);
     if (ev) evidence[name] = ev;
     return ev !== undefined;
   };
   const llmFeatures = flag('llm', 'llmFeatures');
+  const agentTools = flag('agentTools', 'agentTools');
+  const paymentFlow = flag('paymentFlow', 'paymentFlow');
+  const secretHandling = flag('secretHandling', 'secretHandling');
   const fileUpload = flag('fileUpload', 'fileUpload');
   const auth = flag('auth', 'auth');
   const thirdParty: string[] = [];
@@ -106,5 +118,5 @@ export function extractSignals(facts: readonly ContextFact[]): Signals {
       }
     }
   }
-  return { dataClasses, exposure, llmFeatures, fileUpload, auth, payment: dataClasses.includes('payment'), thirdParty, evidence };
+  return { dataClasses, exposure, llmFeatures, agentTools, paymentFlow, secretHandling, fileUpload, auth, payment: dataClasses.includes('payment'), thirdParty, evidence };
 }

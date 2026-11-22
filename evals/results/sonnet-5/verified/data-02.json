@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Parser imports raw CSV into DB; unvalidated field writes could inject malicious data/SQL, concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Multi-gigabyte files evidenced; resource exhaustion attack via large uploads is concrete and distinct.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"SFTP server shared by partners; cross-partner data exposure is plausible concrete attack not covered elsewhere.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"No evidence parser derives filesystem paths from partner input; speculative, not supported by quotes.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

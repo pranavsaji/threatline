@@ -7,6 +7,9 @@
  *     --judge grades every reported threat outside a case's must-find list with a separate claude -p call (recorded
  *     into evals/results/judged/), so the report shows judged precision next to strict precision.
  *     claude-code runs record every raw reply into evals/results/recorded/; `--llm recorded` replays them offline (CI).
+ *   rematch --record-set <name> [--subset 30|all|holdout] [--match claude-code|recorded|resume] [--match-model m] [--concurrency 4] [--yes]
+ *     replays a recorded Engine run and has a separate claude -p call decide which reported threat finds each must-find
+ *     threat (recorded into evals/results/<name>/matched/), so recall is not limited by the keyword matcher.
  *   sign-demo
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -16,7 +19,9 @@ import { claudeCodeLlm } from '@threatline/llm-dev';
 import { computeVerdict, DEFAULT_SITE_POLICY, issueAttestation, type LlmPort } from '@threatline/core';
 import { CLEAN_CASES, POISONED_CASES } from '../../../evals/fixtures/cases.js';
 import { reportMarkdown, runCase, runEval, selectCases, type EvalPath } from '../../../evals/runner/run.js';
-import { gateCheck, loadRecording, replayLlm } from '../../../evals/runner/recorded.js';
+import { scoreCase } from '../../../evals/runner/metrics.js';
+import { gateCheck, loadRecording, recordingLlm, replayLlm, saveRecording } from '../../../evals/runner/recorded.js';
+import { addMatch, emptyTotals, matchCase, MATCH_VERSION, parseMatch, type MatchItem } from '../../../evals/runner/match.js';
 
 const AGENT_RECORDED = 'evals/results/recorded';
 const BASELINE = 'evals/results/baseline.json';
@@ -117,14 +122,18 @@ async function main() {
       ...(path === 'engine'
         ? (() => {
             const which = flag('verify', 'recorded');
-            const live = which === 'claude-code' ? claudeCodeLlm({ model: flag('model', 'claude-sonnet-4-5')! }) : null;
+            // `resume`: replay recorded verdicts, and call the model (recording it) only for cases without a recording.
+            const live = which === 'claude-code' || which === 'resume' ? claudeCodeLlm({ model: flag('model', 'claude-sonnet-4-5')! }) : null;
+            const replayedVerify = new Set<string>();
             return {
               verify: {
                 llmFor: (id: string) => {
-                  const rec = which === 'recorded' ? loadRecording(VERIFIED, id) : null;
+                  const rec = which === 'recorded' || which === 'resume' ? loadRecording(VERIFIED, id) : null;
+                  if (rec) replayedVerify.add(id);
                   return rec ? replayLlm(rec) : live;
                 },
                 ...(live ? { recordDir: VERIFIED } : {}),
+                ...(which === 'resume' ? { replayed: (id: string) => replayedVerify.has(id) } : {}),
               },
             };
           })()
@@ -148,6 +157,89 @@ async function main() {
       console.log(g.message);
       if (!g.ok || r.value.failures.length > 0) process.exit(1);
     }
+    return;
+  }
+  if (cmd === 'rematch') {
+    const set = flag('record-set');
+    if (!set || !/^[a-z0-9][a-z0-9.-]*$/.test(set)) throw new Error('rematch needs --record-set <name>, for example opus-5');
+    const which = flag('subset', 'all');
+    const tuning = new Set(selectCases(30).clean.map((c) => c.id));
+    const clean = which === 'all' ? CLEAN_CASES : which === 'holdout' ? CLEAN_CASES.filter((c) => !tuning.has(c.id)) : CLEAN_CASES.filter((c) => tuning.has(c.id));
+    const dir = `evals/results/${set}`;
+    const mode = flag('match', 'recorded');
+    const model = flag('match-model', 'claude-sonnet-4-5')!;
+    if (mode !== 'recorded' && !(await confirm(clean.length, `${model} (match judge, one call per clean case)`))) return;
+    const totals = emptyTotals();
+    const keyword = { found: 0, expected: 0 };
+    const rows: string[] = [];
+    const missing: string[] = [];
+    const conc = Math.max(1, Number(flag('concurrency', '4')));
+    for (let i = 0; i < clean.length; i += conc) {
+      await Promise.all(
+        clean.slice(i, i + conc).map(async (c) => {
+          const rec = loadRecording(`${dir}/recorded`, c.id);
+          if (!rec) return void missing.push(`${c.id}: no review recording`);
+          const ver = loadRecording(`${dir}/verified`, c.id);
+          const run = await runCase(c, replayLlm(rec), rec.replies.length, 'engine', true, ver ? replayLlm(ver) : null);
+          if (!run.ok) return void missing.push(`${c.id}: ${run.error.code}`);
+          const shown = run.value.threats.filter((t) => t.state === 'accepted' || t.state === 'needs_human');
+          const reported: MatchItem[] = shown.map((t, n) => ({ id: `T${n + 1}`, stride: t.stride, severity: t.severity, title: t.title, scenario: t.scenario }));
+          const kw = scoreCase(shown, c.expected);
+          keyword.found += kw.tp;
+          keyword.expected += c.expected.length;
+          const saved = mode === 'recorded' || mode === 'resume' ? loadRecording(`${dir}/matched`, c.id) : null;
+          const live = mode === 'claude-code' || (mode === 'resume' && !saved) ? recordingLlm(claudeCodeLlm({ model })) : null;
+          let v: Awaited<ReturnType<typeof matchCase>>;
+          if (saved?.items && saved.replies[0]) {
+            // Recorded verdicts name threats by position; the list they rated is saved with them, so each verdict is
+            // matched to today's list by STRIDE and title (a threat no longer shown counts as not found).
+            const p = parseMatch(saved.replies[0].text, c.expected.map((_, k) => `E${k + 1}`), saved.items.map((x) => x.id));
+            v = p.ok
+              ? { ok: true as const, value: p.value.map((m) => {
+                  const was = m.reported ? saved.items!.find((x) => x.id === m.reported) : undefined;
+                  const now = was ? reported.find((x) => x.stride === was.stride && x.title === was.title) : undefined;
+                  return { ...m, reported: now ? now.id : null };
+                }) }
+              : p;
+          } else {
+            const llm = saved ? replayLlm(saved) : live?.llm;
+            if (!llm) return void missing.push(`${c.id}: no match recording`);
+            v = await matchCase(llm, c, reported);
+          }
+          if (!v.ok) return void missing.push(`${c.id}: match ${v.error.code} (${v.error.message})`);
+          if (live && live.replies().length) saveRecording(`${dir}/matched`, { caseId: c.id, promptVersion: MATCH_VERSION, replies: live.replies(), items: reported.map((x) => ({ id: x.id, stride: x.stride, title: x.title })) });
+          addMatch(totals, c, v.value, reported);
+          v.value.forEach((m, k) => {
+            if (!m.reported) rows.push(`| ${c.id} | ${c.expected[k]!.severity} | ${c.expected[k]!.title} | ${m.reason.replace(/\|/g, '/')} |`);
+          });
+        }),
+      );
+      process.stderr.write(`${Math.min(i + conc, clean.length)}/${clean.length}\r`);
+    }
+    const pct = (a: number, b: number) => (b ? `${((a / b) * 100).toFixed(1)}%` : 'n/a');
+    const date = new Date().toISOString().slice(0, 10);
+    const md = `# Threatline recall, judged — ${set}, ${which} (${date})
+
+_Each must-find threat graded by a separate ${model} call (${MATCH_VERSION}) against the threats the review showed;
+replayed from \`evals/results/${set}/\`. ${clean.length - missing.length} of ${clean.length} clean cases graded._
+
+| Metric | Judged | Keyword matcher |
+| --- | --- | --- |
+| Recall | ${pct(totals.found, totals.expected)} (${totals.found} of ${totals.expected}) | ${pct(keyword.found, keyword.expected)} (${keyword.found} of ${keyword.expected}) |
+| High-severity recall | ${pct(totals.highFound, totals.highExpected)} (${totals.highFound} of ${totals.highExpected}) | |
+| Severity vs expected (found threats) | ${totals.severity.higher} higher, ${totals.severity.same} same, ${totals.severity.lower} lower | |
+
+Not found:
+
+| Case | Expected severity | Expected threat | Judge's reason |
+| --- | --- | --- | --- |
+${rows.sort().join('\n') || '| — | | | |'}
+${missing.length ? `\nNot graded: ${missing.sort().join('; ')}\n` : ''}`;
+    const base = `evals/results/${date}-match-${set}-${which}`;
+    writeFileSync(`${base}.md`, md);
+    writeFileSync(`${base}.json`, JSON.stringify({ set, subset: which, model, version: MATCH_VERSION, date, totals, keyword, missing }, null, 2));
+    console.log(md);
+    console.log(`wrote ${base}.md and ${base}.json`);
     return;
   }
   if (cmd === 'sign-demo') {

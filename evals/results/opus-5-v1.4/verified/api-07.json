@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows string-concatenated SQL from free-text query; concrete injection attack on products database.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Expensive/injected queries saturating DB connection pool is a distinct harm from data theft.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Sort column concatenated into ORDER BY is a distinct injection vector not fixed by parameterization.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Error-based disclosure from concatenated statement is a distinct, plausible attack path on this endpoint.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

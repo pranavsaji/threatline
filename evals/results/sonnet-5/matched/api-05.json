@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Same attack: exploiting request body org id to export another organization's data\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Same attack: CSV formula injection via unsanitized user-supplied fields\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

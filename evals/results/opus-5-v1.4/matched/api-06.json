@@ -1,0 +1,17 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": null,\n      \"reason\": \"No threat about forging tokens using shared secret\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No threat about secret disclosure from environment variables\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe stolen tokens replayed for seven days\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Stolen service token stays usable for a week with no way to revoke it"
+    }
+  ]
+}

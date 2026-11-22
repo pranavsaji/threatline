@@ -1,0 +1,10 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows client-computed final price charged via Stripe; concrete price-tampering attack with clear harm.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same client-side price tampering attack and harm as T1, framed as discount code validation.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct harm: no server record linking code to charged amount, preventing dispute/fraud investigation.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

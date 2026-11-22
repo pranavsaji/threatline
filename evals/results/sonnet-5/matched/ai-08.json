@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe attacker-controlled MCP servers in the public registry being selected and used by the agent.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe malicious tools running with the agent's full privileges, enabling elevation of privilege attacks.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

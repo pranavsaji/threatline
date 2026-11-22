@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack and harm, just restates the missing control rather than new threat.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Vague and either duplicates c1 (attacker sets parameters) or assumes tampering mechanism beyond design.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Assumes normal payment flow controls not described in design; likely duplicates c1's harm.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Specific information disclosure from payment details in URLs; follows from design, distinct from c1.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Assumes internet-facing endpoint not in design; deep links are local OS registrations, not network endpoints.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "No verification that the deep link sender is authorized to initiate payment requests"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link bypasses normal payment initiation authorization flow"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Payment recipient and amount leak via URL in logs, history, and referrers"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    }
+  ]
+}

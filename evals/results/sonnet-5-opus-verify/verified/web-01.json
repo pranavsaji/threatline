@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states user is logged in immediately on reset; no session invalidation mentioned. Concrete persistence-of-access attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"24-hour token validity quoted; long window for stolen link reuse is a concrete attack on this feature.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Token-in-link public page quoted; Referer/history leakage leading to password takeover is concrete and distinct from T2.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Internet-facing login page quoted; brute-force/credential stuffing is a concrete attack on that component.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Reset-by-email-address form quoted; account enumeration via response differences is concrete and distinct.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

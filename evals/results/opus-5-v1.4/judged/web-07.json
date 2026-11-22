@@ -1,0 +1,22 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct attack discovering codes via enumeration or extraction from browser logic\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Describes consequences of c1 and c2, not a distinct attack\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Automated guessing of discount codes"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No server-side record of how a total was reached, so discount fraud cannot be proven or reversed"
+    }
+  ]
+}

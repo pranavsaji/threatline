@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't mention tools, agents, or privilege levels; threat is generic, not specific to memory.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Users can inject instruction-like memories that hijack behavior; direct consequence of automatic memory writing.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "User can plant fake memories that silently steer future answers"
+    }
+  ]
+}

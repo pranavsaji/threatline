@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Payload carries order and address through third-party APNs/FCM; concrete disclosure outside trust boundary.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Send path exists in design; spoofed notification phishing is a concrete distinct attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Lock-screen default plus sensitive payload supported by quotes; concrete shoulder-surfing disclosure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Token-based push delivery implied; misbinding delivers order/address to wrong device, distinct from T1/T3.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

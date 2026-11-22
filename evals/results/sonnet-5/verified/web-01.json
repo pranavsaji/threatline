@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows reset logs user in without mention of session invalidation; concrete account takeover persistence attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows 24-hour token validity, concrete attack window for stolen/guessed link.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence shows token delivered via clickable public link, enabling leakage via referer/history/logs.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Generic brute-force hygiene issue not tied to specific design behavior beyond internet-facing login.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Evidence shows reset request by email, concrete enumeration attack distinct from other threats.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

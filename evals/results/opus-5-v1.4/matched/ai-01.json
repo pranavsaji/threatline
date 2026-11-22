@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe prompt injection causing goal hijack; T2 explicitly uses 'goal hijack' and describes injected instructions\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe tampering to extract unauthorized refunds by exploiting weak enforcement of refund limits\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe agent disclosing other customers' personal data (emails, shipping addresses) without proper access control\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Customer talks the agent into issuing a refund it should not (goal hijack)"
+    },
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "$200 refund limit enforced only in the prompt, so the cap can be split or bypassed"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Agent discloses other customers' emails and shipping addresses"
+    }
+  ]
+}

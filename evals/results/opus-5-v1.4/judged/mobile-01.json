@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Attack paths require access already covered by c2 compromised device or duplicate c2 token theft exactly.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Exact duplicate of c2; both threats describe token theft from plain storage and subsequent replay.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Describes investigation failure after c2 attack occurs; consequence not separate attack. No distinct attacker or action.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Biometric check is local only, so it can be bypassed to use the stored token"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Refresh token stolen from plain app storage lets an attacker log in as the customer"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Bank cannot prove which device or person authorised a session"
+    }
+  ]
+}

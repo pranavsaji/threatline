@@ -1,0 +1,22 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design mentions no data retrieval; generic access control concern\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Low barrier plus financial incentive enables mass fraud; specific to design\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No way to detect or reverse fraudulent credit grants"
+    }
+  ]
+}

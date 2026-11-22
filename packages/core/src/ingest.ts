@@ -5,6 +5,7 @@ import {
   ok,
   severityRank,
   type AgentThreat,
+  ThreatRatingSchema,
   type AgentThreatModel,
   type Citation,
   type ContextBundle,
@@ -26,7 +27,7 @@ import { clusterSamples, consensus, similar, voteThreshold } from './threats/clu
 import { groundQuote } from './threats/grounding.js';
 import { mapThreat } from './threats/mapping.js';
 import { plainLanguageFor } from './threats/plain-language.js';
-import { severityOf } from './threats/severity.js';
+import { boundedScores, ratedScores, severityOf } from './threats/severity.js';
 import { normalizeText } from './threats/text.js';
 import { riskScore } from './scoring.js';
 import { diffBundles, threatsToReevaluate } from './incremental.js';
@@ -221,6 +222,15 @@ function addCitations(into: Citation[], extra: Citation[]): Citation[] {
  * baseline threats always present; agent threats need majority votes and a resolvable citation; the agent can raise severity
  * or exposure but never lower them; weakly grounded or injection-touched agent threats go to needs_human.
  */
+/** A threat with a rating gets Threatline's likelihood and impact for it; the model's own numbers are a fallback. */
+const rated = (t: AgentThreat): AgentThreat => (t.rating ? { ...t, ...boundedScores(ratedScores(t.rating), t) } : t);
+
+/** The median of 1–5 scores; with an even count, the upper of the two middle values (never below a majority). */
+export function centralScore(xs: readonly number[]): number {
+  const s = [...xs].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)]!;
+}
+
 export function assembleReview(i: AssembleInput): AssembleOutput {
   const facts = i.bundle.facts;
   const valid = i.samples.filter((s): s is AgentThreatModel => !isFailedSample(s));
@@ -267,9 +277,11 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     });
   }
   const baselineCount = threats.length;
+  /** AI threats whose severity every run computed from a rating (Threatline's table, not the model's own numbers). */
+  const ratedIds = new Set<string>();
 
   // 2. Agent threats: cluster across samples, keep majority.
-  const { kept: majority, discarded: lowVotes } = consensus(clusterSamples(valid.map((m) => m.threats)), voteBase);
+  const { kept: majority, discarded: lowVotes } = consensus(clusterSamples(valid.map((m) => m.threats.map(rated))), voteBase);
   // Under suspected injection a minority threat may be one the injection silenced in the other runs: keep it (it still
   // needs a verbatim quote, and becomes needs_human below) rather than let the attacker's text vote it out.
   const kept = injectionSuspected ? [...majority, ...lowVotes.map((d) => d.cluster)] : majority;
@@ -289,8 +301,11 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     }
     const citations = grounded.slice(0, MAX_CITATIONS).map((x) => ({ factId: x.g.factId!, quote: x.q }));
     const supported = grounded.some((x) => x.g.grounding === 'supported');
-    const likelihood = Math.max(...cluster.members.map((m) => m.likelihood));
-    const impact = Math.max(...cluster.members.map((m) => m.impact));
+    // The runs' central score, not the highest: one run's outlier should not decide what blocks Done. Under suspected
+    // injection the highest stands, so attacker text that talks one run down cannot lower the outcome.
+    const pick = injectionSuspected ? (xs: number[]) => Math.max(...xs) : centralScore;
+    const likelihood = pick(cluster.members.map((m) => m.likelihood));
+    const impact = pick(cluster.members.map((m) => m.impact));
     const agentSeverity = severityOf(likelihood, impact);
 
     const touchedByInjection = citations.some((c) => factById.get(c.factId)?.injectionSuspected) || injectionSuspected;
@@ -318,8 +333,10 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
       continue;
     }
 
+    const id = claimId(idsOf(threats), i.review.id, 'agent', rep);
+    if (cluster.members.every((m) => m.rating)) ratedIds.add(id);
     threats.push({
-      id: claimId(idsOf(threats), i.review.id, 'agent', rep),
+      id,
       reviewId: i.review.id,
       stride: rep.stride,
       title: rep.title,
@@ -347,7 +364,10 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
   applySuppressions(threats, i.suppressions?.rules ?? [], { blockAtOrAbove: i.policy.blockAtOrAbove, injectionSuspected, now: i.now, unhidden: new Set(i.suppressions?.unhidden ?? []) });
 
   // 3. Noise: a generic rule-based threat stands back (state `covered`) when a trusted AI threat (majority-voted,
-  // quoted word for word, untouched by injection) of the same kind, on the same topic and at least as severe covers it.
+  // quoted word for word, untouched by injection) of the same kind and on the same topic covers it, at least as severe;
+  // or one level below when its severity comes from a rating (the facts it states, through Threatline's table), which
+  // then replaces the generic rule's default severity, so "personal data exposed" (High by default) does not return as
+  // a High duplicate of a Medium user-enumeration threat. A model's bare numbers never lower the floor.
   // It stays stored and comes back if that AI threat is dismissed. Its framework mappings move to the AI threat. Never
   // under suspected injection (attacker text must not steer what is shown), and never for a rule-based threat carried
   // from an earlier revision, whose triage stands.
@@ -355,7 +375,7 @@ export function assembleReview(i: AssembleInput): AssembleOutput {
     for (const b of threats) {
       if (b.origin !== 'baseline' || b.state !== 'accepted' || carried.has(b.id)) continue;
       const cover = threats.find(
-        (t) => t.origin === 'agent' && t.state === 'accepted' && t.grounding === 'supported' && severityRank(t.severity) >= severityRank(b.severity) && coveredByText(b.title, t),
+        (t) => t.origin === 'agent' && t.state === 'accepted' && t.grounding === 'supported' && severityRank(t.severity) >= severityRank(b.severity) - (ratedIds.has(t.id) ? 1 : 0) && coveredByText(b.title, t),
       );
       if (!cover) continue;
       cover.mappings = mergeMappings(cover.mappings, b.mappings);
@@ -448,7 +468,7 @@ function carryOver(threats: Threat[], prior: NonNullable<AssembleInput['prior']>
 export const isBlockingSeverity = (t: Pick<Threat, 'severity'>, policy: Pick<SitePolicy, 'blockAtOrAbove'>): boolean =>
   severityRank(t.severity) >= severityRank(policy.blockAtOrAbove);
 
-const AGENT_THREAT_KEYS = ['stride', 'title', 'scenario', 'component', 'likelihood', 'impact', 'evidence', 'asvs', 'cwe', 'plainLanguage', 'requirement'] as const;
+const AGENT_THREAT_KEYS = ['stride', 'title', 'scenario', 'component', 'likelihood', 'impact', 'evidence', 'asvs', 'cwe', 'plainLanguage', 'rating', 'requirement'] as const;
 const SKETCH_KEYS = ['components', 'dataStores', 'externalServices', 'trustBoundaries', 'dataClasses', 'exposure', 'llmFeatures'] as const;
 const trimWords = (v: unknown, n: number) => (typeof v === 'string' && v.length > n ? `${v.slice(0, n - 1).trimEnd()}…` : v);
 const toScore = (v: unknown) => {
@@ -474,6 +494,8 @@ export function fitAgentModel(raw: unknown): unknown {
     out.scenario = trimWords(out.scenario, 600);
     out.component = trimWords(out.component, 80);
     if ('plainLanguage' in out) out.plainLanguage = trimWords(out.plainLanguage, 200);
+    // A malformed rating is dropped, not fatal: severity then falls back to the model's likelihood and impact.
+    if ('rating' in out && !ThreatRatingSchema.safeParse(out.rating).success) delete out.rating;
     out.likelihood = toScore(out.likelihood);
     out.impact = toScore(out.impact);
     if (Array.isArray(out.evidence))

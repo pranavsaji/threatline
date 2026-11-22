@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows org id from request body; concrete cross-tenant export attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Full-directory export is expensive; plausible resource exhaustion attack on this endpoint.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"CSV export of user-supplied names supports formula injection attack on admin opening file.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Bulk PII export in one request; distinct from T1 (compromised admin, own org).\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Missing export audit trail tied to attacker-controlled org id; attribution harm distinct.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

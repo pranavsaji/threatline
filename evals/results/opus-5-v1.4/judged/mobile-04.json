@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design trusts client flag without store verification; fabricated receipts would be accepted.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Design does not specify authentication or how account is determined; enables cross-account manipulation.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"No transaction record means refunds and fraud cannot be properly handled or reversed.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Receipt is accepted without server-side validation against the app store"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Unlock endpoint has no stated authentication or account binding"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No link from an unlocked account back to a real store transaction"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[\n  {\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Same weakness (logging full bodies) causes information disclosure of passwords to logs\"},\n  {\"expected\":\"E2\",\"reported\":null,\"reason\":\"No reported threat describes log injection or tampering through logged request bodies\"}\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Passwords written in clear text into the log system"
+    }
+  ]
+}

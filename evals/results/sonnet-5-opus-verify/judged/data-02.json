@@ -1,0 +1,17 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design mentions multiple partners using one SFTP server without specifying isolation; lateral access is plausible.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Shared SFTP storage could expose one partner's order data to another"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":true,\"reason\":\"Adds unauthorized refund harm not in c2\"},\n  {\"id\":\"x2\",\"valid\":false,\"reason\":\"Too generic, no attacker or mechanism specified\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate of c1, describes its consequence\"},\n  {\"id\":\"x4\",\"valid\":false,\"reason\":\"Duplicate of c2, same attack and harm\"},\n  {\"id\":\"x5\",\"valid\":false,\"reason\":\"Generic hygiene, not specific to design\"},\n  {\"id\":\"x6\",\"valid\":true,\"reason\":\"Specific DoS from public expensive operations\"},\n  {\"id\":\"x7\",\"valid\":true,\"reason\":\"Non-repudiation distinct from unauthorized access\"}\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Anyone can view another customer's order and request their refund, no login required"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Order lookup leaks other customers' emails and addresses"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    },
+    {
+      "id": "x6",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x7",
+      "stride": "Repudiation",
+      "title": "No way to prove who actually requested each refund"
+    }
+  ]
+}

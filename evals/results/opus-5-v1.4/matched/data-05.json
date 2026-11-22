@@ -1,0 +1,17 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe personal data surviving deletion in warehouse, logs and backups\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data survives deletion in warehouse, logs and backups"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows forwarding capability; concrete exfiltration attack via injected instruction to attacker-controlled address.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same prompt-injection-hijack attack and exfiltration/action harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack: unverified sender impersonation causing social engineering via trusted summary, not forwarding exfiltration.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: lack of attribution/audit trail for agent vs human actions, not covered by other threats.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct DoS attack via volume flooding causing cost/delay harm, unrelated to injection or spoofing threats.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

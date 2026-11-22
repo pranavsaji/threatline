@@ -1,0 +1,27 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Unauthorized deletion by attacker posing as customer. Different from c1's compliance scope issue. Specific and plausible.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1: both describe data persisting despite deletion claim, causing audit and compliance exposure.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"No audit trail for deletion actions enables repudiation. Material to this feature, not generic hygiene.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "No described identity check before a deletion request is honored"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Deletion flag in main database misrepresents the actual data state"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No record of who authorized or performed the deletion"
+    }
+  ]
+}

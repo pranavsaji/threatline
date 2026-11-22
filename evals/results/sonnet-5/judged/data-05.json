@@ -1,0 +1,22 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design lacks identity verification; attacker could request victim's deletion\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"No audit trail mentioned; support agent could delete improperly without accountability\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "No described identity check before a deletion request is honored"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No record of who authorized or performed the deletion"
+    }
+  ]
+}

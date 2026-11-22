@@ -1,0 +1,27 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design describes user changing own settings only, not accessing other users' records or data.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c3: both describe email change enabling password reset to uncontrolled address and account takeover.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c3: both describe session hijack, email change, password reset, and account takeover path.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "New email address is accepted without proving the user owns it"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Email change is silent, so a hijack goes unnoticed and undisputed"
+    }
+  ]
+}

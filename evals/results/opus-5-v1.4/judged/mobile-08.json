@@ -1,0 +1,42 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design does not state codes are weak or guessable; assumes implementation flaw; core farming attack covered by c1.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic data exposure, not specific to referrals; design mentions no record-retrieval mechanism; pure security hygiene.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design states fixed ten-dollar credit, implies server control; threat assumes bad implementation contradicting this stated amount.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Self-referral via fake signups already covered by c1; same attack, same harm, just smaller scale.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Follows directly from email-only signup design; specific attack; distinct harm, account enumeration; not duplicate of c1.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Distinct harm from c1: inability to investigate, attribute or remediate fraud; follows from email-only signup design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Referral codes can be brute forced or guessed to redeem against strangers' codes"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Server trusts the referral code and credit values sent by the client"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Users can refer themselves because the two sides of the referral are never checked"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Email-only sign-up lets anyone test whether a person already has an account"
+    },
+    {
+      "id": "x6",
+      "stride": "Repudiation",
+      "title": "No link between a credited referral and the identity behind it, so fraud cannot be unwound"
+    }
+  ]
+}

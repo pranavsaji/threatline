@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"T1 explicitly describes goal hijack via prompt injection, matching E1's attack method and terminology exactly.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T6\",\n      \"reason\": \"T6 describes bypassing refund limits to obtain unauthorized payouts, a different weakness class from prompt injection.\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T2\",\n      \"reason\": \"T2 describes agent revealing other customers' order history, email and addresses, exactly matching E3's disclosure concern.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Customer talks the agent into issuing refunds it should not issue (goal hijack)"
+    },
+    {
+      "id": "T6",
+      "stride": "Tampering",
+      "title": "The $200 cap is bypassed by splitting refunds across calls or sessions"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Agent can be asked for another customer's order history, email and shipping address"
+    }
+  ]
+}

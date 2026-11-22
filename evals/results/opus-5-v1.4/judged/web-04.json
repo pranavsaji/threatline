@@ -1,0 +1,32 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Exact duplicate of c1: same attacker, action, and harm.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Design implies authentication; c1 already covers unauthorized invoice access.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific DoS: sequential IDs plus expensive PDF generation enables resource exhaustion.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Sequential IDs leak data volume information, distinct from invoice content access.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Any signed-in customer can read other customers' invoices by changing the id in the URL"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Download endpoint may serve invoices without requiring a logged-in session"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Scripted bulk downloads force unbounded PDF generation"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Sequential invoice ids let an attacker enumerate how many customers and invoices exist"
+    }
+  ]
+}

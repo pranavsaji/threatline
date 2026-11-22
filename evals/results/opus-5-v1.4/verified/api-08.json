@@ -1,0 +1,10 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows PATCH /users/{id} copying all fields with no ownership check; concrete privilege takeover attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct mass-assignment attack: suspended user self-reactivates via accountStatus field, bypassing moderation.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack and harm as T1: id enumeration to edit other users' records including role.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design shows parameterized endpoint but omits authorization; IDOR attack follows directly from design as written.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Design explicitly states 'copies every field'; mass assignment attack on role/accountStatus and similar fields follows directly.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "No authorization check on which user can update {id}"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "No field allow-list means any attribute on the user record can be overwritten"
+    }
+  ]
+}

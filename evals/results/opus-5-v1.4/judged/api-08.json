@@ -1,0 +1,17 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack (no ownership check, edit others via id) and harm (privilege escalation).\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Any user can edit another user's record by changing the id in the URL"
+    }
+  ]
+}

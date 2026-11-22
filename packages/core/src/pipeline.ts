@@ -83,12 +83,20 @@ export async function engineAgentRun(deps: StageDeps, review: Review, bundle: Co
     purpose: 'propose',
   });
   if (!r.ok) return r.error.code === 'budget' ? r : ok({ failed: r.error.code });
-  const m = extractAgentJson(r.value, bundle.issueKey);
-  if (m.ok || m.error.code !== 'schema') return ok(m.ok ? m.value : { failed: m.error.code });
-  // A strong model writes long: fit its wording to the contract (quotes only shortened, so still verbatim), then check.
-  const fitted = AgentThreatModelSchema.safeParse(fitAgentModel(parseFirstObject(r.value)));
-  if (fitted.success && fitted.data.issueKey.toLowerCase() === bundle.issueKey.toLowerCase()) return ok(fitted.data);
-  return ok({ failed: m.error.code });
+  return ok(agentSampleFromText(r.value, bundle.issueKey));
+}
+
+/**
+ * One run's reply as a sample, exactly as the Engine reads it (the offline eval uses this too): the strict contract
+ * first; a strong model writes long, so on a schema miss its wording is fitted to the contract (quotes only shortened,
+ * so still verbatim) and checked again.
+ */
+export function agentSampleFromText(text: string, issueKey: string): Sample {
+  const m = extractAgentJson(text, issueKey);
+  if (m.ok || m.error.code !== 'schema') return m.ok ? m.value : { failed: m.error.code };
+  const fitted = AgentThreatModelSchema.safeParse(fitAgentModel(parseFirstObject(text)));
+  if (fitted.success && fitted.data.issueKey.toLowerCase() === issueKey.toLowerCase()) return fitted.data;
+  return { failed: m.error.code };
 }
 
 /** One stage call with the spec's failure ladder: validate → one repair with the validator error → smaller fallback schema → fail. */

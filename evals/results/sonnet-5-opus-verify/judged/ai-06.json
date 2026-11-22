@@ -1,0 +1,32 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; flights agent covered by 'anyone on queue'; same harm from same root cause.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Doesn't follow from design; assumes prompt injection implementation details not mentioned in the design.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Different harm: inability to investigate/dispute charges versus preventing unauthorized charges; enables forensics.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Different harm: information disclosure of sensitive payment data; confidentiality not addressed by existing threats.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Flights agent can directly cause card charges it shouldn't have authority over (ASI03 Identity and Privilege Abuse)"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Malicious flight-search content could hijack the planner agent into issuing unauthorized payments"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No attributable sender identity means fraudulent charges cannot be traced back to their origin"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Payment and trip details on the shared queue are readable by anything with queue access"
+    }
+  ]
+}

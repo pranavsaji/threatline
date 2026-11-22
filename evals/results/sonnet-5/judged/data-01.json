@@ -1,0 +1,17 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same harm (PII exposure) via overlapping attacks; lack of pseudonymization makes c1 worse, not separate threat\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Raw PII copied into analytics with no masking or minimization"
+    }
+  ]
+}

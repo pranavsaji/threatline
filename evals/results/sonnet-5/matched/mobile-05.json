@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Explicitly mentions both phone number and location data exposed via endpoint\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Directly describes GPS spoofing with fake location updates\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

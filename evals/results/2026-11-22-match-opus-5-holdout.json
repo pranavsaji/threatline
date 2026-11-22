@@ -1,0 +1,23 @@
+{
+  "set": "opus-5",
+  "subset": "holdout",
+  "model": "claude-sonnet-4-5",
+  "version": "match-v1",
+  "date": "2026-11-22",
+  "totals": {
+    "found": 29,
+    "expected": 33,
+    "highFound": 22,
+    "highExpected": 23,
+    "severity": {
+      "higher": 19,
+      "same": 10,
+      "lower": 0
+    }
+  },
+  "keyword": {
+    "found": 27,
+    "expected": 33
+  },
+  "missing": []
+}

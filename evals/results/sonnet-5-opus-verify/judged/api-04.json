@@ -1,0 +1,17 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same SSRF attack to internal services, same harm of reading internal data/credentials.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "SSRF via URL fetch reaches internal metadata service"
+    }
+  ]
+}

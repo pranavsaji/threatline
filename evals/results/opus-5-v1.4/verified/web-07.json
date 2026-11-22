@@ -1,0 +1,10 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows server charges browser-supplied total; concrete price tampering attack with harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design includes discount code entry; brute-force harvesting of codes is a concrete attack on it.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Browser-side discount evaluation supported by quotes; reuse/stacking attack distinct from raw price tampering.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Quotes show server stores only browser amount and Stripe charge; lack of pricing provenance blocks dispute resolution.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Assumes URL validation not in design; duplicate SSRF attack reaching internal services as c1\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; same SSRF attack reaching internal services, only consequence differs\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; describes same SSRF attack from different caller position\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Redirect and DNS rebinding bypass any URL check done before the fetch"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service acts as a confused deputy to reach internal endpoints that require no authentication"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Unauthenticated internal callers can drive the fetcher"
+    }
+  ]
+}

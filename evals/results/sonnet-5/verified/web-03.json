@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Quotes show immediate email change without password, enabling attacker with session to take over account.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Cookie-based session plus no-password-confirm change supports CSRF attack scenario distinct from T1.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T1's hijack/takeover harm; adds no new attacked component, just lack of notification.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shipping address change without reverification is a distinct harm (delivery redirection) from email takeover.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

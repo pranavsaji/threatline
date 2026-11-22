@@ -1,0 +1,22 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe mass assignment attack where user adds role field to gain admin privileges.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe IDOR where attacker manipulates id parameter to update other users' records.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any user can make themselves an admin by adding a role field to the update request"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "The user id is taken from the URL, so one user may be able to edit another user's record"
+    }
+  ]
+}

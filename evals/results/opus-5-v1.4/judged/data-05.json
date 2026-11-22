@@ -1,0 +1,32 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Specific attack on deletion capability; not generic access control. Follows from design describing support deletion without controls.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Specific to deletion request flow. Design describes customer requests but no verification step, enabling impersonation attack.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Direct consequence of design's retention policy. Distinct from c1: restoration attack vs. data survival. Specific insider threat.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Logging made material by deletion's legal significance. Specific harm: cannot attribute malicious deletions or prove lawfulness.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any support agent can delete any account with no limits or approval"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Deletion requests accepted without verifying the requester owns the account"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Deleted accounts can be silently restored from the retained copies"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of who requested or performed a deletion"
+    }
+  ]
+}

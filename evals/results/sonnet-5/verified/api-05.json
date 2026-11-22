@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows org id from request body; concrete IDOR attack exporting another org's PII.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design lacks server-side authorization check description; concrete unauthorized access scenario distinct from T1's cross-org id tampering.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence confirms CSV export of free-text names; concrete formula injection attack vector.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"No logging of export actor mentioned; concrete repudiation scenario distinct from access-control threats.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

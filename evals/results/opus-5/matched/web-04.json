@@ -1,0 +1,22 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe IDOR attack changing invoice ID to access other customers' invoices\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Both describe billing data cached by shared proxies exposing sensitive information\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Anyone can read other customers' invoices by changing the invoice id in the URL"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Invoice PDFs with payment data can be cached by browsers and shared proxies"
+    }
+  ]
+}

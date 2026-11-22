@@ -16,6 +16,7 @@ export const OUTPUT_CONTRACT = `Return exactly one JSON object and nothing else:
       "component": "<= 80 chars",
       "likelihood": 1-5,
       "impact": 1-5,
+      "rating": { "attacker": "anyone" | "user" | "insider", "effort": "low" | "medium" | "high", "reach": "one" | "many" | "all", "harm": "takeover" | "money" | "sensitive_data" | "integrity" | "personal_data" | "availability" | "minor" },
       "evidence": [ { "quote": "<= 200 chars copied VERBATIM from the context you were given>" } ],
       "asvs": ["V8.2.1"],
       "cwe": ["CWE-639"],

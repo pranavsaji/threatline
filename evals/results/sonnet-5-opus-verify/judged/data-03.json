@@ -1,0 +1,22 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Attacks payment processing, not event streaming; design describes only published events, not request/execution flow\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c2; both describe compromised internal service gaining unauthorized payment data access via open topic\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Flat trust model gives all internal services payment-processor-level data access"
+    }
+  ]
+}

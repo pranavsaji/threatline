@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows public endpoint exposing customer profiles; concrete unauthenticated harvesting attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Arbitrary nested queries on public endpoint support concrete resource-exhaustion attack.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T1's unauthenticated bulk harvesting of profile/catalogue data and same harm.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Nested product/review-to-profile resolvers are in design; distinct IDOR traversal attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design explicitly enables production introspection; schema disclosure aids targeted attacks.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

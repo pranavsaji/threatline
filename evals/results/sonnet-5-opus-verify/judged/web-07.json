@@ -1,0 +1,22 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene (encryption, minimisation, contracts) not specific to this feature; no concrete harm named.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Follows from design: browser calculates, only final price sent/stored; enables dispute repudiation; distinct from c1/c2.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No link between the discount code used and the amount actually charged"
+    }
+  ]
+}

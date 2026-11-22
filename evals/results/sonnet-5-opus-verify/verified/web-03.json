@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms immediate email change without password re-entry; concrete takeover chain via password reset.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Cookie sessions and immediate changes supported by quotes; CSRF auto-submit attack is concrete and distinct from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Quotes confirm immediate change with no notification mentioned; harm is undetectable takeover, distinct from T1's mechanism.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shipping address change in design; redirection of deliveries is a distinct asset and harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

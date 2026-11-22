@@ -1,0 +1,22 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Authentication weakness unrelated to logging feature; generic hygiene not material to this design.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Payment tampering unrelated to logging feature; general processing threat not from this design.\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    }
+  ]
+}

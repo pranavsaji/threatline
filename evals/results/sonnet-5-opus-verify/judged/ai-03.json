@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Too vague about who attacks and what harm occurs; design doesn't specify user permissions.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Specific: shell access exposes secrets in repo via LLM context, logs, or pushed branches.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific: shared token prevents tracing malicious pushes back to individual developer requests.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Tool misuse by an over-privileged agent"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Shell access to the repository can expose secrets to the model or in pushed branches"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No attribution between developer request and agent's shell/push actions"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows endpoint returns driver phone number to customers; concrete disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows 10-second updates and live polling; load saturation attack is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Continuous tracking with no stop condition; concrete stalking attack distinct from phone disclosure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Client-pushed location updates supported by evidence; spoofing another driver's position is concrete.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

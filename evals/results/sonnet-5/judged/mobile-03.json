@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":true,\"reason\":\"Describes plausible tampering via modification and sync conflicts; specific to offline caching with shared devices.\"},\n  {\"id\":\"x2\",\"valid\":true,\"reason\":\"Session persistence spoofing is distinct from c2's attribution gap; shared devices make this plausible.\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate of x1 - both describe sync conflicts causing silent data overwrites and loss from offline edits.\"}\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Offline edits to patient notes can be altered or conflict during sync without integrity checks"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Shared device allows a nurse to act as the previously logged-in user during handover"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Sync conflicts on reconnect can silently overwrite or lose patient note updates"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design describes service-to-service authentication; threat describes user account takeover, not mentioned in design.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"JWT algorithm confusion is a specific attack on this JWT implementation; design mentions HS256 but not enforcement.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Seven-day validity and no revocation follow from design; distinct from secret leak (c1): token vs secret compromise.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "No mention of algorithm pinning, enabling alg-confusion attacks"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Seven-day token lifetime gives a leaked token a long window of full service impersonation"
+    }
+  ]
+}

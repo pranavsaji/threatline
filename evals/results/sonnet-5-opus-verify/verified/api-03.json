@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows public unauthenticated endpoint accepting order id/status; concrete forged-webhook free-order attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: tampering with other customers' orders via arbitrary/guessed ids, disrupting fulfillment and reporting.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Webhook event processing is in design; replay of captured events is a concrete distinct attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Public unauthenticated write endpoint supported by evidence; flooding causing capacity exhaustion is concrete.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

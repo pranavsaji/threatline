@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows local SQLite cache of patient data plus shared devices; concrete disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Offline sync of notes on shared device with no stated integrity checks; distinct tampering/corruption concern.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shared devices plus app session evidence support concrete spoofing of previous user's identity.\"},{\"id\":\"T4\",\"keep\":false,\"duplicateOf\":\"T2\",\"reason\":\"Same offline conflicting-edit overwrite scenario as T2, just framed as DoS.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared device + local cache support lack of attribution/repudiation distinct from tampering/disclosure harms.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

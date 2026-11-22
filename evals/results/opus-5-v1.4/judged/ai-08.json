@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: both are untrusted server installed leading to data exfiltration\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: both are attacker code executing on agent host from installed server\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct prompt injection vector via tool metadata; different attack mechanism than c1/c2\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS via unbounded runtime installs; not covered by c1 or c2\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Distinct repudiation issue from no deploy records; attribution gap not covered by c1/c2\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Installed MCP server exfiltrates conversation context and internal data"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Installing a third-party MCP server executes attacker code on the agent host"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Poisoned tool descriptions from the registry hijack the agent's goal"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Unbounded runtime installs exhaust the agent host and model budget"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No record of which tool version acted, so attacker actions cannot be attributed"
+    }
+  ]
+}

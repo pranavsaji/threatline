@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has internet-sourced emails, LLM reading them, and forward tool; concrete injection exfiltration attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Summarisation step and human reliance supported; distinct attack manipulating human approval rather than direct exfiltration.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Publicly reachable inbox triggering LLM processing supported; concrete flooding/cost-exhaustion attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared inbox context plus reply generation supported; cross-customer leak via reply distinct from forward exfiltration.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Shared-identity outbound sends supported; attribution gap concretely tied to agent-vs-human authorship disputes.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

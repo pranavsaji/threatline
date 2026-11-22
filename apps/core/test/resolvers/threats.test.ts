@@ -76,8 +76,9 @@ describe('feature: covered rule-based threats come back when their covering AI t
     const { t, all } = await coveredSetup();
     const before = await all();
     const pii = before.find((x) => x.origin === 'baseline' && x.title === 'Personal data exposed to unauthorised users')!;
-    const leak = before.find((x) => x.title === 'Customer email leaks in webhook logs')!;
-    await threatsTriage(t.deps, who, { threatId: pii.coveredBy!, op: 'merge', intoThreatId: leak.id });
+    // Merged into a threat of another kind (Spoofing), which could not cover it.
+    const other = before.find((x) => x.title === 'Forged refund webhooks')!;
+    await threatsTriage(t.deps, who, { threatId: pii.coveredBy!, op: 'merge', intoThreatId: other.id });
     expect((await all()).find((x) => x.id === pii.id)!.state).toBe('accepted');
   });
 });

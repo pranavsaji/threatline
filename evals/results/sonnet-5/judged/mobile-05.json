@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Exploits designed endpoint and delivery id without temporal access control, enabling past customers to stalk drivers.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Continuous 10-second tracking can be used to track a driver's movements long after a delivery ends"
+    }
+  ]
+}

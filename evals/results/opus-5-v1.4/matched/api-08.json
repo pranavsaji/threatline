@@ -1,0 +1,22 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe mass assignment of role field enabling privilege escalation to admin\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe missing authorization check on id parameter allowing cross-user data modification\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "User makes themselves an admin by adding a role field to the profile update"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Any user can edit another user's record by changing the id in the URL"
+    }
+  ]
+}

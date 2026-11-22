@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Public agent, no auth, lookup+refund tool concretely attacked; matches evidence.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same unauthenticated access/PII disclosure harm already captured in T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct harm: lack of accountability/audit trail for refunds, not just unauthorized access.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

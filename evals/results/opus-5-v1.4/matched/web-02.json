@@ -1,0 +1,22 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe stored XSS via rich-text comment markup affecting all visitors\"},{\"expected\":\"E2\",\"reported\":\"T1\",\"reason\":\"Both describe script hijacking moderator session when admin screen loads the malicious comment\"},{\"expected\":\"E3\",\"reported\":null,\"reason\":\"No reported threat discusses audit trails or logging of deletions\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Stored cross-site scripting through rich-text comment markup"
+    },
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Comment script runs inside the moderator admin screen and abuses moderator powers"
+    }
+  ]
+}

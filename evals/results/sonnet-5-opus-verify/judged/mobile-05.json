@@ -1,0 +1,17 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design lacks access revocation after delivery ends; enables continued tracking with valid delivery id. Not duplicate.\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Continuous 10-second tracking can be used to track a driver's movements long after a delivery ends"
+    }
+  ]
+}

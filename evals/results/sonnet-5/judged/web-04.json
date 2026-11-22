@@ -1,0 +1,17 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design only downloads existing invoice PDFs; no payment execution flow described to tamper with.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Payment amount or recipient manipulated"
+    }
+  ]
+}

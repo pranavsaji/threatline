@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe over-privileged admin account enabling attacker to inherit full rights across all databases\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe compromised/leaked credential exposing all production data through excessive read access\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

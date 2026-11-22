@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows endpoint returns driver phone number; concrete over-exposure attack on drivers.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms 10-second tracking and live map; stale delivery id enables continuous driver tracking.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence confirms driver phones push GPS; spoofed coordinates concretely mislead customers.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

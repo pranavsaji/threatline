@@ -3,7 +3,7 @@
   "promptVersion": "v1.3.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms map endpoint returns driver phone number to customers; concrete disclosure attack and harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows continuous 10s GPS with no stated start/stop or expiry; distinct attack on off-shift tracking.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design explicitly returns driver phone number to customers; concrete disclosure attack and harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"10-second GPS with no start/stop or expiry supports off-shift tracking and stale delivery-id queries.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Ingest of phone GPS posts with no stated authentication; concrete spoofing of another driver's location.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Fixed 10-second ingest plus map polling is design-specific; concrete load amplification harming tracking.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": null,\n      \"reason\": \"T1 describes receipt replay attack; E1 targets client flag tampering—different attack vectors\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Describes consequence of c1/c2 (no limits enables those attacks) rather than distinct attack path\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Distinct information disclosure attack - reading queue data, not covered by c1/c2 tampering threats\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Distinct tampering attack - modifying messages in-flight differs from forging new messages (c2)\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Distinct DoS attack - flooding queue to stall bookings, different harm from unauthorized charges\"},{\"id\":\"x5\",\"valid\":false,\"reason\":\"Same attack as c2 (insider forges message) just emphasizing cannot trace afterward - duplicate\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Payments agent can charge the saved card with no per-charge user authorisation or limit"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Unauthenticated shared queue exposes booking and payment details to any reader"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Queue messages can be modified in flight to change amount, card or payee"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Queue flooding stalls bookings and runs up model cost"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Charges cannot be attributed to a user or an agent"
+    }
+  ]
+}

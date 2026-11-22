@@ -1,0 +1,47 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design specifies public mobile app with no authentication mentioned before accessing refunds or PII.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"LLM agent with $200 limit plausibly prompt-based; design doesn't specify hard technical control or cumulative tracking.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Order fields are attacker-controlled at checkout; lookup tool feeds them into agent context enabling indirect injection.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Public mobile app endpoint with costly LLM and tool calls per turn; no abuse controls mentioned.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Design says agent calls Stripe API but doesn't specify credential scoping; broad access is plausible risk.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene about encryption and contracts; doesn't name specific provider, data, attack, or harm from design.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"AI making refund decisions with no audit trail mentioned; material for distinguishing legitimate from fraudulent financial transactions.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Refunds and order lookups available without proving who the customer is"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "$200 refund limit enforced only in the prompt, so the cap can be split or bypassed"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Attacker-controlled order fields poison the agent's context"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Bots flood the public chat, driving LLM and support cost"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Agent holds broader Stripe power than refunds"
+    },
+    {
+      "id": "x6",
+      "stride": "InformationDisclosure",
+      "title": "Sensitive data sent to a third-party service"
+    },
+    {
+      "id": "x7",
+      "stride": "Repudiation",
+      "title": "Agent-issued refunds cannot be traced to an authorising decision"
+    }
+  ]
+}

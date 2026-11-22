@@ -1,0 +1,23 @@
+{
+  "set": "opus-5-v1.4",
+  "subset": "all",
+  "model": "claude-sonnet-4-5",
+  "version": "match-v1",
+  "date": "2026-11-22",
+  "totals": {
+    "found": 80,
+    "expected": 87,
+    "highFound": 58,
+    "highExpected": 60,
+    "severity": {
+      "higher": 42,
+      "same": 38,
+      "lower": 0
+    }
+  },
+  "keyword": {
+    "found": 73,
+    "expected": 87
+  },
+  "missing": []
+}

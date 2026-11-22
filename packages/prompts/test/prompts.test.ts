@@ -76,7 +76,21 @@ describe('agent prompt v1.3.0 tuning (Task 33 eval: precision 17.7%, off-topic A
     expect(p).not.toMatch(/at most 25 threats/);
     expect(p).toMatch(/generic hygiene/);
   });
-  it('calibrates Critical', () => expect(p).toMatch(/Critical only when/));
+  it('leaves severity to the rating table', () => expect(p).toMatch(/Threatline computes severity from it/));
   it('cites only ASVS and CWE ids whose text addresses the threat itself', () => expect(p).toMatch(/never a process requirement/));
-  it('is a new prompt version', () => expect(PROMPT_VERSION).toBe('v1.3.0'));
+});
+
+describe('agent prompt v1.4.0 (Opus 5 eval: 44 of 71 found threats rated above the expert, 0 below)', () => {
+  const p = agentPrompt();
+  it('asks for the facts severity is computed from, with the least severe true option', () => {
+    expect(p).toMatch(/"rating"/);
+    expect(p).toMatch(/pick the least severe option that is true/);
+    for (const v of ['"anyone"', '"insider"', '"low"', '"high"', '"one"', '"all"', '"takeover"', '"personal_data"', '"minor"']) expect(p).toContain(v);
+  });
+  it('checks the three gaps the tuning half of the eval missed, only when material', () => {
+    expect(p).toMatch(/automated abuse/);
+    expect(p).toMatch(/values the client sends that the server trusts/);
+    expect(p).toMatch(/internal channels/);
+  });
+  it('is a new prompt version', () => expect(PROMPT_VERSION).toBe('v1.4.0'));
 });

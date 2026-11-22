@@ -1,0 +1,10 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design quote confirms 7-day token lifetime; threat describes concrete replay attack with no revocation path.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

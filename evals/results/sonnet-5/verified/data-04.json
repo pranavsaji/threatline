@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Shared bucket + unencrypted backups directly support misconfiguration/leak exposing full plaintext backup.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: reporting team itself gaining escalation access, not external exposure.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"No evidence bucket grants write access to reporting team or lacks integrity checks; largely speculative, overlaps T1/T2 harms.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

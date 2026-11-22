@@ -1,0 +1,17 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct insider threat: reporting team's authorized access exceeds need-to-know, enabling privilege escalation if malicious or compromised.\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shared bucket grants reporting team a path to escalate beyond reporting data"
+    }
+  ]
+}

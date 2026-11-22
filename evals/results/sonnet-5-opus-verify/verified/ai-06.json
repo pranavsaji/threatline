@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Unauthenticated shared queue plus card-charging payments agent supports concrete spoofing-to-charge attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows multiple agents on same unauthenticated queue; least-privilege violation distinct from spoofing by external actor.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Planner delegates to flights agent and payments agent; injected tool output hijacking payments is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Lack of sender authentication on queue directly supports non-attributability of charge instructions.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unauthenticated queue carrying payment/trip data supports concrete disclosure to any queue-accessing process.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Unauthenticated messages permit in-transit modification of amount/token; tampering distinct from spoofed-sender injection.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

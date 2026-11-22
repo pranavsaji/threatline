@@ -3,28 +3,23 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same unauthorized access attack via delivery ID\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Too generic: doesn't specify what records or data in this feature\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Valid: authorized customer misusing legitimate access to stalk driver\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Generic hygiene: rate limiting not made material by this design\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: unauthorized access to driver location via delivery ID, enabling tracking and stalking.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: stalking via delivery ID access is already covered, regardless of attacker type.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Valid DoS threat: GPS flooding and map polling are distinct from information disclosure and tampering.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "InformationDisclosure",
-      "title": "Unauthorized access to driver location and phone via delivery id"
+      "stride": "ElevationOfPrivilege",
+      "title": "Missing authorization allows access to any delivery's driver location"
     },
     {
       "id": "x2",
       "stride": "InformationDisclosure",
-      "title": "Personal data exposed to unauthorised users"
-    },
-    {
-      "id": "x3",
-      "stride": "InformationDisclosure",
       "title": "Real-time customer access to driver location enables stalking"
     },
     {
-      "id": "x4",
+      "id": "x3",
       "stride": "DenialOfService",
       "title": "Unlimited location updates and map requests risk resource exhaustion"
     }

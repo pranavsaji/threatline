@@ -1,0 +1,27 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic hygiene; scope is defined as business users\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic logging hygiene; design doesn't specify\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Design specifies replica which is read-only\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Dashboard access scope is undefined, risking broader access than intended"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No attribution of who ran which query against sensitive production data"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "SQL editor connection may allow write/DDL statements against production data"
+    }
+  ]
+}

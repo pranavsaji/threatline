@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Attacker hijacks agent via crafted email, though tampering summaries rather than generic privilege escalation\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Exact match: prompt injection makes agent forward sensitive inbox contents to attacker\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Misleading summaries steer the sales team into approving attacker-chosen actions"
+    },
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Attacker emails instructions that make the agent forward inbox contents to them"
+    }
+  ]
+}

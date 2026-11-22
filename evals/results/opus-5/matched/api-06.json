@@ -1,0 +1,27 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe shared secret enabling any service to forge tokens for other services\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe HS256 secret exposed through environment variables leading to compromise\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe stolen 7-day tokens reusable with no revocation mechanism\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Any service with the shared secret can mint tokens impersonating any other service"
+    },
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Leak of the single shared secret lets an attacker forge any service identity everywhere"
+    },
+    {
+      "id": "T4",
+      "stride": "Spoofing",
+      "title": "Stolen token is usable for up to 7 days with no way to revoke it"
+    }
+  ]
+}

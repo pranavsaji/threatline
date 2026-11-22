@@ -1,0 +1,10 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows browser computes price and server charges it blindly, directly supporting price tampering attack.\"},{\"id\":\"T2\",\"keep\":false,\"duplicateOf\":\"T1\",\"reason\":\"Same root cause and harm as T1: server trusts client-sent price with no validation of discount.\"},{\"id\":\"T3\",\"keep\":false,\"duplicateOf\":\"T1\",\"reason\":\"Same underlying flaw (no server-side validation/record of price vs discount); repeats harm already captured.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

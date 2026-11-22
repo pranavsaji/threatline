@@ -1,0 +1,10 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has internet-facing SAML ACS reading assertion attributes; forged assertion attack is concrete and supported.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"RelayState/return URL not present in quoted design; attacked parameter is invented.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Quotes confirm internet-reachable admin portal with SSO-only gate; phished credential reaching admin functions is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design explicitly derives admin access from assertion role attribute; attribute manipulation attack is supported.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Signature-bypass to gain admin via crafted assertion duplicates T1's attack and harm.\",\"duplicateOf\":\"T1\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Role read once at login supports stale-session privilege retention; distinct attacker and harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

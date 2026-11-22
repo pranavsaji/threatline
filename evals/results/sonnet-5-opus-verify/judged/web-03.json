@@ -1,0 +1,32 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Generic hygiene not specific to this feature; design doesn't describe credential storage or logging.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Design describes only self-service changes, not accessing other users' data or records.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Valid: design omits notifications; repudiation concern distinct from c1's takeover; follows from email change.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Valid: design includes shipping address; delivery redirection harm distinct from c1's account takeover.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Credentials or secrets leaked"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No notification to the old email when account email is changed"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Shipping address change enables silent order/delivery redirection"
+    }
+  ]
+}

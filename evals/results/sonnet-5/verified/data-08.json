@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Free SQL editor against production replica with no access restriction supports unrestricted data read attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm (DoS via expensive queries) on same component, concrete attack scenario.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats unrestricted access concern from T1 without new attack mechanism.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm (lack of attribution/repudiation) not covered by T1 or T2.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct harm (write/DDL tampering) differs from read-disclosure threat T1.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

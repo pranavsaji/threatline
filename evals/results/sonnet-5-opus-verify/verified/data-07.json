@@ -1,0 +1,10 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence confirms gateway logs full payment bodies to central log for 1 year; concrete disclosure attack via log readers.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

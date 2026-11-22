@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design omits server-side account derivation from token; concrete account-takeover attack on reset submit endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Immediate login quoted; no session invalidation mentioned; concrete persistence attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"24-hour token validity quoted; concrete interception-and-takeover attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Token in link/URL quoted; concrete leakage via history, logs, referrer with replay.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Email-based reset request form quoted; concrete account enumeration attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public unauthenticated reset request quoted; concrete flooding/quota exhaustion harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

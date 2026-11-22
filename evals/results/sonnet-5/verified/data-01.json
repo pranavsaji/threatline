@@ -1,0 +1,10 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Broad analyst read access to full PII table with no restriction is supported and concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: unmasked copy into warehouse as root cause enabling downstream exposure.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Repeats T1's broad-access harm without new evidence of logging absence as a feature component.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"No evidence of job pipeline write access or lack of validation; speculative tampering not supported by text.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

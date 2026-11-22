@@ -1,0 +1,10 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Rich-text comments rendered to all visitors directly support stored XSS attack and impact.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Duplicates T1's attack vector (malicious link content in rich-text comment) with weaker harm; not distinct component.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Image embedding in comments rendered to all visitors supports tracking/exfiltration attack distinct from XSS/phishing.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Admin deletion screen exists per evidence; lack of described authorization checks supports CSRF/forged deletion threat.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unbounded comment posting with images/rich text stored in DB supports flooding/DoS scenario distinct from other threats.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms link-only access without login; enumeration attack on share namespace is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states links never expire; leaked-link permanent access is distinct from enumeration.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design confirms S3 storage; bucket-level exposure is a distinct attack path.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Unauthenticated download path supported by quotes; cost/availability harm distinct from disclosure.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Upload and public rendering present; HTML/SVG script execution on app origin is concrete.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Anonymous viewing supported; lack of access records harms investigation, distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

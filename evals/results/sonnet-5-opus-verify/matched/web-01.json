@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T3\",\"reason\":\"Both describe account takeover via compromised reset token; T3 mentions stolen/guessed link matching E1's guessable token.\"},{\"expected\":\"E2\",\"reported\":\"T7\",\"reason\":\"Exact match: both describe enumerating registered accounts via reset endpoint response differences or timing.\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Both describe automated abuse of unauthenticated reset endpoint; T5's resource exhaustion includes email flooding costs.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

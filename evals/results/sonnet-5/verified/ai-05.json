@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows LLM-generated SQL runs directly on DB with no validation before execution; destructive injection is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm (resource exhaustion/DoS) from unbounded queries, separate from destructive tampering in T1.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

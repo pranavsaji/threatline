@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe account takeover via email change without re-authentication; identical attack.\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe CSRF on settings changes; identical attack on same component.\"},{\"expected\":\"E3\",\"reported\":null,\"reason\":\"No threat focuses on session cookie theft/reuse as the primary vulnerability.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

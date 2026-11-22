@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe cached health records accessible beyond authorized scope on shared devices\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe inability to reliably attribute offline edits to specific nurses on shared devices\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ]
+}

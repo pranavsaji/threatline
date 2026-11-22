@@ -1,0 +1,10 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states role attribute from assertion decides admin access; concrete privilege escalation via IdP attribute manipulation.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms internet reachability; distinct attack surface concern from T1's attribute trust.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

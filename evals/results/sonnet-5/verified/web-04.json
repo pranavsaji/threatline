@@ -1,0 +1,10 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Sequential IDs with no ownership check enable IDOR enumeration of other customers' invoice PDFs.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"PDF combines name, address, card last-four, enabling misuse if a single file leaks.\"}]}",
+      "modelId": "claude-sonnet-5"
+    }
+  ]
+}

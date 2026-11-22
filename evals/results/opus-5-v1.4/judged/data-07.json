@@ -1,0 +1,32 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"DoS via log inflation, different attack and harm from c1's information disclosure\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Privilege escalation to production data, different harm focus from c1's fraud consequence\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Plaintext passwords from login requests, different data type from c1's payments\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Session tokens from responses enable replay, different from x3 passwords and c1 payments\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Full body logging lets any caller inflate log storage and cost"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Log readers gain the same reach as production admins"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Plaintext passwords land in the central log system"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "Session tokens and API keys captured from logged bodies and headers allow account takeover"
+    }
+  ]
+}

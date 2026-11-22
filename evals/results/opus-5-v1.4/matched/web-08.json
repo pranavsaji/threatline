@@ -1,0 +1,27 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe unrestricted impersonation scope allowing any support staff to target any customer account\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe actions appearing as customer's own with no operator identity recorded for attribution\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe customer personal data exposure to support staff without consent or masking\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any employee with the support role can take over any customer account"
+    },
+    {
+      "id": "T5",
+      "stride": "Repudiation",
+      "title": "Actions taken while impersonating are indistinguishable from the customer's own actions"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Unrestricted view of a customer's personal data with no consent or masking"
+    }
+  ]
+}

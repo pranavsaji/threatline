@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Forwarding capability and public inbox are in design; concrete exfiltration attack via injected instructions.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same prompt-injection attack and harm as T1 (agent executes embedded instructions to forward/leak data).\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states emails come from anyone with no sender verification; distinct spoofing/BEC attack via trusted summaries.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent sends forwards/replies on behalf of team; attribution gap is concrete to this feature.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Public inbox supports flooding attack; harms triage timeliness and cost, distinct from other threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

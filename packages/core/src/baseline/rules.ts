@@ -21,7 +21,7 @@ const RULES: Rule[] = [
       likelihood: 3, impact: 4, asvs: ['V6.3.1', 'V7.2.1'], cwe: ['CWE-287'],
       plainLanguage: 'Someone could log in as a customer using a stolen password or session.',
     },
-    covers: { strides: ['Spoofing'], topic: /\b(auth\w*|log ?in|sign[- ]?in|session|credential|password|token|mfa|2fa|otp|impersonat\w*|account takeover|reset)/i },
+    covers: { strides: ['Spoofing', 'ElevationOfPrivilege'], topic: /\b(auth\w*|log ?in|sign[- ]?in|session|credential|password|token|mfa|2fa|otp|impersonat\w*|account takeover|reset|saml|sso|single sign-on|identity provider|idp|assertion|oauth|jwt|biometric\w*|face ?id|fingerprint|forged? identit\w*)/i },
   },
   {
     when: (s) => (s.dataClasses.includes('pii') ? 'pii' : undefined),
@@ -34,7 +34,8 @@ const RULES: Rule[] = [
     covers: { strides: ['InformationDisclosure'], topic: /\b(personal|pii|customer (data|records?|details?)|privacy|profile|address(es)?|phone|e-?mail|idor|another (user|customer)|other (users?|customers?)|enumerat\w*)/i },
   },
   {
-    when: (s) => (s.payment ? 'payment' : undefined),
+    // Payment data alone (an invoice PDF, card details in a log) is not a payment flow: the money has to move.
+    when: (s) => (s.payment && s.paymentFlow ? 'paymentFlow' : undefined),
     threat: {
       stride: 'Tampering', title: 'Payment amount or recipient manipulated', component: 'payment flow',
       scenario: 'An attacker alters the amount, currency or recipient of a payment between request and execution.',
@@ -44,7 +45,8 @@ const RULES: Rule[] = [
     covers: { strides: ['Tampering'], topic: /\b(payments?|amount|refunds?|payouts?|transfers?|charges?|price|currency|recipient|invoices?|checkout|money)\b/i },
   },
   {
-    when: (s) => (s.dataClasses.includes('credentials') ? 'credentials' : s.dataClasses.includes('secrets') ? 'secrets' : undefined),
+    // A password the user types is not a leak; one that is stored, logged, embedded or shared can be.
+    when: (s) => (s.dataClasses.includes('secrets') ? 'secrets' : s.dataClasses.includes('credentials') && s.secretHandling ? 'secretHandling' : undefined),
     threat: {
       stride: 'InformationDisclosure', title: 'Credentials or secrets leaked', component: 'secret storage',
       scenario: 'Passwords, API keys or signing keys end up in code, logs, prompts or responses where attackers can read them.',
@@ -81,20 +83,26 @@ const RULES: Rule[] = [
       likelihood: 4, impact: 4, asvs: ['V8.3.1', 'V2.2.1'], cwe: ['CWE-1427'],
       plainLanguage: 'Someone could slip instructions into what the AI reads and make it work for them.',
     },
-    covers: { strides: ['ElevationOfPrivilege', 'Tampering', 'Spoofing'], topic: /\b(prompt injection|inject\w*|instructions?|jailbreak\w*|hijack\w*)/i },
+    covers: { strides: ['ElevationOfPrivilege', 'Tampering', 'Spoofing', 'InformationDisclosure'], topic: /\b(prompt injection|inject\w*|instructions?|jailbreak\w*|hijack\w*|poison\w*|steer\w*|manipulat\w*|malicious (content|input|text|pages?|emails?|messages?)|untrusted (content|input|text))/i },
   },
   {
-    when: (s) => (s.llmFeatures ? 'llmFeatures' : undefined),
+    // An assistant that only answers has no tools to misuse.
+    when: (s) => (s.llmFeatures && s.agentTools ? 'agentTools' : undefined),
     threat: {
       stride: 'Tampering', title: 'Tool misuse by an over-privileged agent', component: 'AI agent tools',
       scenario: 'The agent calls one of its tools with attacker-chosen arguments, or does something the requesting user is not allowed to do.',
       likelihood: 3, impact: 4, asvs: ['V8.2.1', 'V8.3.1'], cwe: ['CWE-250', 'CWE-1426'],
       plainLanguage: 'The AI could be tricked into using its tools, like refunds, in ways nobody intended.',
     },
-    covers: { strides: ['Tampering', 'ElevationOfPrivilege'], topic: /\b(tools?|tool calls?|function calls?|actions?|over-?privileg\w*|excessive agency|permissions?)\b/i },
+    covers: { strides: ['Tampering', 'ElevationOfPrivilege'], topic: /\b(tools?|tool calls?|function calls?|actions?|over-?privileg\w*|excessive agency|permissions?|shell|commands?|sql|queries|mcp|plugins?|refunds?|bookings?|forward\w*|exfiltrat\w*)\b/i },
   },
   {
-    when: (s) => (s.thirdParty.length > 0 ? `thirdParty:${s.thirdParty[0]}` : undefined),
+    // Sending an order to Stripe, or files to S3, is not a disclosure by itself: personal or health data has to go.
+    // S3 is the team's own storage, not another company.
+    when: (s) => {
+      const tp = s.thirdParty.find((x) => x !== 's3');
+      return tp && (s.dataClasses.includes('pii') || s.dataClasses.includes('health')) ? `thirdParty:${tp}` : undefined;
+    },
     threat: {
       stride: 'InformationDisclosure', title: 'Sensitive data sent to a third-party service', component: 'third-party integration',
       scenario: 'Data is passed to an external provider without minimisation, contract controls or encryption in transit.',

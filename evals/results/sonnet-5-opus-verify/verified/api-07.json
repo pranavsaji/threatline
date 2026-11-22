@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "v1.3.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Concatenated query in evidence; error-based schema leakage is a distinct disclosure attack on this endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence confirms sort column concatenated into SQL; concrete injection attack described.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Same concatenation flaw, but distinct attack (expensive query injection) and harm (service degradation).\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
