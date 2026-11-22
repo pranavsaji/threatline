@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows org id from request body; concrete cross-tenant export attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Full-directory export is expensive; plausible resource exhaustion attack on this endpoint.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"CSV export of user-supplied names supports formula injection attack on admin opening file.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Bulk PII export in one request; distinct from T1 (compromised admin, own org).\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Missing export audit trail tied to attacker-controlled org id; attribution harm distinct.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design explicitly states org id comes from request body; concrete cross-tenant export attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design says admins use endpoint but no role check described; concrete privilege escalation by member.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Full-directory export with no async/pagination described; plausible resource exhaustion attack on this endpoint.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"CSV export of user-supplied names supports concrete formula injection against admin opening file.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Restates bulk PII disclosure via admin access already covered by the access-control export threats.\",\"duplicateOf\":\"T1\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Ties missing export logging to attacker-controlled org id; distinct attribution harm.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

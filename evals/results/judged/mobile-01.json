@@ -3,20 +3,20 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Bundles vague scenarios, overlaps with c1, includes generic password guessing advice\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic security hygiene not specific to this feature design\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Tampering doesn't enable plausible harm; session redirection unsupported by design\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: rooted device scenario covered; physical access alone cannot read sandboxed storage\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1 and c2: describes duration of same harm, not distinct attack\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Implausible harm: tampering signed token causes rejection not session redirection; stealing is simpler\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "Spoofing",
-      "title": "Account takeover through weak authentication"
+      "stride": "InformationDisclosure",
+      "title": "Refresh token stored in plain text accessible to attackers"
     },
     {
       "id": "x2",
-      "stride": "InformationDisclosure",
-      "title": "Credentials or secrets leaked"
+      "stride": "ElevationOfPrivilege",
+      "title": "Stolen refresh token grants permanent account access"
     },
     {
       "id": "x3",

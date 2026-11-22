@@ -73,7 +73,18 @@ export function parseJudge(text: string, ids: string[]): Result<JudgeVerdict[]> 
 
 export async function judgeExtras(llm: LlmPort, c: { summary: string; design: string }, counted: JudgeItem[], extras: JudgeItem[]): Promise<Result<JudgeVerdict[]>> {
   if (extras.length === 0) return ok([]);
-  const r = await llm.complete({ system: judgeSystemPrompt(), user: judgeUserPrompt(c, counted, extras), tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
+  const ids = extras.map((x) => x.id);
+  const user = judgeUserPrompt(c, counted, extras);
+  const r = await llm.complete({ system: judgeSystemPrompt(), user, tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
   if (!r.ok) return err(r.error);
-  return parseJudge(r.value.text, extras.map((x) => x.id));
+  const first = parseJudge(r.value.text, ids);
+  if (first.ok || first.error.code !== 'schema') return first;
+  // One retry naming what was wrong: a dropped or repeated id otherwise leaves the whole case unjudged.
+  const again = await llm.complete({ system: judgeSystemPrompt(), user: `${user}\n\n${retryNote(first.error.message, ids)}`, tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
+  if (!again.ok) return first;
+  return parseJudge(again.value.text, ids);
 }
+
+/** Appended on the one retry after a malformed reply (judge and match grader alike). */
+export const retryNote = (problem: string, ids: string[]) =>
+  `Your previous reply could not be used (${problem}). Reply again with JSON only, exactly one entry for each of: ${ids.join(', ')}.`;

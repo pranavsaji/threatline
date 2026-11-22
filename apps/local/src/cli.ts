@@ -113,7 +113,7 @@ async function main() {
             judge: {
               llmFor: judgeFor,
               recordingFor: (id: string) => loadRecording(JUDGED, id),
-              ...(judgeLive ? { recordDir: JUDGED } : {}),
+              ...(judgeLive ? { recordDir: JUDGED, live: judgeLive } : {}),
               ...(has('annotate-judged') ? { annotateDir: JUDGED } : {}),
             },
           }
@@ -187,20 +187,29 @@ async function main() {
           const kw = scoreCase(shown, c.expected);
           keyword.found += kw.tp;
           keyword.expected += c.expected.length;
-          const saved = mode === 'recorded' || mode === 'resume' ? loadRecording(`${dir}/matched`, c.id) : null;
+          let saved = mode === 'recorded' || mode === 'resume' ? loadRecording(`${dir}/matched`, c.id) : null;
+          // Recorded verdicts name threats by position; the list they rated is saved with them, so each verdict is
+          // matched to today's list by STRIDE and title. A verdict whose threat is no longer listed under that title is
+          // stale (the threat may have been renamed, not lost): re-graded live under `resume`, otherwise not graded.
+          const remapped = (() => {
+            if (!saved?.items || !saved.replies[0]) return null;
+            const p = parseMatch(saved.replies[saved.replies.length - 1]!.text, c.expected.map((_, k) => `E${k + 1}`), saved.items.map((x) => x.id));
+            if (!p.ok) return null;
+            const value = p.value.map((m) => {
+              const was = m.reported ? saved!.items!.find((x) => x.id === m.reported) : undefined;
+              const now = was ? reported.find((x) => x.stride === was.stride && x.title === was.title) : undefined;
+              return { ...m, reported: now ? now.id : null, stale: Boolean(was && !now) };
+            });
+            return value.some((m) => m.stale) ? 'stale' : value.map(({ stale: _, ...m }) => m);
+          })();
+          if (remapped === 'stale') {
+            if (mode !== 'resume') return void missing.push(`${c.id}: stale match recording (re-grade with --match resume)`);
+            saved = null;
+          }
           const live = mode === 'claude-code' || (mode === 'resume' && !saved) ? recordingLlm(claudeCodeLlm({ model })) : null;
           let v: Awaited<ReturnType<typeof matchCase>>;
-          if (saved?.items && saved.replies[0]) {
-            // Recorded verdicts name threats by position; the list they rated is saved with them, so each verdict is
-            // matched to today's list by STRIDE and title (a threat no longer shown counts as not found).
-            const p = parseMatch(saved.replies[0].text, c.expected.map((_, k) => `E${k + 1}`), saved.items.map((x) => x.id));
-            v = p.ok
-              ? { ok: true as const, value: p.value.map((m) => {
-                  const was = m.reported ? saved.items!.find((x) => x.id === m.reported) : undefined;
-                  const now = was ? reported.find((x) => x.stride === was.stride && x.title === was.title) : undefined;
-                  return { ...m, reported: now ? now.id : null };
-                }) }
-              : p;
+          if (remapped && remapped !== 'stale') {
+            v = { ok: true as const, value: remapped };
           } else {
             const llm = saved ? replayLlm(saved) : live?.llm;
             if (!llm) return void missing.push(`${c.id}: no match recording`);

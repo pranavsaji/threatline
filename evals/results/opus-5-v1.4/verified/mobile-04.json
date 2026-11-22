@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows receipt posted and premium unlocked with no transaction binding or reuse check; replay attack concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows server trusts client-supplied receipt/flag without store verification; forged receipt attack distinct from replay.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Endpoint quoted with no stated auth or account binding; granting premium on others' accounts is a distinct attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Entitlement granted on client flag with no transaction record; non-repudiation/revocation harm distinct from prior threats.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence directly shows server trusting client purchased flag; concrete free-premium attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Receipt sent to endpoint with no transaction-account binding; replay across accounts is a distinct attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Receipt handling present; forged receipt accepted without store-side verification is a distinct spoofing attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Unlock endpoint in design; unauthenticated/cross-account unlock harms other customers, distinct from self-unlock.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Entitlement record granted on client flag; lack of transaction linkage prevents revocation and audit.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

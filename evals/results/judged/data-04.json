@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Backup deletion follows from cloud storage design; lack of versioning is implicit weakness enabling attack.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Shared reporting team access makes logging material; insider threat and compromised credentials specifically enabled by design.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Design explicitly shares bucket with reporting team; threat follows directly from this excessive permission grant.\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":true,\"reason\":\"Deletion causing data loss differs from modification. Availability harm distinct from c2 integrity harm.\"},\n  {\"id\":\"x2\",\"valid\":false,\"reason\":\"Audit logging is generic hygiene not made material by the design.\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Duplicate of c1 which already covers misconfigured permissions exposing data.\"},\n  {\"id\":\"x4\",\"valid\":false,\"reason\":\"Duplicate of c1 which covers insider access and credential theft scenarios.\"}\n]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -20,6 +20,11 @@
     },
     {
       "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Bucket misconfiguration could expose backups publicly"
+    },
+    {
+      "id": "x4",
       "stride": "ElevationOfPrivilege",
       "title": "Reporting team has unnecessary access to production backups"
     }

@@ -1,9 +1,9 @@
 {
   "caseId": "mobile-04",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence explicitly states server trusts client flag 'purchased': true, directly supporting the attack\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": false,\n      \"reason\": \"Evidence shows receipts are sent but doesn't prove validation is missing or receipts are trusted without verification\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Duplicates T1's attack on the same client-controlled 'purchased' flag vulnerability\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": false,\n      \"reason\": \"Evidence shows endpoint exists but nothing about session-to-account verification or its absence\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Evidence shows endpoint exists but nothing about error responses or validation logic disclosure\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms server trusts client-controlled purchased flag; concrete attack on this design element.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows receipts are part of design; forging receipts is concrete attack on receipt-based systems.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Duplicate attack and harm: sets purchased flag to bypass payment, identical to T1.\",\n      \"duplicateOf\": \"T1\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows receipts used; receipt reuse is concrete attack distinct from forgery or flag manipulation.\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Generic API hygiene; no evidence design has verbose errors or information disclosure issues.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows endpoint returns driver phone number to customers; concrete disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence shows 10-second updates and live polling; load saturation attack is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Continuous tracking with no stop condition; concrete stalking attack distinct from phone disclosure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Client-pushed location updates supported by evidence; spoofing another driver's position is concrete.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows id-keyed endpoint returning location and phone; concrete enumeration attack with harm.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design has client GPS push with no stated auth; concrete spoofed-location tampering attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"10-second updates plus live map polling supported by quotes; concrete saturation attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Continuous tracking with no stated termination; concrete off-hours surveillance of drivers.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same endpoint exposing driver phone number to callers; harm overlaps T1's phone harvesting.\",\"duplicateOf\":\"T1\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

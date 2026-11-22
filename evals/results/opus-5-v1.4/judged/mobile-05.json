@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Ten-second update rate with no capacity controls directly stated; volume DOS is specific and plausible.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Continuous GPS without stated stop condition or endpoint time limit enables post-delivery tracking and surveillance.\"\n    }\n  ]\n}\n```",
+      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design states 10s updates and live map with no rate limits or caps, DoS scenario is plausible.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Design lacks end condition for tracking; legitimate customer can follow driver home after delivery completes.\"}]}",
       "modelId": "claude-sonnet-4-5"
     }
   ],

@@ -1,9 +1,9 @@
 {
   "caseId": "web-04",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Sequential IDs, endpoint serving PDFs with PII, concrete IDOR attack described with specific harm.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": false,\n      \"reason\": \"Repeats T1's IDOR attack and harm; same vulnerability, endpoint, and data exposure.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Logging not mentioned in design evidence; generic hygiene with no design-specific support.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"PDF generation explicitly in design; concrete DoS attack via resource exhaustion specific to feature.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms sequential IDs and PII in PDFs; concrete IDOR enumeration attack described\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Endpoint exists in evidence; threat specific to this endpoint, describes concrete unauthorized access scenario\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Endpoint exists; threat specifically linked to IDOR vulnerability forensics, not generic hygiene\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"PDF generation endpoint exists; concrete DoS attack via resource exhaustion described\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

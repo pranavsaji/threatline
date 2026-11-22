@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design logs full bodies for 1 year; attacker-driven log volume/cost exhaustion is concrete and distinct.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Evidence supports 1-year retention of full bodies; bulk PII exposure distinct from credential harvest.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Login request bodies logged; concrete credential harvesting by log readers.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Full response bodies logged, including login responses; token replay attack distinct from password theft.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence supports 1-year retention of full bodies; concrete bulk-PII exposure attack distinct from credential/card theft.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design explicitly logs login request bodies; concrete insider/log-reader credential harvesting attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Response bodies logged in full; token replay by log reader is a distinct attack from password harvesting.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design states payment details logged for 1 year; concrete card data theft attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unconditional full-body logging supports log-flooding/storage-exhaustion attack; distinct harm from disclosure threats.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

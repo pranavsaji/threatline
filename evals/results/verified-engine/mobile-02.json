@@ -1,9 +1,9 @@
 {
   "caseId": "mobile-02",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows external trigger and pre-filled payment data, supporting CSRF attack via malicious website\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows any website can trigger links; threat exploits via repetition (no rate limits mentioned)\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms websites trigger pre-filled payment screens, concrete CSRF attack described\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": false,\n      \"reason\": \"No evidence about authentication checks; quote only confirms screen opens, not authentication bypass\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Evidence supports repeated triggers possible, concrete DoS attack distinct from T1's payment theft\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

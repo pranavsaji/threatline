@@ -3,18 +3,23 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"c1 already states 'full account takeover' and 'operates it as the owner', encompassing modification capabilities x1 describes\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Addresses temporal persistence of impersonation sessions beyond support need, distinct from c1-c3 access control concerns\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Assumes some customers have admin privileges not established by feature design\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate: c1 already covers operating as owner, c3 covers actions taken\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Session unbounded by support interaction is distinct from c1 access and c3 attribution\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Impersonating a privileged or staff account to reach admin functions"
+    },
+    {
+      "id": "x2",
       "stride": "Tampering",
       "title": "Impersonation issues a full customer session, so admins can change the account, not just view it"
     },
     {
-      "id": "x2",
+      "id": "x3",
       "stride": "ElevationOfPrivilege",
       "title": "Impersonation session is unbounded in time and survives after the support interaction ends"
     }

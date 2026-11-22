@@ -1,9 +1,9 @@
 {
   "caseId": "data-05",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms warehouse copies persist after deletion; threat describes concrete privacy harm from analytics access.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms warehouse data persists post-deletion. Concrete threat: analytics teams query deleted user data.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": false,\n      \"reason\": \"Same attack and GDPR harm as T1. Audit discovery vs analytics use is same persistence threat.\",\n      \"duplicateOf\": \"T1\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

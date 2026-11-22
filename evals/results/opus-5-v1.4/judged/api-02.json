@@ -3,13 +3,18 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Assumes signed-in users but design describes no authentication system, only public endpoint.\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: both describe bulk harvesting customer profiles from public endpoint; pagination and aliasing are just optimization details.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Assumes authentication not in design; describes resolver implementation flaw not design flaw; nested profile access already allowed by design.\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Bots can bulk-harvest product, review and profile data from the open endpoint"
+    },
+    {
+      "id": "x2",
       "stride": "ElevationOfPrivilege",
       "title": "Nesting from products or reviews reaches another customer's profile (IDOR)"
     }

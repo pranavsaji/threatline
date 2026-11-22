@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Specific spam attack exploiting link feature on public, indexed product pages with inadequate moderation.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"CSRF on state-changing comment/delete actions is specific to session-based post and delete in this design.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Image tracking via attacker-controlled URLs is specific to image rendering in public comments for all visitors.\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Generic resource exhaustion; no feature-specific vulnerability named, applies to any public endpoint.\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific spam attack exploiting comment links on public pages; identifies actors, mechanism, and brand harm.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Plausible authorization gap on delete endpoint; specific to content integrity and evidence erasure.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Image tracking follows from design's image support; specific information disclosure and profiling risk.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"CSRF attack on post/delete specific to ambient session; identifies victims and attribution harm.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Generic DDoS; design lacks details making resource exhaustion material to this comment feature.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,8 +15,8 @@
     },
     {
       "id": "x2",
-      "stride": "Spoofing",
-      "title": "Cross-site request forgery makes a victim post or delete comments unknowingly"
+      "stride": "ElevationOfPrivilege",
+      "title": "Comment delete endpoint may not verify the caller is a moderator"
     },
     {
       "id": "x3",
@@ -25,6 +25,11 @@
     },
     {
       "id": "x4",
+      "stride": "Spoofing",
+      "title": "Cross-site request forgery makes a victim post or delete comments unknowingly"
+    },
+    {
+      "id": "x5",
       "stride": "DenialOfService",
       "title": "Unauthenticated endpoint abused for resource exhaustion"
     }

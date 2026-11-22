@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design mentions SAML but not RelayState or redirect handling\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Assumes assertion structure and IdP configuration beyond design\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"One-time role check implies no revalidation; material risk\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Duplicate of c1; specific signature validation failure mode\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design doesn't describe RelayState or post-login redirection; attacks component not in design.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Role attribute manipulation follows from design; specific techniques differ from c1's forgery.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Replay attack on assertions follows from SAML authentication; distinct from forgery/access threats.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"XML signature wrapping follows from SAML protocol; parsing attack distinct from signature failure.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Session lifecycle follows from 'reads role after login'; stale roles distinct from initial access.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -20,13 +20,18 @@
     },
     {
       "id": "x3",
-      "stride": "ElevationOfPrivilege",
-      "title": "Revoked or demoted employees keep admin access because roles are only read at login"
+      "stride": "Spoofing",
+      "title": "Captured assertion can be replayed to log in as that employee"
     },
     {
       "id": "x4",
       "stride": "Tampering",
       "title": "XML signature wrapping lets an attacker swap assertion contents past signature checks"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Revoked or demoted employees keep admin access because roles are only read at login"
     }
   ]
 }

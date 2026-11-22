@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design specifies token in link to public page, which creates URL logs and browser history exposure\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Design explicitly states immediate login after reset, turning token compromise into instant session hijacking\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic credential reuse attack, not specific to password reset feature\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Generic secrets management hygiene, not specific to password reset feature\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Design requires email input for reset, allowing enumeration through response differences\"},{\"id\":\"x6\",\"valid\":false,\"reason\":\"Generic data exposure, design mentions no customer records or personal data retrieval\"},{\"id\":\"x7\",\"valid\":true,\"reason\":\"Design specifies reset link by email with no notification mechanism mentioned\"},{\"id\":\"x8\",\"valid\":false,\"reason\":\"Too generic endpoint flooding, not specific to password reset versus any public endpoint\"}]}\n```",
+      "text": "```json\n{\"verdicts\":[\n  {\"id\":\"x1\",\"valid\":true,\"reason\":\"Token in URL logged by servers, proxies, browser; accessible to attacker via log access.\"},\n  {\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic data exposure; design mentions no personal records beyond password reset flow itself.\"},\n  {\"id\":\"x3\",\"valid\":false,\"reason\":\"Describes normal flow outcome; no distinct harm beyond token theft already counted in c1.\"},\n  {\"id\":\"x4\",\"valid\":true,\"reason\":\"Sessions persist after password reset; attacker with existing session retains access despite password change.\"},\n  {\"id\":\"x5\",\"valid\":false,\"reason\":\"Generic email security hygiene; applies to any email-based feature, not specific to password reset.\"},\n  {\"id\":\"x6\",\"valid\":true,\"reason\":\"Response differences reveal valid accounts; attacker enumerates users for targeted phishing or credential attacks.\"},\n  {\"id\":\"x7\",\"valid\":true,\"reason\":\"Weak tokens can be brute-forced within 24-hour validity window; attacker guesses tokens to reset passwords.\"}\n]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,38 +15,33 @@
     },
     {
       "id": "x2",
-      "stride": "ElevationOfPrivilege",
-      "title": "Stolen reset token grants immediate authenticated session"
-    },
-    {
-      "id": "x3",
-      "stride": "Spoofing",
-      "title": "Account takeover through weak authentication"
-    },
-    {
-      "id": "x4",
-      "stride": "InformationDisclosure",
-      "title": "Credentials or secrets leaked"
-    },
-    {
-      "id": "x5",
-      "stride": "InformationDisclosure",
-      "title": "Different responses reveal which email addresses have accounts"
-    },
-    {
-      "id": "x6",
       "stride": "InformationDisclosure",
       "title": "Personal data exposed to unauthorised users"
     },
     {
-      "id": "x7",
+      "id": "x3",
       "stride": "ElevationOfPrivilege",
-      "title": "Users unaware when password reset is initiated"
+      "title": "Stolen reset token grants immediate authenticated session"
     },
     {
-      "id": "x8",
-      "stride": "DenialOfService",
-      "title": "Unauthenticated endpoint abused for resource exhaustion"
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Active sessions not terminated when password is reset"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Password reset tokens intercepted via unencrypted email"
+    },
+    {
+      "id": "x6",
+      "stride": "InformationDisclosure",
+      "title": "Different responses reveal which email addresses have accounts"
+    },
+    {
+      "id": "x7",
+      "stride": "ElevationOfPrivilege",
+      "title": "Predictable or short reset tokens can be brute forced"
     }
   ]
 }

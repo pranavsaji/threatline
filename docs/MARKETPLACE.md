@@ -50,7 +50,8 @@ on, turns them into testable requirements, and blocks Done and merge until each 
 the developer console, source <https://github.com/pranavsaji/threatline>.
 
 **Screenshots:** `docs/screenshots/jira-1-issue-panel.png`, `jira-2-threat-evidence.png`, `jira-3-accept-risk.png`,
-`jira-4-posture-dashboard.png`, `bitbucket-6-live-merge-check-fails.jpg`, plus a Delivery tab capture.
+`jira-4-posture-dashboard.png`, `bitbucket-6-live-merge-check-fails.jpg`. Still to take: a Delivery check capture,
+once the demo site shows a linked pull request and deployment (not in `docs/screenshots/` yet).
 
 **Logo:** `docs/brand/icon-144.png` (144×144).
 

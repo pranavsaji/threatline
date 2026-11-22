@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific prompt injection attack on LLM-based RAG system accessing explicitly mentioned sensitive HR/finance data.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"References order notes and tools not mentioned in design; overlaps with c2 for pages.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Audit trails are material given design explicitly indexes sensitive HR and finance spaces.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Design only mentions page retrieval; no tools, refunds, or other agent capabilities described.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of x1: same attack mechanism, action, and harm despite different wording.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Direct prompt injection is a specific LLM threat, not generic input validation\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic 'log everything' hygiene, doesn't describe independent attack\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Indirect prompt injection causes different harm: leaking other retrieved documents\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,23 +15,13 @@
     },
     {
       "id": "x2",
-      "stride": "ElevationOfPrivilege",
-      "title": "Agent goal hijack through injected instructions"
-    },
-    {
-      "id": "x3",
       "stride": "Repudiation",
       "title": "No audit trail of sensitive information access"
     },
     {
-      "id": "x4",
-      "stride": "Tampering",
-      "title": "Tool misuse by an over-privileged agent"
-    },
-    {
-      "id": "x5",
+      "id": "x3",
       "stride": "InformationDisclosure",
-      "title": "Direct prompt injection to extract out-of-context information"
+      "title": "Indirect prompt injection through poisoned Confluence content"
     }
   ]
 }

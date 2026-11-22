@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe fake accounts scripting sign-ups to farm referral credits through easy email-only registration.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"No threat describes service degradation from automated sign-ups; T1 addresses credit fraud, not availability.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe scripting fake email sign-ups to farm referral credits from attacker's own code\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": null,\n      \"reason\": \"T1 mentions automation but describes financial fraud harm, not service disruption or DoS\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -12,6 +12,31 @@
       "id": "T1",
       "stride": "Spoofing",
       "title": "Anyone can farm unlimited $10 credits with throwaway email addresses"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Referral codes can be brute forced or guessed to redeem against strangers' codes"
+    },
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "Referral credit redeemed more than once per new account"
+    },
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Users can refer themselves because the two sides of the referral are never checked"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "Email-only sign-up lets anyone test whether a person already has an account"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "No link between a credited referral and the identity behind it, so fraud cannot be unwound"
     }
   ]
 }

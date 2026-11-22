@@ -3,20 +3,45 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Feature resizes images; parser exploit is specific attack on that processing component, not duplicate.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c2: same slow HTTP response attack mechanism and same resource exhaustion harm.\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Direct SSRF attack to metadata service; different attack method from c2's DNS rebinding.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"SSRF targeting databases; different harm (database data) from x1's cloud credentials.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: both describe identical DNS rebinding attack to bypass IP validation.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Network enumeration via timing/errors; distinct from SSRF exploitation of known targets.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"DoS via large file download; different mechanism from c1's decompression bomb.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Code execution via parser vulnerability; distinct attack class from SSRF or DoS.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"DoS via slow HTTP response; different mechanism from c1's bomb and x5's large file.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "SSRF attack via cloud metadata service access"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "SSRF to internal databases exposes sensitive data"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "DNS rebinding attack bypasses IP validation"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Internal service enumeration via error messages"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Large image download exhausts memory"
+    },
+    {
+      "id": "x6",
       "stride": "ElevationOfPrivilege",
       "title": "Image parser CVE enables remote code execution"
     },
     {
-      "id": "x2",
+      "id": "x7",
       "stride": "DenialOfService",
-      "title": "Slowloris attack via slow download"
+      "title": "Slow HTTP response ties up service connections"
     }
   ]
 }

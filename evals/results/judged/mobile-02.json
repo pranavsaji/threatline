@@ -15,8 +15,8 @@
     },
     {
       "id": "x2",
-      "stride": "DenialOfService",
-      "title": "Unauthenticated endpoint abused for resource exhaustion"
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link bypasses authentication for payment operations"
     },
     {
       "id": "x3",

@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack path (compromised service subscribes to topic) and harm (payment data access)\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Audit trail for event sources is specific to streaming feature and material for incident response\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Threat describes payment processing pipeline not event streaming; design only covers events after execution\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific tampering threat on events in Kafka; distinct from spoofing (c2) which injects new events\"}]}",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (compromise service to access payment topic) and harm (payment data exposure)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Attacks payment processing flow, not event streaming; design only describes publishing completed payment events\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Specific Kafka infrastructure attacks (network interception, disk access) on card data the design puts there\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Audit logging material given multiple producers and c2's established concern about fake events\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Event tampering distinct from c2's spoofing; specific to message broker architecture with payment data\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -15,16 +15,21 @@
     },
     {
       "id": "x2",
-      "stride": "Repudiation",
-      "title": "No audit trail of which service published which payment event"
-    },
-    {
-      "id": "x3",
       "stride": "Tampering",
       "title": "Payment amount or recipient manipulated"
     },
     {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Payment data in Kafka without encryption exposes card data to infrastructure attacks"
+    },
+    {
       "id": "x4",
+      "stride": "Repudiation",
+      "title": "No audit trail of which service published which payment event"
+    },
+    {
+      "id": "x5",
       "stride": "Tampering",
       "title": "Payment events lack integrity protection"
     }

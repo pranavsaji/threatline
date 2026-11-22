@@ -1,6 +1,7 @@
 import { appError, err, ok, severityRank, type Result, type Severity, type Stride } from '@threatline/shared';
 import type { LlmPort } from '@threatline/core';
 import type { CleanCase } from '../fixtures/cases.js';
+import { retryNote } from './judge.js';
 
 /**
  * Offline eval only, never in the product: a separate model call decides which reported threat, if any, finds each
@@ -85,9 +86,15 @@ export function parseMatch(text: string, expectedIds: string[], reportedIds: str
 export async function matchCase(llm: LlmPort, c: CleanCase, reported: MatchItem[]): Promise<Result<MatchVerdict[]>> {
   const expected: MatchItem[] = c.expected.map((e, i) => ({ id: `E${i + 1}`, stride: e.stride, severity: e.severity, title: e.title, scenario: '' }));
   if (reported.length === 0) return ok(expected.map((e) => ({ expected: e.id, reported: null, reason: 'nothing reported' })));
-  const r = await llm.complete({ system: matchSystemPrompt(), user: matchUserPrompt(c, expected, reported), tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
+  const user = matchUserPrompt(c, expected, reported);
+  const parse = (text: string) => parseMatch(text, expected.map((e) => e.id), reported.map((t) => t.id));
+  const r = await llm.complete({ system: matchSystemPrompt(), user, tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
   if (!r.ok) return err(r.error);
-  return parseMatch(r.value.text, expected.map((e) => e.id), reported.map((t) => t.id));
+  const first = parse(r.value.text);
+  if (first.ok || first.error.code !== 'schema') return first;
+  const again = await llm.complete({ system: matchSystemPrompt(), user: `${user}\n\n${retryNote(first.error.message, expected.map((e) => e.id))}`, tier: 'balanced', maxOutputTokens: 2000, purpose: 'verify' });
+  if (!again.ok) return first;
+  return parse(again.value.text);
 }
 
 export interface MatchTotals {

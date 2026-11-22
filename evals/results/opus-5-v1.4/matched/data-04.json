@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe information disclosure through bucket access to unencrypted backups\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe tampering with backup integrity through shared bucket write access\"}]}\n```",
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe unauthorized access to production data via unencrypted shared backups\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe tampering with backup integrity through shared write access\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -11,12 +11,22 @@
     {
       "id": "T1",
       "stride": "InformationDisclosure",
-      "title": "A bucket permission mistake exposes full database copies outside the company"
+      "title": "Reporting team can read the entire production database from unencrypted backup files"
+    },
+    {
+      "id": "T2",
+      "stride": "DenialOfService",
+      "title": "Backups can be deleted or overwritten, leaving no recovery point"
     },
     {
       "id": "T3",
       "stride": "Tampering",
       "title": "Someone with bucket write access can replace a backup and poison a restore"
+    },
+    {
+      "id": "T4",
+      "stride": "Repudiation",
+      "title": "No way to tell who copied a backup out of the shared bucket"
     }
   ]
 }

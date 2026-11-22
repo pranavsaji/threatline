@@ -3,7 +3,7 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe phone and location exposed to anyone with delivery id access.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe GPS spoofing through unauthenticated location updates.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe unauthorized access to driver location and phone via delivery id.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe spoofed GPS updates accepted without authentication.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -11,12 +11,22 @@
     {
       "id": "T1",
       "stride": "InformationDisclosure",
-      "title": "Driver phone number returned to customers who only need a map pin"
+      "title": "Guessing delivery ids returns any driver's live location and phone number"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Location updates are accepted from the client without proving which driver sent them"
+    },
+    {
+      "id": "T3",
+      "stride": "DenialOfService",
+      "title": "Ten-second updates from every driver plus live polling can overwhelm the location pipeline"
     },
     {
       "id": "T4",
-      "stride": "Tampering",
-      "title": "Location updates are accepted from the client without proving which driver sent them"
+      "stride": "InformationDisclosure",
+      "title": "No stated end to tracking, so drivers are followed home after the delivery"
     }
   ]
 }

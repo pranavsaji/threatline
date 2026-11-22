@@ -5,18 +5,18 @@
   "version": "match-v1",
   "date": "2026-11-22",
   "totals": {
-    "found": 80,
+    "found": 82,
     "expected": 87,
-    "highFound": 58,
+    "highFound": 60,
     "highExpected": 60,
     "severity": {
-      "higher": 42,
-      "same": 38,
-      "lower": 0
+      "higher": 44,
+      "same": 37,
+      "lower": 1
     }
   },
   "keyword": {
-    "found": 73,
+    "found": 76,
     "expected": 87
   },
   "missing": []

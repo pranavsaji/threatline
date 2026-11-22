@@ -3,25 +3,30 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design specifies read access for analysts; threat assumes write access not granted by design\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Whole table copy is in design; harm about data proliferation differs from c1's access control\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic credential security concern applying to any service, not specific to this feature design\"}]}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"cites reporting tools and backups not in design; stale analyst account duplicates c1\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"job must have production read credentials; theft from scheduler configuration is plausible\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"assumes write paths accessible to read-only analysts beyond design description\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"assumes historical retention when design only says job copies table nightly\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "Tampering",
-      "title": "Unverified writes into the warehouse tables can poison analytics and reporting"
+      "stride": "InformationDisclosure",
+      "title": "Whole customer table copied with no minimisation or masking"
     },
     {
       "id": "x2",
-      "stride": "InformationDisclosure",
-      "title": "Whole table is copied instead of only the fields analytics needs"
+      "stride": "ElevationOfPrivilege",
+      "title": "Export job credentials give standing full read on the production customers table"
     },
     {
       "id": "x3",
-      "stride": "ElevationOfPrivilege",
-      "title": "Export job credentials give standing full read on the production customers table"
+      "stride": "Tampering",
+      "title": "Unauthenticated or unverified writes into the warehouse export table"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Customer data retained indefinitely in analytics after deletion in production"
     }
   ]
 }

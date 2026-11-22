@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (unauthorized invoice access via ID) and harm (PII exposure)\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design is about downloading PDFs, not processing payments or refunds. Out of scope.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (unauthorized record access) and harm (personal data exposure)\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Generic audit logging hygiene. Design does not make breach detection or compliance material.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Generic rate limiting hygiene. Design does not make DoS material or mention resource concerns.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"c1 implies attacker has access to enumerate; x1's missing-auth contradicts this established context\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Generic hygiene (log everything); describes missing control, not attack specific to design\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific DoS attack via PDF generation exhaustion; mechanism follows from design specification\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -11,25 +11,15 @@
     {
       "id": "x1",
       "stride": "ElevationOfPrivilege",
-      "title": "Missing authorization allows accessing other users' invoices"
+      "title": "Missing authentication allows unauthenticated invoice access"
     },
     {
       "id": "x2",
-      "stride": "Tampering",
-      "title": "Payment amount or recipient manipulated"
-    },
-    {
-      "id": "x3",
-      "stride": "InformationDisclosure",
-      "title": "Personal data exposed to unauthorised users"
-    },
-    {
-      "id": "x4",
       "stride": "Repudiation",
       "title": "Missing audit logging of invoice access"
     },
     {
-      "id": "x5",
+      "id": "x3",
       "stride": "DenialOfService",
       "title": "PDF generation without rate limiting exhausts server resources"
     }

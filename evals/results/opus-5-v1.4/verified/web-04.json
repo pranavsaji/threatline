@@ -3,7 +3,7 @@
   "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows sequential ids and sensitive PDF content; concrete IDOR attack on this endpoint.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack and harm as T1, re-labeled as privilege escalation.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design text does not state authentication requirement for download endpoint; distinct unauthenticated-access attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Evidence supports PDF generation and predictable ids; distinct resource-exhaustion attack and harm.\"}]}",
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows sequential ids, PDF with PII, no ownership check; concrete IDOR enumeration attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same unauthorized retrieval of others' invoice PDFs via guessed sequential URLs as T1; harm duplicated.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"PDF generation endpoint supported by quotes; concrete resource-exhaustion attack distinct from data disclosure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Sequential id scheme is in design; enumeration inferring customer/invoice volume is distinct harm from T1.\"}]}",
       "modelId": "claude-opus-5"
     }
   ]

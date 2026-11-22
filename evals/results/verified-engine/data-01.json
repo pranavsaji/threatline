@@ -1,9 +1,9 @@
 {
   "caseId": "data-01",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Quotes explicitly show all analysts access customer PII including email and phone numbers in warehouse.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": false,\n      \"reason\": \"Quotes mention analyst access but say nothing about audit logging presence or absence.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Quotes describe the export job exists but say nothing about its authentication mechanism.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": false,\n      \"reason\": \"Quotes describe the copy operation but say nothing about integrity verification mechanisms.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms analysts access warehouse containing PII. Over-privileged access is concrete threat to this design.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms nightly job transmits customer PII. Network interception is concrete threat to data transmission.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms customer PII stored in warehouse. Filesystem/backup access is concrete threat to stored data.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms analysts can read customer data. Undetected misuse is concrete threat to privileged access.\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms automated nightly job exists. Job impersonation is concrete threat to automated processes.\"\n    },\n    {\n      \"id\": \"T6\",\n      \"keep\": true,\n      \"reason\": \"Evidence confirms data copied between systems. Corruption during transfer is concrete threat to data operations.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

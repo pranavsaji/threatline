@@ -1,9 +1,9 @@
 {
   "caseId": "api-03",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Webhook endpoint exists per evidence; concrete replay attack with duplicate processing harm described.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Public endpoint accepting JSON per evidence; concrete forgery attack without verification described.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Generic rate limiting hygiene for any public endpoint; not specific to this design.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": true,\n      \"reason\": \"Endpoint accepts order IDs per evidence; concrete enumeration attack via response differences described.\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Evidence doesn't mention logging; generic logging hygiene, not design-specific attack.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Quotes confirm endpoint accepts any JSON without verification. Concrete spoofing attack on payment confirmation.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Quotes confirm public endpoint. Concrete DoS attack preventing legitimate payment processing for this feature.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Quotes confirm no validation beyond structure. Concrete replay attack causing duplicate payment processing.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": false,\n      \"reason\": \"Same replay attack and harm as T3. Both describe replaying webhooks causing duplicate processing.\",\n      \"duplicateOf\": \"T3\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Quotes don't mention logging or auditing. No evidence that attacked component exists or is missing.\"\n    },\n    {\n      \"id\": \"T6\",\n      \"keep\": true,\n      \"reason\": \"Quotes confirm public endpoint accepting order IDs. Concrete enumeration attack revealing valid order data.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

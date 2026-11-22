@@ -34,8 +34,8 @@ Threatline makes security review part of "Done". One story shows all of it:
 **The AI cannot be talked into approving.** Text that tries to instruct the model is flagged, the threats resting on it
 wait for a security champion, the verifier never runs on flagged material, and code, not the model, computes the
 verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the product runs, through
-Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found 96.7% of the
-high-severity must-find threats (92.0% of all). Severity comes from facts each threat states, by a fixed table, so
+Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found all 60
+high-severity must-find threats (94.3% of all). Severity comes from facts each threat states, by a fixed table, so
 Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
 replays offline.
 
@@ -54,7 +54,7 @@ Two Forge apps (Jira + Confluence, and Bitbucket) and a GitHub Action, in TypeSc
 a chain of queue jobs with checkpoints; Forge SQL stores reviews, requirements and the ledger; Forge KVS and secret
 storage hold policy and signing keys; Custom UI with Atlaskit for every surface. The design rule: the model proposes,
 code decides. Consensus, quote grounding, scoring, the verdict and the gates are deterministic and unit-tested
-(over 1,000 tests, browser journeys, and a 55-case eval set with poisoned twins).
+(over 1,600 tests, browser journeys, and a 55-case eval set with poisoned twins).
 
 ## Challenges
 
@@ -69,7 +69,8 @@ code decides. Consensus, quote grounding, scoring, the verdict and the gates are
 
 - A review a developer cannot talk their way out of, that still explains itself in plain language.
 - Signed attestations: change one character in the pull request and the merge check fails.
-- An eval harness with recorded runs, a judge, and a CI gate that fails if quality drops.
+- An eval harness with recorded runs, a judge and a grader, and a CI gate that replays the production model's recordings
+  and fails if recall, high-severity recall, judged precision or injection resistance drops.
 
 ## What we learned
 
@@ -106,7 +107,7 @@ title, and upload it as public or unlisted.
 | 14 | Without a valid attestation the required check blocks the merge | Without a valid attestation, the required check stays red, and the merge is blocked. It checks again at merge time, and the same gate runs as a GitHub Action. |
 | 15 | An audit trail anyone can verify | Every acceptance, override and refusal lands in a hash-chained ledger, with signed Merkle tree heads. An auditor can download an inclusion proof, and check it offline. |
 | 16 | Coding agent over MCP | And coding agents see the same requirements. Through Threatline's M.C.P. server, Claude Code or Cursor fetch exactly what the gate will check, write the fix, and mark the requirement verified with their pull request. |
-| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: ninety-two percent recall on high-severity threats, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
+| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: every high-severity threat found, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
 
 ## Additional info (judges only): ready-to-paste answers
 

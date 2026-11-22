@@ -28,7 +28,7 @@ export const SIGNAL_KEYWORDS = {
   credentials: ['password*', 'credential*', 'login details'],
   payment: ['credit card*', 'card number*', 'stripe', 'payment*', 'checkout', 'pci', 'refund*', 'billing', 'invoice*'],
   health: ['medical', 'health record*', 'diagnos*', 'patient*', 'hipaa'],
-  secrets: ['api key*', 'secret key*', 'private key*', 'signing key*', 'access token*'],
+  secrets: ['api key*', 'secret key*', 'private key*', 'signing key*', 'access token*', 'secret', 'secrets', 'client secret*', 'signing secret*', 'hs256', 'hmac', 'encryption key*'],
   public: ['public', 'internet-facing', 'external customer*', 'mobile app*', 'website', 'webhook*', 'public api', 'anonymous user*'],
   partner: ['partner*', 'b2b', 'vendor portal', 'third-party integration*'],
   // "agent" alone counts unless a person is meant ("support agents", "sales agent"): see HUMAN_AGENT.

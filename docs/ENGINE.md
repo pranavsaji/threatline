@@ -11,9 +11,9 @@ Each stage is its own queue job, so every model call fits a function timeout and
 | Stage | Model tier | Reads | Produces |
 | --- | --- | --- | --- |
 | 1. Gather | none | the work item, linked pages, incidents, parent and children (scoped to who triggered it) | facts, each with a source, trust level and injection flag |
-| 2. Injection check (quarantined) | balanced (`claude-sonnet-5`, falling back to `claude-sonnet-4-6`) | the raw untrusted text, fenced with a random nonce | a typed sketch whose `injectionSuspected` flag joins the scanner's: if set, every AI threat waits for a champion and the verifier is skipped. If the check cannot complete, the verifier is skipped too |
+| 2. Injection check (quarantined) | balanced (`claude-sonnet-5`, falling back to `claude-sonnet-4-6`, then `claude-sonnet-4-5-20250929`) | the raw untrusted text, fenced with a random nonce | a typed sketch whose `injectionSuspected` flag joins the scanner's: if set, every AI threat waits for a champion and the verifier is skipped. If the check cannot complete, the verifier is skipped too |
 | 3. Three independent runs, in parallel | deep (`claude-opus-5`, falling back through `claude-opus-4-8`, `-4-7`, `-4-6`) | the Threatline agent prompt over the review context, with untrusted text fenced by a random nonce: exactly what a Rovo agent run sees | three threat models, each threat quoting its evidence |
-| 4. Assemble (deterministic) | none | the three runs | consensus (a threat needs a majority of runs), quotes checked word for word against the sources, the rule-based floor, coverage, severity and STRIDE/ASVS/CWE mappings, the risk score |
+| 4. Assemble (deterministic) | none | the three runs | consensus (a threat needs a majority of runs; runs match on the quoted passage and wording, whatever STRIDE category each gave, and one run counts once per threat), quotes checked word for word against the sources, the rule-based floor, coverage, severity and STRIDE/ASVS/CWE mappings, the risk score |
 | 5. Verify (adversarial) | deep | each accepted AI threat with the quotes it rests on, fenced as data | keep or drop, with a reason |
 
 Code decides what a verifier verdict does:
@@ -62,8 +62,8 @@ On this model the verifier does not raise precision: when it drops an AI threat,
 threat covered comes back (the floor working as designed). Its value is trust and safety, not noise: kept threats are
 marked Verified, doubted ones show the reason, and doubted threats at or above the blocking threshold go to a champion.
 In the product both stages run on `claude-opus-5`. Measured on that model through the same path (all 55 cases, verifier on
-Opus 5, prompt v1.4.0): 15 of 15 poisoned cases held, graded high-severity recall 96.7% and recall 92.0%, judged
-precision of model-proposed threats 79.9% (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`,
+Opus 5, prompt v1.4.0): 15 of 15 poisoned cases held, graded high-severity recall 100% (60 of 60) and recall 94.3%,
+judged precision of model-proposed threats 80.9% (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`,
 `evals/results/2026-11-22-match-opus-5-v1.4-all.md`). Severity is computed from each threat's `rating` (attacker, effort,
 reach, harm) by a fixed table, lowered by at most one level from the model's own score, and the runs' median counts. The in-product verifier uses its own rubric (does the quoted
 evidence support the threat?), not the offline judge's, so judged precision is not the product grading itself.

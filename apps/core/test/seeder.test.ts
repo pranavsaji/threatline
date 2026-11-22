@@ -51,12 +51,41 @@ function site() {
 }
 
 describe('demo seeder (Task 24)', () => {
+  it('works on a site without Confluence: the design, hidden instruction included, goes into the descriptions (audit finding)', async () => {
+    const s = site();
+    s.t.deps.confluence = {} as ConfluenceClient; // any Confluence call would throw
+    const r = await seedDemo(s.t.deps, { projectKey: 'PAY' });
+    if (!r.ok) throw new Error(r.error.message);
+    expect(r.value.designPageUrl).toBeNull();
+    expect(s.links).toEqual([]);
+    const text = (c: Created) => c.description.content.map((p) => JSON.stringify(p)).join(' ');
+    const [epic, story] = s.created;
+    for (const c of [epic!, story!]) {
+      expect(text(c)).toContain('issueRefund calls it with an order id and amount');
+      expect(scanForInjection(text(c)).suspected).toBe(true);
+    }
+    expect(text(s.created[3]!)).not.toContain('issueRefund calls it'); // incidents stay as they were
+  });
+
+  it('a project without Story gets Task stories, and Task is added to the reviewed work types (audit finding)', async () => {
+    const s = site();
+    s.t.jira.projectInfo = async () => ok({ id: '10000', key: 'PAY', issueTypes: [{ id: '1', name: 'Epic', subtask: false }, { id: '5', name: 'Task', subtask: false }] });
+    const r = await seedDemo(s.t.deps, { projectKey: 'PAY', spaceKey: 'PAY' });
+    if (!r.ok) throw new Error(r.error.message);
+    expect(r.value.addedReviewTypes).toEqual(['Task']);
+    const policy = await s.t.deps.config.site();
+    expect(policy.ok && policy.value.reviewIssueTypes).toEqual(expect.arrayContaining(['Task']));
+    // Again: nothing more to add.
+    const again = await seedDemo(s.t.deps, { projectKey: 'PAY', spaceKey: 'PAY' });
+    expect(again.ok && again.value.addedReviewTypes).toEqual([]);
+  });
+
   it('creates the epic, two stories under it, two incidents, the design page, links and the enabled project', async () => {
     const s = site();
     await s.t.deps.config.setSite({ ...(await s.t.deps.config.site() as { ok: true; value: Parameters<typeof s.t.deps.config.setSite>[0] }).value, enabledProjects: [] });
     const r = await seedDemo(s.t.deps, { projectKey: 'PAY', spaceKey: 'PAY' });
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value).toEqual({ epicKey: 'PAY-100', storyKeys: ['PAY-101', 'PAY-102'], designPageUrl: 'https://x/wiki/pages/500', incidentKeys: ['PAY-103', 'PAY-104'] });
+    expect(r.value).toEqual({ epicKey: 'PAY-100', storyKeys: ['PAY-101', 'PAY-102'], designPageUrl: 'https://x/wiki/pages/500', incidentKeys: ['PAY-103', 'PAY-104'], addedReviewTypes: [] });
     expect(s.created.map((c) => c.summary)).toEqual(['Add AI support agent', 'Agent can look up order status', 'Agent can issue refunds', expect.stringMatching(/delivery address/), expect.stringMatching(/refund requests/)]);
     expect(s.created[1]).toMatchObject({ parentId: '20100', components: [DEMO_COMPONENT], issueTypeId: '2' });
     expect(s.created[3]).toMatchObject({ issueTypeId: '3', labels: expect.arrayContaining(['incident', DEMO_LABEL]), components: [DEMO_COMPONENT] });

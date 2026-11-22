@@ -3,15 +3,35 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe server trusting client purchased flag without validating receipt, enabling fabricated unlock\"}]}\n```",
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe sending purchased: true flag to unlock premium without real payment.\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Client can unlock premium for free by sending purchased: true"
+    },
+    {
       "id": "T2",
+      "stride": "Tampering",
+      "title": "One real receipt can be replayed to unlock premium on many accounts"
+    },
+    {
+      "id": "T3",
       "stride": "Spoofing",
       "title": "Receipt is accepted without server-side validation against the app store"
+    },
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Unlock endpoint has no stated authentication or account binding"
+    },
+    {
+      "id": "T5",
+      "stride": "Repudiation",
+      "title": "No link from an unlocked account back to a real store transaction"
     }
   ]
 }

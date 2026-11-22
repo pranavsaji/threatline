@@ -1,0 +1,17 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: same attack (incomplete deletion) and harm (GDPR violations), just broader scope.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Personal data persists indefinitely after deletion"
+    }
+  ]
+}

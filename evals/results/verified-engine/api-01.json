@@ -1,9 +1,9 @@
 {
   "caseId": "api-01",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Design puts API keys in query strings; threat attacks this specific choice with concrete log/history attack.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Design explicitly has no rate limiting; threat describes concrete DoS attack exploiting this gap.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Query string API keys create concrete logging exposure risk; evidence supports attack vector\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Non-expiring keys enable indefinite impersonation post-theft; distinct from T1's initial exposure\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"No rate limiting enables resource exhaustion DoS; evidence confirms vulnerability exists\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

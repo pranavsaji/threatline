@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Valid SAML replay attack; specific attacker action and harm; distinct from role manipulation or IdP attacks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design uses SAML SSO not password auth; mentions customers when design specifies employees; doesn't follow design.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Valid XML wrapping attack on SAML; specific mechanism exploiting parser/validator; distinct from role attribute manipulation.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Valid entity expansion attack on SAML XML parser; material to feature's authentication mechanism; causes DoS.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct from c1/c2: complete signature validation failure enables spoofing any user\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c1: exploits same signature vulnerability, achieves same admin access harm\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic TLS hygiene, not material to SSO feature per design\"},{\"id\":\"x4\",\"valid\":false,\"reason\":\"Generic XML parsing hygiene, not material to SAML SSO per design\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -11,17 +11,17 @@
     {
       "id": "x1",
       "stride": "Spoofing",
-      "title": "SAML assertion replay allows reuse of stolen authentication tokens"
+      "title": "Authentication bypass through SAML signature validation failure"
     },
     {
       "id": "x2",
       "stride": "Spoofing",
-      "title": "Account takeover through weak authentication"
+      "title": "XML signature wrapping attack allows assertion content replacement"
     },
     {
       "id": "x3",
       "stride": "Spoofing",
-      "title": "XML signature wrapping attack allows assertion content replacement"
+      "title": "Man-in-the-middle attack on SAML flow"
     },
     {
       "id": "x4",

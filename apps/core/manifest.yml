@@ -121,7 +121,7 @@ modules:
     - key: threatline-posture-gadget
       title: Threatline security posture
       description: Open security requirements by severity, expiring risk acceptances, mean time to verify and reviews in flight, for the work items you can see.
-      thumbnail: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+      thumbnail: https://raw.githubusercontent.com/pranavsaji/threatline/main/docs/brand/icon-144.png
       resource: panel
       resolver:
         function: panelResolverFn

@@ -1,9 +1,9 @@
 {
   "caseId": "mobile-01",
-  "promptVersion": "v1.3.0",
+  "promptVersion": "v1.4.0",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows plain storage of refresh token; concrete attack extracting and using token remotely to impersonate.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows plain token storage and biometric screen-only; distinct compromised-device scenario bypassing all app protections.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": true,\n      \"reason\": \"Evidence shows plain token storage enabling tampering; distinct attack type and harm from T1/T2 extraction threats.\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"T1\",\n      \"keep\": true,\n      \"reason\": \"Plain storage confirmed; backups include app data; concrete attack via backup compromise extracting token.\"\n    },\n    {\n      \"id\": \"T2\",\n      \"keep\": true,\n      \"reason\": \"Plain storage confirmed; physical or malware access can read; concrete attack scenario with token theft.\"\n    },\n    {\n      \"id\": \"T3\",\n      \"keep\": false,\n      \"reason\": \"Evidence shows token storage but not token lifetime/rotation policy; attacks absence not demonstrated in quotes.\"\n    },\n    {\n      \"id\": \"T4\",\n      \"keep\": false,\n      \"reason\": \"Rooted device token theft repeats T2's attack and harm; biometric hooking adds no distinct impact.\",\n      \"duplicateOf\": \"T2\"\n    },\n    {\n      \"id\": \"T5\",\n      \"keep\": false,\n      \"reason\": \"Evidence shows plain storage, not tampering behavior or integrity checking; harm description unclear and unlikely.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ]

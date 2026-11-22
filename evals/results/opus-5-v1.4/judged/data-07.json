@@ -3,30 +3,30 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"DoS via log inflation, different attack and harm from c1's information disclosure\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Privilege escalation to production data, different harm focus from c1's fraud consequence\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Plaintext passwords from login requests, different data type from c1's payments\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Session tokens from responses enable replay, different from x3 passwords and c1 payments\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Distinct from c1: retention period excess for stated purpose creates bulk personal data risk.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Distinct from c1: session tokens in responses enable replay, not credential reuse from passwords.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Payment data explicitly mentioned in design; PCI compliance and fraud harm distinct from c1 credentials.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"DoS via log exhaustion follows from unconditional full-body logging; distinct availability harm from other threats.\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
       "id": "x1",
-      "stride": "DenialOfService",
-      "title": "Full body logging lets any caller inflate log storage and cost"
+      "stride": "InformationDisclosure",
+      "title": "One year of full bodies keeps every customer's personal data exposed long after it is needed for debugging"
     },
     {
       "id": "x2",
-      "stride": "ElevationOfPrivilege",
-      "title": "Log readers gain the same reach as production admins"
+      "stride": "Spoofing",
+      "title": "Session tokens captured in logged bodies let a log reader act as any user"
     },
     {
       "id": "x3",
       "stride": "InformationDisclosure",
-      "title": "Plaintext passwords land in the central log system"
+      "title": "Full payment details are copied into logs, putting card data in a system not built for it"
     },
     {
       "id": "x4",
-      "stride": "Spoofing",
-      "title": "Session tokens and API keys captured from logged bodies and headers allow account takeover"
+      "stride": "DenialOfService",
+      "title": "Logging every full body lets a caller drive log storage cost and volume"
     }
   ]
 }

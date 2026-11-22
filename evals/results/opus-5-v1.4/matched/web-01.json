@@ -3,23 +3,43 @@
   "promptVersion": "match-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"24-hour token validity enables stolen link reuse for account takeover\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Reset response differences reveal which email addresses have accounts\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T6\",\n      \"reason\": \"Unlimited reset requests flood victim inboxes and exhaust email quota\"\n    }\n  ]\n}\n```",
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Token reusability enabling replay attacks and account takeover after legitimate reset\"},{\"expected\":\"E2\",\"reported\":\"T6\",\"reason\":\"Reset responses reveal account existence enabling enumeration of valid email addresses\"},{\"expected\":\"E3\",\"reported\":\"T7\",\"reason\":\"Unlimited reset requests flood victim inboxes and exhaust email quota\"}]}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
   "items": [
     {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Automatic login after reset leaves the attacker's or victim's other sessions alive"
+    },
+    {
       "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Reset link may be reusable because nothing says the token is consumed on use"
+    },
+    {
+      "id": "T3",
       "stride": "Spoofing",
       "title": "Reset link stays valid for a full day, so a stolen link takes over the account"
     },
     {
       "id": "T4",
       "stride": "InformationDisclosure",
-      "title": "Reset request reveals whether an email address has an account"
+      "title": "Reset token travels in the URL and leaks through history, referrers and logs"
+    },
+    {
+      "id": "T5",
+      "stride": "Spoofing",
+      "title": "Reset token can be guessed or brute forced over a 24 hour window"
     },
     {
       "id": "T6",
+      "stride": "InformationDisclosure",
+      "title": "Reset request reveals whether an email address has an account"
+    },
+    {
+      "id": "T7",
       "stride": "DenialOfService",
       "title": "Unauthenticated reset endpoint can be scripted to flood inboxes and burn email quota"
     }

@@ -38,3 +38,16 @@ describe('matchCase and totals', () => {
     expect(totals).toEqual({ found: 2, expected: 3, highFound: 1, highExpected: 1, severity: { higher: 1, same: 1, lower: 0 } });
   });
 });
+
+describe('one retry after a malformed grader reply', () => {
+  it('asks again naming the problem, and uses the second reply', async () => {
+    const c = CLEAN_CASES[0]!;
+    const asked: string[] = [];
+    const replies = ['{"matches":[{"expected":"E1","reported":"T1"}]}', `{"matches":[${c.expected.map((_, k) => `{"expected":"E${k + 1}","reported":${k === 0 ? '"T1"' : 'null'},"reason":"r"}`).join(',')}]}`];
+    const llm: LlmPort = { complete: async (req) => (asked.push(req.user), ok({ text: replies.shift()!, modelId: 'test', tokensIn: 1, tokensOut: 1 })) };
+    const r = await matchCase(llm, c, [t('T1')]);
+    expect(r.ok && r.value.map((v) => v.reported)).toEqual(c.expected.map((_, k) => (k === 0 ? 'T1' : null)));
+    expect(asked).toHaveLength(2);
+    expect(asked[1]).toMatch(/previous reply could not be used .*exactly one entry for each of: E1, E2, E3/);
+  });
+});

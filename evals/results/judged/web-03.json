@@ -3,7 +3,7 @@
   "promptVersion": "judge-v1",
   "replies": [
     {
-      "text": "```json\n{\n  \"verdicts\": [\n    {\"id\": \"x1\", \"valid\": false, \"reason\": \"Duplicate of c1: same attack path and harm (session access to email change to account takeover)\"},\n    {\"id\": \"x2\", \"valid\": false, \"reason\": \"Generic cookie security hygiene; session theft already covered in c1\"},\n    {\"id\": \"x3\", \"valid\": false, \"reason\": \"Too generic; not specific to this feature's design\"},\n    {\"id\": \"x4\", \"valid\": true, \"reason\": \"Specific to feature; distinct harm (investigation) from c1's takeover\"},\n    {\"id\": \"x5\", \"valid\": false, \"reason\": \"Design is about changing own settings, not accessing others' data\"},\n    {\"id\": \"x6\", \"valid\": true, \"reason\": \"Specific to immediate address/phone changes; distinct fraud harm from c1\"},\n    {\"id\": \"x7\", \"valid\": false, \"reason\": \"Duplicate of x2; generic cookie hygiene\"},\n    {\"id\": \"x8\", \"valid\": true, \"reason\": \"Specific DoS via email changes; distinct lockout harm from c1's takeover\"}\n  ]\n}\n```",
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack (unverified email change) and harm (account takeover via password reset).\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic cookie security hygiene. Design doesn't describe cookie implementation details or XSS vulnerabilities elsewhere.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Follows from immediate changes without notifications. Specific attack path and harm. Not duplicate.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Doesn't follow from design. Feature is about changing own settings, not viewing others' records.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Follows from immediate phone and shipping changes. Specific fraud scenario distinct from email takeover.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Follows from immediate email changes. Rate limiting material here given no password verification. Distinct DoS harm.\"\n    }\n  ]\n}\n```",
       "modelId": "claude-sonnet-4-5"
     }
   ],
@@ -20,31 +20,21 @@
     },
     {
       "id": "x3",
-      "stride": "InformationDisclosure",
-      "title": "Credentials or secrets leaked"
+      "stride": "Repudiation",
+      "title": "No notification of account changes enables silent takeover"
     },
     {
       "id": "x4",
-      "stride": "Repudiation",
-      "title": "Missing audit logs prevent incident investigation"
-    },
-    {
-      "id": "x5",
       "stride": "InformationDisclosure",
       "title": "Personal data exposed to unauthorised users"
     },
     {
-      "id": "x6",
+      "id": "x5",
       "stride": "Tampering",
       "title": "PII changes without verification enable fraud"
     },
     {
-      "id": "x7",
-      "stride": "Spoofing",
-      "title": "Session cookie vulnerable without httpOnly, secure, SameSite"
-    },
-    {
-      "id": "x8",
+      "id": "x6",
       "stride": "DenialOfService",
       "title": "Unlimited email changes enable account lockout"
     }
