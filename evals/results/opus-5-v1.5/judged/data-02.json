@@ -1,0 +1,37 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Specific attack on CSV order data (prices, customers); distinct from c2 code execution attacks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Flags missing authentication spec; specific attack via weak credentials; not covered elsewhere.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Race condition with partial file; follows from multi-GB size mentioned; not c1 exhaustion.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Lack of SFTP isolation; specific partner-to-partner access; follows from shared server.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Missing audit trail; specific to bulk order disputes; follows from large file impacts.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Partner can submit orders for other partners or with attacker-chosen prices"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "No partner authentication model defined for the SFTP drop"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Parser picks up a file that is still being uploaded and imports truncated orders"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Partners may read or overwrite each other's order files on the shared SFTP server"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No link between an imported order and the partner upload it came from"
+    }
+  ]
+}

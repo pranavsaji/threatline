@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Prompt injection to trigger model-decided refund via Stripe; supported by quotes.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"No authentication before refund/order lookup in public chat; distinct spoofing attack.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attacker bypassing model-side refund cap for money loss; repeats T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent leaks other customers' PII from order lookup; distinct harm and fix.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Stored injection via attacker-supplied shipping address read into context; distinct vector.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public unauthenticated chat endpoint flooding drives LLM cost and denies support.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Over-scoped Stripe credential enables operations beyond refunds; grounded in Stripe integration.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Design names agent-issued refunds; missing authorising record is specific repudiation gap.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

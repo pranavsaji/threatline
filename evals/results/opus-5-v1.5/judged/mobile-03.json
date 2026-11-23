@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Session inheritance between shifts enables spoofing; distinct from c1 attribution issue.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Cache retention scope exceeds clinical need; distinct from c2's physical device security.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Server-side validation gap on sync enables tampering; not covered by c1/c2.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Undefined conflict resolution can lose clinical data; distinct from malicious tampering.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Account revocation not enforced offline; distinct from c2's encryption concern.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Next shift inherits the previous nurse's signed-in session on the shared tablet"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Cache keeps full medical history for patients the current nurse is not treating"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Server trusts whatever the offline device sends on sync, including patient ids and timestamps"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Sync conflict handling can silently overwrite or lose clinical notes"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Offline app keeps granting access to cached records after the account is revoked"
+    }
+  ]
+}

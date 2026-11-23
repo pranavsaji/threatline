@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-web-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has emailed sign-in token; guessable/brute-forceable token to impersonate customers is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Invoice and card endpoints exist; IDOR across customers is a distinct concrete attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public sign-in page triggers emails; flooding named endpoint is design-specific.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"7-day non-single-use link replay by inbox observer is distinct from guessing.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Credential-in-URL leakage via history/referrer/logs is a separate exposure path.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Same link-holder changing card for financial loss; already covered by replay threat.\",\"duplicateOf\":\"T4\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Public email-only form enables account enumeration; distinct harm of customer-list disclosure.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Caching of invoice documents the design serves is specific per guidance.\"},{\"id\":\"T9\",\"keep\":true,\"reason\":\"Design names card-on-file change; missing record of who changed it is specific.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

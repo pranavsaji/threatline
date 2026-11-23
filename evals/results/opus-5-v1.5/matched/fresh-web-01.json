@@ -1,0 +1,47 @@
+{
+  "caseId": "fresh-web-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T4\",\"reason\":\"Both describe account takeover via forwarded or accessed sign-in link from email.\"},{\"expected\":\"E2\",\"reported\":\"T3\",\"reason\":\"Both describe sign-in form abuse to flood customer inboxes with emails.\"},{\"expected\":\"E3\",\"reported\":\"T7\",\"reason\":\"Both describe sign-in form revealing which email addresses are customers via enumeration.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Guessable sign-in tokens let an attacker sign in as any customer"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Invoice and card requests may trust a customer id supplied by the browser"
+    },
+    {
+      "id": "T3",
+      "stride": "DenialOfService",
+      "title": "Bots can drive unlimited sign-in emails, flooding customer inboxes and our sending reputation"
+    },
+    {
+      "id": "T4",
+      "stride": "Spoofing",
+      "title": "Sign-in link stays usable for 7 days, so anyone who sees the email becomes the customer"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "The sign-in secret travels in a URL and leaks through browser history, referrers and logs"
+    },
+    {
+      "id": "T6",
+      "stride": "ElevationOfPrivilege",
+      "title": "Card on file can be replaced using only a sign-in link, with no second check"
+    },
+    {
+      "id": "T7",
+      "stride": "InformationDisclosure",
+      "title": "Public sign-in form reveals which email addresses have billing accounts"
+    }
+  ]
+}

@@ -11,19 +11,26 @@ export interface Verdict4 {
   duplicateOf?: string;
 }
 
-/** The threats the verifier sees: accepted AI threats. Rule-based ones are never sent; needs-human ones already wait. */
-const verifiable = (t: Threat) => t.origin === 'agent' && t.state === 'accepted';
+/** A gap-check threat still waiting for the verifier: hidden (dismissed, `unconfirmed`) and never verified. */
+export const isGapCandidate = (t: Threat): boolean => t.foundBy === 'gap_check' && t.state === 'dismissed' && t.dismissReason === 'unconfirmed' && !t.verification;
+
+/**
+ * The threats the verifier sees: accepted AI threats, then gap-check candidates (listed last, so a candidate that
+ * repeats a threat points back at it). Rule-based ones are never sent; needs-human ones already wait.
+ */
+const verifiable = (t: Threat) => (t.origin === 'agent' && t.state === 'accepted') || isGapCandidate(t);
+const candidatesLast = (a: Threat, b: Threat) => Number(isGapCandidate(a)) - Number(isGapCandidate(b));
 
 /**
  * Threatline Engine stage 4: one call on a stronger model checks each accepted AI threat against the quotes it rests on.
  * Its answer is only a request; applyVerification decides what it does. Every id must get a verdict, or nothing changes.
  */
 export async function engineVerify(deps: Pick<PipelineDeps, 'llm' | 'policy'>, threats: readonly Threat[], usage: Usage, nonce: string): Promise<Result<Verdict4[]>> {
-  const items = threats.filter(verifiable).slice(0, 80);
+  const items = threats.filter(verifiable).sort(candidatesLast).slice(0, 80);
   if (items.length === 0) return ok([]);
   const ids = items.map((_, n) => `T${n + 1}`);
   const p = verifyPrompt(
-    items.map((t, n) => ({ id: ids[n]!, stride: t.stride, severity: t.severity, title: t.title, scenario: t.scenario, component: t.component, quotes: t.citations.map((c) => c.quote) })),
+    items.map((t, n) => ({ id: ids[n]!, stride: t.stride, severity: t.severity, title: t.title, scenario: t.scenario, component: t.component, quotes: t.citations.map((c) => c.quote), ...(isGapCandidate(t) ? { added: true } : {}) })),
     nonce,
   );
   const r = await callStage(deps, usage, { ...p, purpose: 'verify', tier: 'deep', maxOutputTokens: 6000 }, FittedVerifySchema, null);
@@ -67,7 +74,12 @@ export function applyVerification(
     const verification = { keep: v.keep, reason: v.reason.slice(0, 300) };
     let u: Threat;
     const cover = v.duplicateOf ? threats.find((x) => x.id === v.duplicateOf) : undefined;
-    if (v.keep) u = { ...t, verification };
+    // A gap-check candidate becomes active only when kept and resting on clean sources; otherwise it stays hidden, now
+    // with the verifier's reason. Activating one only ever adds to what gates Done.
+    if (isGapCandidate(t)) {
+      const { dismissReason: _r, ...rest } = t;
+      u = v.keep && !t.citations.some((c) => opts.taintedFacts?.has(c.factId)) ? { ...rest, state: 'accepted', verification } : { ...t, verification };
+    } else if (v.keep) u = { ...t, verification };
     else if (t.citations.some((c) => opts.taintedFacts?.has(c.factId))) u = { ...t, verification };
     // Security: the verifier reads untrusted quotes, so it may never remove anything that would gate Done or merge,
     // not even by calling it a duplicate (fixing the cover might not fix it). A champion decides, seeing the reason.

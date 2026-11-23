@@ -1,0 +1,22 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe forging unauthenticated webhook calls to mark unpaid orders as paid and obtain goods without payment.\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Both describe replaying legitimate webhook events due to lack of idempotency or replay detection, causing duplicate processing.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Anyone can forge a payment notification and get goods for free"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Replayed webhook events are processed again"
+    }
+  ]
+}

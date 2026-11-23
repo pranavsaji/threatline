@@ -1,0 +1,37 @@
+{
+  "caseId": "fresh-data-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":false,\n    \"reason\":\"Duplicate of c1; both describe unauthorized access to salary/health data via shared dashboard links.\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":false,\n    \"reason\":\"Duplicate of c1; both describe unauthorized access to row-level salary/health records via shared dashboards.\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":true,\n    \"reason\":\"Valid; distinct DoS attack via query abuse, specific to broad link distribution and permanent access.\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":true,\n    \"reason\":\"Valid; distinct harm (broken audit trail) specific to credential-sharing model; material for health data compliance.\"\n  },\n  {\n    \"id\":\"x5\",\n    \"valid\":true,\n    \"reason\":\"Valid; distinct attack stage (ungoverned sharing) specific to sensitive data, permanent links, no sharing audit.\"\n  }\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Anyone holding a shared dashboard link can read salary and health-plan rows"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Row-level data for salary and health tables is published with no row-level restriction per viewer"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Any employee with a link can trigger unbounded warehouse queries, running up cost and starving other jobs"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Access to health and salary data is attributed to the analyst, not the viewer"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No record of who shared a salary or health dashboard, or with whom"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Network MITM follows from accepting any cert; specific attack reading credentials\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Modifying bundled config follows from release packaging; specific repackaging attack\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Tampering follows from bypassed validation; different harm than x1 (integrity vs confidentiality)\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Build compromise follows from bundled config; different vector than x2 (pre vs post-distribution)\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Network attacker impersonates the backend because the app can be told to accept any certificate"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Anyone with the app package can flip the bundled flag to turn off certificate checking"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Fake backend can feed the app altered responses and change what it does"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Whoever controls the release config can ship accept-any-certificate to the entire production fleet"
+    }
+  ]
+}

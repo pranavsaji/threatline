@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-ai-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states agent attaches drive files mentioned in email and invites named people; concrete exfiltration attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Prompt injection steering agent goals via email body is a distinct attack on the email-driven task path.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Broad standing inbox/calendar/drive access supported by quotes; privilege scoping concern specific to this agent.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Spoofed sender/attendee names trusted for invites sent under employee identity; distinct spoofing attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Persistent poisoned inbox context affecting later unrelated requests is a distinct attack from direct injection.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design explicitly says agent acts without asking; attribution gap for invites and file shares is specific.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Email trigger reachable by anyone; flooding causes calendar spam and cost, tied to stated booking behaviour.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Reconnaissance harvesting valid addresses and free/busy via invite replies is a different harm than file exfiltration.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states app accepts any TLS cert when flag set; concrete MITM impersonation attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Attacks the bundled config file itself via repackaging; distinct from network MITM.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Response tampering by MITM is a distinct harm from credential theft/impersonation.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same MITM on same TLS bypass harvesting session tokens/credentials as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Insider/pipeline setting flag in release config is a different actor and attack path.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

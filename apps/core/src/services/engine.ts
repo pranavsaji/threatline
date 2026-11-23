@@ -1,4 +1,4 @@
-import { applyVerification, engineAgentRun, engineExtract, engineVerify, requirementsFor, type Extracted, type Sample, type Usage } from '@threatline/core';
+import { applyVerification, engineAgentRun, engineExtract, engineGapCheck, engineVerify, requirementsFor, type Extracted, type Sample, type Usage } from '@threatline/core';
 import { appError, err, ok, type ContextBundle, type Result, type Review } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
@@ -187,7 +187,8 @@ async function applyAndStore(deps: CoreDeps, review: Review, verdicts: Verdicts)
   if (untouched.length < verdicts.length) log('engine.verify_skipped_triaged', { reviewId: review.id, skipped: verdicts.length - untouched.length });
   const applied = applyVerification(threats.value, untouched, { injectionSuspected: false, taintedFacts: tainted, blockAtOrAbove });
   for (const t of applied.changed) {
-    const u = await deps.reviews.updateThreat(t.id, { state: t.state, verification: t.verification, coveredBy: t.coveredBy, ...(t.dismissReason ? { dismissReason: t.dismissReason } : {}) });
+    // dismissReason is always written, so a gap-check candidate the verifier kept loses its `unconfirmed` reason.
+    const u = await deps.reviews.updateThreat(t.id, { state: t.state, verification: t.verification, coveredBy: t.coveredBy, dismissReason: t.dismissReason });
     if (!u.ok) return u;
   }
   // Requirements follow: an untouched row of a dropped threat goes; a threat that is active again gets its row.
@@ -225,6 +226,11 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
     await trace(deps, review.id, 'verify', 'done', checked ? 'skipped: injection suspected' : 'skipped: injection check did not complete');
     return voidOk();
   }
+  // The gap check runs once, in its own job, before the verifier (which then runs in the next job, so each model call
+  // has the function's whole time limit). Its threats are stored hidden; only the verifier's keep makes one active.
+  const gaps = await deps.reviews.stage(review.id, 'gaps');
+  if (!gaps.ok) return gaps;
+  if (gaps.value?.status !== 'done' && gaps.value?.status !== 'failed') return gapCheck(deps, review, stageDeps, usage, before);
   const nonce = globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 12);
   const v = await engineVerify(stageDeps, threats.value, usage, nonce);
   await record(deps, review, before, usage);
@@ -243,4 +249,33 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
   const r = await refreshVerdict(deps, review.issueId);
   if (!r.ok) return r;
   return deps.queue.push([{ kind: 'propagate', issueId: review.issueId }]);
+}
+
+/**
+ * Threatline Engine, the gap check (stage 5a): one call names what the agreed threats miss. Its candidates are added to
+ * the review hidden (dismissed, `unconfirmed`); then the verifier's job is queued. A failed check is recorded and the
+ * verifier runs anyway: without the gap check the review stands as the runs agreed, as before it existed.
+ */
+async function gapCheck(deps: CoreDeps, review: Review, stageDeps: Parameters<typeof engineGapCheck>[0], usage: Usage, before: { tokensIn: number; tokensOut: number }): Promise<Result<void>> {
+  await deps.reviews.saveStage(review.id, 'gaps', 'running');
+  const [threats, samples, bundle] = await Promise.all([deps.reviews.threats(review.id), deps.reviews.samples(review.id), bundleOf(deps, review)]);
+  if (!threats.ok) return threats;
+  if (!samples.ok) return samples;
+  if (!bundle.ok) return bundle;
+  const g = await engineGapCheck(stageDeps, review, bundle.value, threats.value, samples.value, usage);
+  await record(deps, review, before, usage);
+  if (g.ok && g.value.length > 0) {
+    // Read again after the model call: a champion may have triaged meanwhile. Only new ids are added.
+    const [current, discarded] = await Promise.all([deps.reviews.threats(review.id), deps.reviews.discarded(review.id)]);
+    if (!current.ok) return current;
+    if (!discarded.ok) return discarded;
+    const ids = new Set(current.value.map((t) => t.id));
+    const s = await deps.reviews.saveThreats(review.id, [...current.value, ...g.value.filter((t) => !ids.has(t.id))], discarded.value);
+    if (!s.ok) return s;
+  }
+  if (!g.ok) log('engine.gaps_failed', { reviewId: review.id, code: g.error.code });
+  else log('engine.gaps', { reviewId: review.id, candidates: g.value.length });
+  await deps.reviews.saveStage(review.id, 'gaps', g.ok ? 'done' : 'failed', g.ok ? { candidates: g.value.map((t) => t.id) } : undefined, g.ok ? undefined : g.error.code);
+  await trace(deps, review.id, 'gap_check', g.ok ? 'done' : 'failed', g.ok ? `${g.value.length} candidate(s)` : g.error.code);
+  return deps.queue.push([{ kind: 'engine', reviewId: review.id, stage: 'verify' }]);
 }

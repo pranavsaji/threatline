@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c1: identical permission bypass vulnerability, attack scenario, and harm to HR/finance data.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Distinct from c1: stale data persisting after access revoked, not current permission filter bypass.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Plausible DoS attack. Design mentions no rate limits, input size caps, or per-user quotas.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Logging material here because c1 enables disclosure; not generic hygiene but repudiation of specific threat.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Specific to HR/finance data sent externally. Provider compromise plausible. Not generic third-party hygiene.\"},{\"id\":\"x6\",\"valid\":true,\"reason\":\"Distinct from c2: knowledge-base poisoning via fake content, not prompt injection hijacking assistant behavior.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Assistant answers from HR and finance pages the asking employee may not be allowed to read"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Index keeps content after a page is restricted, deleted or an employee leaves"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unbounded querying runs up LLM and embedding cost or starves the service"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of which sensitive pages were revealed to which employee"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "HR and finance page text plus employee questions are sent out to the LLM for every answer"
+    },
+    {
+      "id": "x6",
+      "stride": "Tampering",
+      "title": "Planted or outdated wiki page is restated by the assistant as authoritative HR or finance policy"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe malicious user input stored in memory that changes future chatbot behavior\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe memories leaking between users due to inadequate retrieval scoping\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "User text written into memory later acts as instructions to the chatbot"
+    },
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Memories from one customer surface in another customer's answers"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe stored XSS via rich-text comments on public product pages\"},{\"expected\":\"E2\",\"reported\":\"T7\",\"reason\":\"Both describe script executing in moderator context to hijack session and abuse privileges\"},{\"expected\":\"E3\",\"reported\":\"T8\",\"reason\":\"Both describe missing audit trail for comment deletions by moderators\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "Stored cross-site scripting through rich-text comment markup"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Automated accounts flood product pages with spam and phishing links"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Comment delete endpoint may not verify the caller is a moderator"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Attacker-chosen image URLs in comments report every visitor to the attacker's server"
+    },
+    {
+      "id": "T5",
+      "stride": "Spoofing",
+      "title": "Cross-site request forgery makes a victim post or delete comments unknowingly"
+    },
+    {
+      "id": "T6",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "T7",
+      "stride": "ElevationOfPrivilege",
+      "title": "Comment markup executes in the moderator admin screen and abuses moderation powers"
+    },
+    {
+      "id": "T8",
+      "stride": "Repudiation",
+      "title": "Comment deletions by moderators leave no record of who deleted what"
+    }
+  ]
+}

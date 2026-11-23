@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-api-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms client filter string into SQL via string templates on public API; concrete injection attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Free-text filter syntax on public API supports filtering hidden fields; distinct disclosure attack from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states unlimited paging at 500 records on public API; concrete bulk scraping attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Unbounded paging and arbitrary filters support resource-exhaustion attack; harm differs from T3.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

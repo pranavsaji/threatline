@@ -1,0 +1,32 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; operating as owner includes elevated permissions, same unrestricted access flaw.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; full account takeover already includes tampering capability.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Session persistence beyond support interaction is distinct temporal flaw not covered by c1-c3.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; compromised account exploits same flaw (no per-case authorization), different attacker only.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Impersonating a privileged or staff account to reach admin functions"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Impersonation issues a full customer session, so admins can change the account, not just view it"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Impersonation session is unbounded in time and survives after the support interaction ends"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "One compromised support account becomes a generator of customer sessions, with no step-up check"
+    }
+  ]
+}

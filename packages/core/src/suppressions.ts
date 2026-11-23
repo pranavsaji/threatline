@@ -122,6 +122,7 @@ const REASON_LABEL: Record<DismissReason, string> = {
   not_applicable: 'not applicable',
   already_mitigated: 'already mitigated',
   duplicate: 'a duplicate',
+  unconfirmed: 'not confirmed by the verifier',
 };
 
 const mostCommon = (xs: readonly string[]): string => {

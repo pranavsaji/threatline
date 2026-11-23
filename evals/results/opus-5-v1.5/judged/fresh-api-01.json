@@ -1,0 +1,27 @@
+{
+  "caseId": "fresh-api-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Leaked static key enables unauthorized billable shipments; distinct from c1's authorization bypass\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Volume abuse via automation inflates merchant costs; distinct from c2's per-shipment value tampering\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"MerchantId enumeration discloses commercial relationships; distinct from c1's billing fraud\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "A leaked static API key lets anyone create billable shipments"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Automated bulk shipment creation runs up merchant cost"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Merchant ids can be probed to confirm which merchants exist and who they work with"
+    }
+  ]
+}

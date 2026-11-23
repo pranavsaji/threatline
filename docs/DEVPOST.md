@@ -34,8 +34,9 @@ Threatline makes security review part of "Done". One story shows all of it:
 **The AI cannot be talked into approving.** Text that tries to instruct the model is flagged, the threats resting on it
 wait for a security champion, the verifier never runs on flagged material, and code, not the model, computes the
 verdict. Measured on our 55-case eval set on `claude-opus-5`, the model the product runs, through
-Threatline Engine's full path: all 15 of 15 poisoned cases held, and a separate model grader found 59 of
-the 60 high-severity must-find threats (93.1% of all). Severity comes from facts each threat states, by a fixed table, so
+Threatline Engine's full path (three runs, a gap check, a verifier): all 15 of 15 poisoned cases held, and a separate
+model grader found all 60 high-severity must-find threats (97.7% of all), and every must-find threat on 10 fresh cases
+written before the gap check existed. Severity comes from facts each threat states, by a fixed table, so
 Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
 replays offline.
 

@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-data-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states dashboards query warehouse with analyst credentials; concrete privilege inheritance by viewers.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Link-shared dashboards with no viewer entitlement check; leaked URL exposes salary/health data.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack and harm as T2: link holders reading salary/health rows without per-viewer checks.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Non-expiring company-wide links trigger privileged warehouse queries; concrete cost/compute exhaustion attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design states links never expire; leavers/role-changers retaining access is a distinct attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared-credential queries break attribution; distinct harm of untraceable health-data access.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

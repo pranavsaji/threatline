@@ -1,0 +1,37 @@
+{
+  "caseId": "fresh-ai-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\"id\": \"x1\", \"valid\": true, \"reason\": \"Prompt injection directly follows from agent reading and acting on email content without approval.\"},\n    {\"id\": \"x2\", \"valid\": false, \"reason\": \"Assumes agent uses historical emails as context for new decisions; not stated in design.\"},\n    {\"id\": \"x3\", \"valid\": true, \"reason\": \"Design says actions taken without asking employee; repudiation directly follows from this.\"},\n    {\"id\": \"x4\", \"valid\": true, \"reason\": \"Anyone can email to trigger agent; no rate limits stated; DoS follows directly.\"},\n    {\"id\": \"x5\", \"valid\": true, \"reason\": \"Outsider emails with guessed names; agent confirms validity by sending invites; follows from design.\"}\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Anyone who can email an employee can give the assistant instructions (prompt injection)"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Earlier inbox content poisons later decisions"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Actions taken without the employee cannot be distinguished from their own"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Automated email flood turns into calendar spam and uncapped LLM cost"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Outsider names internal people in a meeting request and harvests valid addresses, availability and meeting context"
+    }
+  ]
+}

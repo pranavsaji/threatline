@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-web-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Public-read bucket is in design; concrete unauthenticated access to other customers' attachments.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states agents open arbitrary attachments in browser console with access to all customer records.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Evidence shows console has access to every customer record; broad-access attack distinct from XSS vector.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Any-file upload opened by agents; malware foothold on workstations is a distinct attack from browser script.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Open unauthenticated ticket/attachment intake supports flooding; cost and queue harm concrete.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Public-read bucket plus arbitrary file upload supports malicious content hosting abuse; distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

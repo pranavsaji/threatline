@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-mobile-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Evidence shows QR holds only customer id, offline generation, points redeemable for goods; concrete spoofing attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Offline accrual plus in-app redemption supported by quotes; double-spend attack is concrete and distinct from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design has cashier till adding points; tampering with submitted point amounts is a concrete distinct attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Offline on-device code generation with no issuance record supports dispute/repudiation concern tied to this design.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

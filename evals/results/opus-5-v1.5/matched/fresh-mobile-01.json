@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-mobile-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe forging QR codes to collect points on someone else's account\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe spending same points twice due to offline operation\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Anyone can generate another customer's loyalty QR code because it only holds a customer id"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Offline queued scans let the same points be spent twice"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Till submits point amounts the server trusts, so earnings can be inflated"
+    },
+    {
+      "id": "T5",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "Disputed point balances cannot be resolved because codes are made offline"
+    }
+  ]
+}

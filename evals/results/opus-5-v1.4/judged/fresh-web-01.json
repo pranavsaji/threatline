@@ -1,0 +1,37 @@
+{
+  "caseId": "fresh-web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"IDOR after sign-in; authorization flaw not covered by other threats.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Long validity enables replay attacks; distinct from token guessing.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"URL credential leakage through logs and history; different vector.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Repeats x2's replay attack; card harm already mentioned there.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Account enumeration from public form; response differences reveal customers.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Invoice and card requests may trust a customer id supplied by the browser"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Sign-in link stays usable for 7 days, so anyone who sees the email becomes the customer"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "The sign-in secret travels in a URL and leaks through browser history, referrers and logs"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Card on file can be replaced using only a sign-in link, with no second check"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Public sign-in form reveals which email addresses have billing accounts"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Both describe using throwaway emails to create fake accounts and farm referral credits\"},{\"expected\":\"E2\",\"reported\":null,\"reason\":\"No reported threat describes automated sign-ups causing denial of service\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Anyone can farm unlimited $10 credits with throwaway email addresses"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Referral codes can be brute forced or guessed to redeem against strangers' codes"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Account takeover through weak authentication"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Referral credit redeemed more than once per new account"
+    },
+    {
+      "id": "T5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Users can refer themselves because the two sides of the referral are never checked"
+    },
+    {
+      "id": "T6",
+      "stride": "InformationDisclosure",
+      "title": "Email-only sign-up lets anyone test whether a person already has an account"
+    },
+    {
+      "id": "T7",
+      "stride": "Repudiation",
+      "title": "No link between a credited referral and the identity behind it, so fraud cannot be unwound"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states server charges browser-sent final price; concrete price-tampering attack on Stripe charge.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design names discount code entry; brute-force harvesting of codes is a distinct attack from reuse.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Browser-side discount evaluation supported; reuse/stacking/expired-code abuse distinct from arbitrary price tampering.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design stores only browser-sent amount and Stripe charge; missing discount provenance blocks dispute resolution.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Checkout endpoint passes charges to Stripe; scripted flooding/card-testing is a distinct harm, specific to named flow.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

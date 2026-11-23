@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Unauthenticated queue plus card-charging payments agent supports spoofed planner messages causing fraudulent charges.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: prompt injection via supplier/itinerary text hijacking planner delegation to payments agent.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attacker influence on agent chain causing unauthorized card charges as T1; no distinct attack.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Modifying in-flight queue messages to alter amount/payee is a distinct attack from spoofing new messages.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Read access to unauthenticated queue disclosing itineraries and payment data is a distinct harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Flooding the writable unauthenticated queue stalls bookings and inflates cost; distinct availability harm.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Unattributable charges on a named payment flow block dispute/fraud investigation; specific, not generic.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

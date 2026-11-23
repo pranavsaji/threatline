@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-mobile-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design only says QR generation is offline, not redemption or synchronization. Assumes unspecified queuing and sync.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic authorization hygiene. Design doesn't describe record retrieval APIs or personal data beyond customer ID.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Generic DDoS hygiene. Design doesn't specify unauthenticated public endpoints or lack of rate limiting.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Follows from offline code generation with no server record. Specific audit concern for loyalty disputes.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Offline queued scans let the same points be spent twice"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Disputed point balances cannot be resolved because codes are made offline"
+    }
+  ]
+}

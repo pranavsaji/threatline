@@ -1,0 +1,10 @@
+{
+  "caseId": "web-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states impersonation open to every support-role holder; account takeover attack is concrete.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same actor using same impersonation access; privacy harm already implied by T1 takeover of any account.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Customer session carries no operator identity; attribution/repudiation harm distinct from access control.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: targeting privileged accounts to inherit higher permissions than support role grants.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct tampering attack via full session: altering account, orders, credentials, not just viewing.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Distinct weakness: unbounded, unrevocable session persisting after support interaction or employee departure.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

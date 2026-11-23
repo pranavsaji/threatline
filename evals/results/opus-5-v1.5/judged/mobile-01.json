@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Bypassing local biometric via patching or hooking is distinct from c2's storage access focus.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: both describe reading refresh token from plain storage and replaying it.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Token persistence despite remediation attempts is distinct from initial compromise in c2 or x1.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Describes consequence of x1/x2 rather than a distinct attack; forensic limitations not primary threat.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Unauthorized OS-level biometric enrollment by family/abuser is distinct from technical bypass or token theft.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Biometric check is local only, so it can be bypassed to use the stored token"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Refresh token stolen from plain app storage lets an attacker log in as the customer"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "No rotation or revocation means one leaked token gives permanent access"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Bank cannot prove which device or person authorised a session"
+    },
+    {
+      "id": "x5",
+      "stride": "Spoofing",
+      "title": "Any extra face or fingerprint enrolled on the phone opens the banking session"
+    }
+  ]
+}

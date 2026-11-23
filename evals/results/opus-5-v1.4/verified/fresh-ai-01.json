@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-ai-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states agent attaches drive files and invites people named in email; concrete exfiltration attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack vector (email-supplied instructions) and same harm (attacker invited, file attached) as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Generic least-privilege/standing-access observation; no concrete attacker action beyond already-listed injection threats.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent reads whole inbox as context; planted durable false context affecting later requests is a distinct attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design acts on sender/named attendees with no verification; spoofing or lookalike address is a distinct attack path.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Actions sent under employee identity without approval; attribution gap is concrete to this design.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Email-triggered autonomous booking supports calendar-spam/cost-exhaustion flood attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

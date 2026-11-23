@@ -1,0 +1,27 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Browser-side validation enables automated code discovery through enumeration or extraction\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Not an attack; describes audit gap not plausible attack on feature\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Generic checkout abuse not specific to discount code feature\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Automated guessing of discount codes"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No server-side record of how a total was reached, so discount fraud cannot be proven or reversed"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Scripted checkout submissions run up Stripe charge attempts and fees"
+    }
+  ]
+}

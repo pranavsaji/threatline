@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-data-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states CSV export of customers; bulk PII exfiltration via export is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Nightly job processes uploaded files; oversized file stalling imports is supported.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Import-to-export flow both in design; CSV formula injection harms marketing users.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Rows written straight into customers table supports SQL injection via import.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Direct row mapping supports overwriting other teams' records; distinct from injection.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Summary email to uploader is named; PII leakage/redirected address is concrete.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Unattended bulk import into customers table with no provenance; specific audit gap.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Upload path intake trust gap; planted file attributed to sales staff is distinct attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

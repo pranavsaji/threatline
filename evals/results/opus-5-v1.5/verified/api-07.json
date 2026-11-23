@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states concatenated SQL from free-text query; concrete injection attack on products database.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct DoS attack: expensive/automated queries saturating database connection pool; endpoint takes free-text query.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Sort column is a separate injection path quoted in design, needing its own fix beyond parameterization.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Error-based disclosure of schema from concatenated statement is a distinct harm and fix.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

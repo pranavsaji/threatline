@@ -452,6 +452,8 @@ function carryOver(threats: Threat[], prior: NonNullable<AssembleInput['prior']>
     // A covered rule-based threat is not a decision: coverage is worked out afresh for each revision. Nor is a
     // suppressed one: the project's rules are applied afresh too (a rule may have expired or been revoked).
     if (old.state === 'covered' || old.state === 'suppressed') continue;
+    // Nor is a gap-check candidate the verifier never kept: it was never shown, so it must not hide a fresh threat.
+    if (old.dismissReason === 'unconfirmed') continue;
     if (!onlyUnchanged(old)) continue;
     // Same origin only: an old AI threat (perhaps dismissed by the verifier) must not overwrite a fresh rule-based one.
     const idx = threats.findIndex((t, n) => !matched.has(n) && t.origin === old.origin && onlyUnchanged(t) && similar(t, old, { ignoreComponent: true }));
@@ -547,4 +549,65 @@ export function fitAgentModel(raw: unknown): unknown {
     result.sketch = fitted;
   }
   return result;
+}
+
+/** At most this many gap-check threats become candidates (the prompt asks for no more). */
+const MAX_GAP_CANDIDATES = 4;
+
+/**
+ * The threats only one run raised (outvoted in consensus), one per cluster, rated as assembly rates them: the gap check
+ * reads them as unconfirmed leads. Failed runs are ignored.
+ */
+export function minorityThreats(samples: readonly Sample[]): AgentThreat[] {
+  const valid = samples.filter((s): s is AgentThreatModel => !isFailedSample(s));
+  const { discarded } = consensus(clusterSamples(valid.map((m) => m.threats.map(rated))), Math.max(1, valid.length));
+  return discarded.map((d) => d.cluster.representative);
+}
+
+/**
+ * Threatline Engine, the gap check's answer as candidate threats. Each must be new (no stored threat, in any state, of
+ * its STRIDE category with a near-identical title; the run-clustering match is too loose here, since on a short design
+ * every threat quotes the same sentence, so subtler repeats are the verifier's to catch), quote its source word for word (a weak or missing quote drops it) and
+ * cite no source flagged for injection. Severity comes from its rating through the same table as every AI threat.
+ * A candidate is stored hidden: dismissed as `unconfirmed`, counting for nothing, with no requirement, until the
+ * verifier keeps it (applyVerification). So the gap check alone can never change what gates Done.
+ */
+export function gapCandidates(i: { review: Review; bundle: ContextBundle; threats: readonly Threat[]; sample: Sample; llmFeatures: boolean }): Threat[] {
+  if (isFailedSample(i.sample)) return [];
+  const facts = i.bundle.facts;
+  const factById = new Map(facts.map((f) => [f.id, f]));
+  const out: Threat[] = [];
+  for (const raw of i.sample.threats.slice(0, MAX_GAP_CANDIDATES)) {
+    const t = rated(raw);
+    if ([...i.threats, ...out].some((x) => similar(x, t, { ignoreComponent: true }))) continue;
+    const grounded = [...new Set(t.evidence.map((e) => e.quote))].map((q) => ({ q, g: groundQuote(q, facts) })).filter((x) => x.g.grounding === 'supported' && x.g.factId);
+    if (grounded.length === 0) continue;
+    const citations = grounded.slice(0, MAX_CITATIONS).map((x) => ({ factId: x.g.factId!, quote: x.q }));
+    if (citations.some((c) => factById.get(c.factId)?.injectionSuspected)) continue;
+    const id = claimId(new Set([...i.threats, ...out].map((x) => x.id)), i.review.id, 'gap', t);
+    out.push({
+      id,
+      reviewId: i.review.id,
+      stride: t.stride,
+      title: t.title,
+      scenario: t.scenario,
+      component: t.component,
+      likelihood: t.likelihood,
+      impact: t.impact,
+      severity: severityOf(t.likelihood, t.impact),
+      votes: 1,
+      samples: 1,
+      grounding: 'supported',
+      confidence: 0.5,
+      state: 'dismissed',
+      dismissReason: 'unconfirmed',
+      foundBy: 'gap_check',
+      origin: 'agent',
+      citations,
+      mappings: mapThreat(t, i.llmFeatures),
+      plainLanguage: plainLanguageFor(t),
+      ...(t.requirement ? { suggestedRequirement: t.requirement } : {}),
+    });
+  }
+  return out;
 }

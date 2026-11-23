@@ -1,0 +1,37 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design lacks approval/scoping controls; plausible mass deletion attack by support.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"No identity verification step described; attacker can request deletion for victim's account.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Data retained in warehouse/backups enables silent restoration by insiders.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Audit trail material for privileged, legally significant deletion; not generic hygiene.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Design only marks flag; doesn't describe session/credential revocation or access control.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any support agent can delete any account with no limits or approval"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Deletion requests accepted without verifying the requester owns the account"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Deleted accounts can be silently restored from the retained copies"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of who requested or performed a deletion"
+    },
+    {
+      "id": "x5",
+      "stride": "Spoofing",
+      "title": "Deleted accounts keep working because deletion is only a database flag"
+    }
+  ]
+}

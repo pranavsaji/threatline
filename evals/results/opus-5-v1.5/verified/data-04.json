@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states backups unencrypted and bucket shared with reporting team; concrete overexposure of full DB.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Nightly backups in shared bucket named; deletion of recovery points is a concrete distinct harm.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack: overwriting backup objects to poison restore; integrity harm differs from deletion.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design names shared bucket access to plaintext backups; inability to attribute downloads is specific, not generic.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

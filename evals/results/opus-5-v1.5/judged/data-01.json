@@ -1,0 +1,37 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design explicitly copies email, phone, purchase history wholesale; threat addresses this specific feature choice\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Introduces platform staff, job host, credential storage—implementation components design does not mention\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design states analysts have read access only; threat assumes write path and analyst write capability not in design\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes accumulation and indefinite retention; design states nightly copy but not whether it replaces or accumulates\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Assumes no replica, full scan, peak-hour triggering—multiple implementation details design does not specify\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Whole customer table copied with no minimisation or masking"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Export job credentials give standing full read on the production customers table"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Unauthenticated or unverified writes into the warehouse export table"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Customer data retained indefinitely in analytics after deletion in production"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Nightly full copy of the production customers table can starve customer-facing traffic"
+    }
+  ]
+}

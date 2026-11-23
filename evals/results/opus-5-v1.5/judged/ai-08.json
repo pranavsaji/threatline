@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Protocol inherently sends arguments to third-party servers; data disclosure even without malicious code execution.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1; both describe malicious code execution, installation phase not materially distinct from runtime.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Prompt injection via tool descriptions; different mechanism from code execution or data exfiltration threats.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Resource exhaustion through installation spam; different harm (DoS) from confidentiality/integrity threats in c1/c2.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Assumes no audit trail; design says 'without deploy' but doesn't state no logging of installs.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Supply chain update attack; server becomes malicious after trust, distinct from initially malicious install.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Installed MCP server exfiltrates conversation context and internal data"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Installing a third-party MCP server executes attacker code on the agent host"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Poisoned tool descriptions from the registry hijack the agent's goal"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Unbounded runtime installs exhaust the agent host and model budget"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No record of which tool version acted, so attacker actions cannot be attributed"
+    },
+    {
+      "id": "x6",
+      "stride": "Tampering",
+      "title": "Rug pull: a server that was fine before serves malicious code on the next runtime install"
+    }
+  ]
+}

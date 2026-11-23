@@ -43,7 +43,7 @@ export function ThreatCard({
   const [explainError, setExplainError] = useState<string | null>(null);
   const bodyId = useId();
   const g = GROUNDING[threat.grounding];
-  const runs = threat.origin === 'baseline' ? 'Rule-based' : `${threat.votes} of ${threat.samples} runs`;
+  const runs = threat.origin === 'baseline' ? 'Rule-based' : threat.foundBy === 'gap_check' ? 'Found by the gap check' : `${threat.votes} of ${threat.samples} runs`;
   return (
     <article
       aria-labelledby={`${bodyId}-title`}
@@ -63,6 +63,7 @@ export function ThreatCard({
             {threat.state === 'needs_human' && <Lozenge appearance="new">Needs a champion</Lozenge>}
             {threat.verification?.keep && <Lozenge appearance="success">Verified</Lozenge>}
             {threat.state === 'dismissed' && threat.verification?.keep === false && <Lozenge appearance="removed">Dropped by the verifier</Lozenge>}
+            {threat.state === 'dismissed' && threat.dismissReason === 'unconfirmed' && !threat.verification && <Lozenge appearance="moved">Waiting for the verifier</Lozenge>}
             {threat.state === 'suppressed' && <Lozenge appearance="removed">Hidden by team rule</Lozenge>}
             <span style={{ color: token('color.text.subtlest'), font: token('font.body.small') }}>{runs}</span>
           </div>

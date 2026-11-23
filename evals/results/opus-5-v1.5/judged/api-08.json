@@ -1,0 +1,27 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Follows from design (accountStatus copied); specific (suspended user bypasses suspension); distinct from c1 (role) and c2 (authorization).\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Duplicate of c2. Overwriting email is covered by c2's 'rewrite identity attributes'; password reset is exploitation consequence.\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Design doesn't mention audit or logging. Repudiation risk depends on assumptions about these components, beyond feature design.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "User changes accountStatus to bypass suspension or lock other accounts"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Identity fields such as email can be overwritten, enabling account takeover by password reset"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Role and accountStatus changes leave no distinct record of who made them"
+    }
+  ]
+}

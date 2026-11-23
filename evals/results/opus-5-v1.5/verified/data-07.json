@@ -1,0 +1,10 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states 1-year retention of full bodies for debugging; bulk exposure of customer data is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design explicitly logs login request bodies; credential harvesting by log readers is a distinct attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Response bodies logged; token replay to impersonate users is a distinct attack from password harvesting.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design names payment details logged for a year; card data theft is distinct harm and data.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unconditional full-body logging supports log storage/quota exhaustion attack degrading debugging and detection.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Caller-controlled bodies written verbatim into logs; forged records poisoning investigations is a distinct attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

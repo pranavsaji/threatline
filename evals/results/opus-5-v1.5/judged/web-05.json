@@ -1,0 +1,42 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"SAML protocol includes RelayState; open redirect after trusted SSO is specific to this flow\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Same attack and harm as c1: manipulate assertion role to get admin access\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Distinct from forging: replay requires capturing legitimate assertion first; different prerequisites\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Same attack and harm as c1: assertion manipulation for admin; wrapping is incomplete validation\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1/c2: session persistence after revocation, not authentication bypass\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Generic hygiene (log everything); applies equally to any authentication mechanism on portal\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "RelayState used after login sends employees to an attacker's site"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Admin access granted from a role attribute the user can influence"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Captured assertion can be replayed to log in as that employee"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "XML signature wrapping lets an attacker swap assertion contents past signature checks"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Revoked or demoted employees keep admin access because roles are only read at login"
+    },
+    {
+      "id": "x6",
+      "stride": "Repudiation",
+      "title": "No record of who signed in as admin or what they changed in the portal"
+    }
+  ]
+}

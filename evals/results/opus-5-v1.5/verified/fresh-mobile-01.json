@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-mobile-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states QR holds only customer id generated offline; forging another's id to steal points is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Offline accrual plus in-app redemption supports double-spend attack; distinct from forgery.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design says cashiers scan at till to add points; inflating submitted amounts is a distinct tampering attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Offline code generation with no issuance record supports accrual dispute threat named by design.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same missing-record harm as T4 on same loyalty flow; repackaged repudiation of point balances.\",\"duplicateOf\":\"T4\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

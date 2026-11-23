@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states agent reads issue comments and runs shell commands; prompt injection attack is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Over-scoped org-wide token is named in design; distinct from injection entry point.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Shell access enabling token/source exfiltration is a distinct harm supported by quotes.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Agent-pushed branches reaching production without review is a distinct tampering attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design names agent runs triggered by bug reports; resource exhaustion is specific.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared token attribution gap attaches to the design's named push action.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Repo code executing on agent host is a distinct vector from text-based injection.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

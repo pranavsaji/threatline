@@ -1,0 +1,10 @@
+{
+  "caseId": "api-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states shared HS256 secret; forging tokens to impersonate privileged services is a concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states 7-day token validity; replay of stolen token without revocation is distinct from forging.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same shared-secret impersonation of services via forged identity tokens as T1; reworded as attribution loss.\",\"duplicateOf\":\"T1\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

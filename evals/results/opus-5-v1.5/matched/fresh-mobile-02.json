@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-mobile-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe attackers creating fake seller accounts to phish buyers through chat\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe reading unprotected chat history from the phone's local database\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T6\",\n      \"reason\": \"Both describe photo EXIF metadata revealing the sender's home location\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Open seller sign-up lets attackers mass-create seller accounts to phish buyers in chat"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Uploaded chat photos readable by anyone who has or guesses the image URL"
+    },
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Full chat history stored unprotected in a local database on the phone"
+    },
+    {
+      "id": "T4",
+      "stride": "DenialOfService",
+      "title": "Unbounded photo uploads let anyone fill server storage and run up cost"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Uploaded image files are not validated, so a seller can push malicious content into a buyer's app"
+    },
+    {
+      "id": "T6",
+      "stride": "InformationDisclosure",
+      "title": "Photo metadata leaks the sender's home location to a stranger"
+    }
+  ]
+}

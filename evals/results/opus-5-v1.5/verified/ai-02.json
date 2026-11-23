@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design indexes all spaces with embedding-only retrieval; concrete cross-permission disclosure attack.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attacker, same missing permission filter, same disclosure harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Retrieved page content passed to LLM; editor-planted injection hijacks answers.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Separate index copy with no described re-index/delete path; stale sensitive content stays retrievable.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Paid LLM/embedding calls per query with no quota; flooding exhausts budget and availability.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Specific to assistant's disclosure of named HR/finance spaces; no record of who asked what.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Distinct external-provider exposure path for HR/finance text and questions; different victim boundary.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Content-planting without injection syntax; distinct harm of false policy guiding decisions.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

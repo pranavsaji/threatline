@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Checks (step 2):\n- Automated abuse reachable: design says \"Sign-up only needs an email address\" and credit granted on sign-up — present; covered by listed threat 1 (mass sign-up farming) and listed threat 2 (code enumeration). Email/SMS flooding: design states no email sending, not present. Scraping of returned data: no page or API output described, not present.\n- Staff/admin/moderator screens showing user-supplied content: design mentions none (\"Each user gets a referral code... both accounts receive $10 credit\"), not present.\n- Money movement / approvals without a record: credits of \"$10 credit\" move value; covered by listed threat 7 (no link between a credited referral and identity, fraud cannot be unwound).\n- Cacheable personal/financial pages or documents: design describes no pages, statements or documents, not present.\n- Attacker-controlled text into logs, CSV, emails, headers: only field stated is \"an email address\" with no export, log or downstream consumer named, not present.\n- Unconfirmed reviewer items: budget exhaustion / account-table growth is the same automated sign-up run as listed threat 1 (its consequence), client-trusted credit amount and concurrency double-credit depend on build details not stated in the design, alias self-referral is a sub-case of listed threat 5, code-validation disclosure is a sub-case of listed threats 2 and 6. No new gap.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-08\",\n  \"sketch\": {\n    \"components\": [\"mobile sign-up\", \"referral code issuance\", \"credit ledger\"],\n    \"dataStores\": [\"accounts\", \"credits\"],\n    \"externalServices\": [],\n    \"trustBoundaries\": [\"mobile client to backend\"],\n    \"dataClasses\": [\"pii\"],\n    \"exposure\": \"internal\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

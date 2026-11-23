@@ -1,0 +1,27 @@
+{
+  "caseId": "fresh-web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Duplicates c3: both describe agents or hijacked sessions accessing customer records inappropriately; emphasis differs but attack and core harm are the same.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Distinct abuse scenario: attacker exploits public storage to host malicious content under our trusted domain, harming reputation and enabling external attacks.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Specific resource exhaustion attack: unlimited ticket creation with large attachments causes storage costs, service degradation, and agent queue flooding from stated lack of limits.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Every agent session can reach every customer record, so one compromised agent exposes all customers"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Our storage domain is used to host malware and phishing pages for free"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Anonymous bots flood ticket intake with large attachments"
+    }
+  ]
+}

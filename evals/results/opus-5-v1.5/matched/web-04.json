@@ -1,0 +1,42 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"IDOR attack via URL manipulation exposing other customers' invoices\"},{\"expected\":\"E2\",\"reported\":\"T5\",\"reason\":\"Billing data cached by proxies and browsers\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any customer can download another customer's invoice by changing the id in the URL"
+    },
+    {
+      "id": "T2",
+      "stride": "Spoofing",
+      "title": "Download endpoint may serve invoices without requiring a logged-in session"
+    },
+    {
+      "id": "T3",
+      "stride": "DenialOfService",
+      "title": "Scripted bulk downloads force unbounded PDF generation"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Sequential invoice ids let an attacker enumerate how many customers and invoices exist"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "Invoice PDFs with billing address and card last four left cacheable by browsers and shared proxies"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "No download audit record, so an invoice data leak cannot be attributed or scoped"
+    }
+  ]
+}

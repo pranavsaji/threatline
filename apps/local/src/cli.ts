@@ -4,7 +4,7 @@
  *   review <caseId> [--llm fake|claude-code] [--samples 3] [--model m] [--path agent|pipeline|engine] [--yes]
  *   eval [--subset all|<n>] [--llm fake|claude-code|recorded] [--samples 3] [--model m] [--path agent|pipeline|engine] [--concurrency 1] [--yes]
  *        [--write-baseline] [--gate evals/results/baseline.json] [--resume] [--judge claude-code|recorded] [--record-set name] [--judge-model m]
- *        [--verify recorded|claude-code|resume] [--no-coverage] [--annotate-judged]
+ *        [--verify recorded|claude-code|resume] [--gaps recorded|claude-code|resume] [--no-coverage] [--annotate-judged]
  *     --judge grades every reported threat outside a case's must-find list with a separate claude -p call (recorded
  *     into evals/results/judged/), so the report shows judged precision next to strict precision.
  *     claude-code runs record every raw reply into evals/results/recorded/; `--llm recorded` replays them offline (CI).
@@ -39,16 +39,16 @@ const flag = (name: string, def?: string) => {
 const has = (name: string) => argv.includes(`--${name}`);
 
 /** eval's `--subset`: `all` or a positive whole number of cases. Anything else used to become NaN and select no case. */
-export function evalSubset(raw: string | undefined): number | 'all' {
-  if (raw === 'all') return 'all';
+export function evalSubset(raw: string | undefined): number | 'all' | 'fresh' {
+  if (raw === 'all' || raw === 'fresh') return raw;
   if (raw !== undefined && /^[1-9]\d*$/.test(raw)) return Number(raw);
-  throw new Error(`--subset takes all or a positive whole number of cases, not "${(raw ?? '').slice(0, 20)}"`);
+  throw new Error(`--subset takes all, fresh or a positive whole number of cases, not "${(raw ?? '').slice(0, 20)}"`);
 }
 
-/** rematch's `--subset`: every clean case, the 30-case tuning set, or the held-out rest. */
-export function rematchSubset(raw: string | undefined): 'all' | '30' | 'holdout' {
-  if (raw === 'all' || raw === '30' || raw === 'holdout') return raw;
-  throw new Error(`rematch --subset takes all, 30 or holdout, not "${(raw ?? '').slice(0, 20)}"`);
+/** rematch's `--subset`: every clean case, the 30-case tuning set, the held-out rest, or the fresh held-out set. */
+export function rematchSubset(raw: string | undefined): 'all' | '30' | 'holdout' | 'fresh' {
+  if (raw === 'all' || raw === '30' || raw === 'holdout' || raw === 'fresh') return raw;
+  throw new Error(`rematch --subset takes all, 30, holdout or fresh, not "${(raw ?? '').slice(0, 20)}"`);
 }
 
 /** The Engine verifier's mode (`--verify`, path engine): recorded replays; claude-code and resume call claude -p live. */
@@ -86,9 +86,10 @@ async function main() {
   const RECORDED = set ? `evals/results/${set}/recorded` : path === 'pipeline' ? 'evals/results/recorded-pipeline' : AGENT_RECORDED;
   const JUDGED = set ? `evals/results/${set}/judged` : path === 'pipeline' ? 'evals/results/judged-pipeline' : AGENT_JUDGED;
   const VERIFIED = set ? `evals/results/${set}/verified` : 'evals/results/verified-engine';
+  const GAPS = set ? `evals/results/${set}/gaps` : 'evals/results/gaps-engine';
   if (cmd === 'review') {
     const id = argv[1];
-    const c = [...CLEAN_CASES, ...POISONED_CASES].find((x) => x.id === id);
+    const c = [...CLEAN_CASES, ...POISONED_CASES, ...selectCases('fresh').clean].find((x) => x.id === id);
     if (!c) throw new Error(`unknown case ${id}; try one of: ${CLEAN_CASES.slice(0, 5).map((x) => x.id).join(', ')}…`);
     const { llm, name, model } = llmFrom();
     if (llm && !(await confirm(samples * (path === 'pipeline' ? 2 : 1), model))) return;
@@ -113,6 +114,9 @@ async function main() {
     const verify = path === 'engine' ? verifyMode(flag('verify', 'recorded')) : null;
     const verifyModel = flag('model', 'claude-sonnet-4-5')!;
     if (verify?.live && !(await confirm(n, `${verifyModel} (verifier, at most one call per case${verify.mode === 'resume' ? ' without a recorded verdict' : ''})`))) return;
+    // The gap check (path engine, before the verifier): off unless --gaps is given; same modes as --verify.
+    const gaps = path === 'engine' && flag('gaps') !== undefined ? verifyMode(flag('gaps')) : null;
+    if (gaps?.live && !(await confirm(n, `${verifyModel} (gap check, at most one call per case${gaps.mode === 'resume' ? ' without a recorded answer' : ''})`))) return;
     const recorded = flag('llm') === 'recorded';
     const judgeWith = flag('judge');
     // The judge always runs on a real model, even when the reviews are replayed (`--llm recorded` has model "none").
@@ -145,6 +149,23 @@ async function main() {
           }
         : {}),
       ...(has('no-coverage') ? { coverage: false } : {}),
+      ...(gaps
+        ? (() => {
+            const live = gaps.live ? claudeCodeLlm({ model: verifyModel }) : null;
+            const replayedGaps = new Set<string>();
+            return {
+              gaps: {
+                llmFor: (id: string) => {
+                  const rec = gaps.mode === 'recorded' || gaps.mode === 'resume' ? loadRecording(GAPS, id) : null;
+                  if (rec) replayedGaps.add(id);
+                  return rec ? replayLlm(rec) : live;
+                },
+                ...(live ? { recordDir: GAPS } : {}),
+                ...(gaps.mode === 'resume' ? { replayed: (id: string) => replayedGaps.has(id) } : {}),
+              },
+            };
+          })()
+        : {}),
       ...(verify
         ? (() => {
             const which = verify.mode;
@@ -190,7 +211,7 @@ async function main() {
     if (!set || !/^[a-z0-9][a-z0-9.-]*$/.test(set)) throw new Error('rematch needs --record-set <name>, for example opus-5');
     const which = rematchSubset(flag('subset', 'all'));
     const tuning = new Set(selectCases(30).clean.map((c) => c.id));
-    const clean = which === 'all' ? CLEAN_CASES : which === 'holdout' ? CLEAN_CASES.filter((c) => !tuning.has(c.id)) : CLEAN_CASES.filter((c) => tuning.has(c.id));
+    const clean = which === 'fresh' ? selectCases('fresh').clean : which === 'all' ? CLEAN_CASES : which === 'holdout' ? CLEAN_CASES.filter((c) => !tuning.has(c.id)) : CLEAN_CASES.filter((c) => tuning.has(c.id));
     const dir = `evals/results/${set}`;
     const mode = flag('match', 'recorded');
     const model = flag('match-model', 'claude-sonnet-4-5')!;
@@ -206,7 +227,8 @@ async function main() {
           const rec = loadRecording(`${dir}/recorded`, c.id);
           if (!rec) return void missing.push(`${c.id}: no review recording`);
           const ver = loadRecording(`${dir}/verified`, c.id);
-          const run = await runCase(c, replayLlm(rec), rec.replies.length, 'engine', true, ver ? replayLlm(ver) : null);
+          const gap = loadRecording(`${dir}/gaps`, c.id);
+          const run = await runCase(c, replayLlm(rec), rec.replies.length, 'engine', true, ver ? replayLlm(ver) : null, gap ? replayLlm(gap) : null);
           if (!run.ok) return void missing.push(`${c.id}: ${run.error.code}`);
           const shown = run.value.threats.filter((t) => t.state === 'accepted' || t.state === 'needs_human');
           const reported: MatchItem[] = shown.map((t, n) => ({ id: `T${n + 1}`, stride: t.stride, severity: t.severity, title: t.title, scenario: t.scenario }));
@@ -226,6 +248,11 @@ async function main() {
               const now = was ? reported.find((x) => x.stride === was.stride && x.title === was.title) : undefined;
               return { ...m, reported: now ? now.id : null, stale: Boolean(was && !now) };
             });
+            // A "not found" verdict was given against the old list: when the review now shows threats it did not, that
+            // verdict may be wrong (the new threat may be the one), so the case is graded again.
+            const seen = new Set(saved.items.map((x) => `${x.stride}|${x.title}`));
+            const grown = reported.some((x) => !seen.has(`${x.stride}|${x.title}`));
+            if (grown && value.some((m) => !m.reported)) return 'stale';
             return value.some((m) => m.stale) ? 'stale' : value.map(({ stale: _, ...m }) => m);
           })();
           if (remapped === 'stale') {

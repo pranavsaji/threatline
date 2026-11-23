@@ -1,0 +1,10 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states link-only access with no login; enumeration of share namespace is concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design explicitly says links never expire; leaked-link permanent access is distinct from enumeration.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design names S3 bucket storage; direct bucket exposure bypassing app is a distinct attack path.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Unauthenticated download path and S3 egress named; cost/DoS amplification is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design has user uploads served to viewers; stored XSS via HTML/SVG on share origin is concrete.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Anonymous viewing named in design; missing access records for leaked-document investigation is specific.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Caching/indexing of the login-free documents the design serves is specific, distinct from guessing links.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Upload plus never-expiring public link enables malware/phishing hosting; distinct harm from XSS on viewers.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

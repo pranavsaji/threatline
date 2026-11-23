@@ -1,0 +1,10 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states all analysts read the warehouse holding full PII; concrete insider over-access attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design copies whole customers table; lack of minimisation/masking is a distinct design flaw from access breadth.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Export job needs production read credentials; attack on credential reuse against production is distinct.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Write/load path into warehouse export table is in design; tampering harm distinct from disclosure threats.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Specific: PII dataset readable by all analysts, no query/export attribution for leak tracing.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Nightly repeated copies with no retention/deletion propagation named; distinct harm of stale PII persistence.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Availability of production source attacked via full nightly scan; distinct from confidentiality threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

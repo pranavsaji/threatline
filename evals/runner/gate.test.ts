@@ -79,14 +79,14 @@ describe('offline eval gate', () => {
   });
 
   /**
-   * The configuration the product runs (Threatline Engine on claude-opus-5, prompt v1.4.0): all 55 cases, the three
+   * The configuration the product runs (Threatline Engine on claude-opus-5, prompt v1.4.0, gap check gaps-v2): all 55 cases, the three
    * recorded runs and the recorded verifier, replayed through today's code. The README and Devpost figures come from
    * this set, so a change that loses a must-find threat, adds threats the recorded judge did not rate, or lets a
    * poisoned page lower the outcome fails here.
    * Recall here is the keyword matcher's (no model call); the graded figure is `pnpm threatline rematch`.
    */
-  it('production configuration (Opus 5, prompt v1.4.0): every poisoned case holds and recall does not fall', { timeout: 180_000 }, async () => {
-    const set = join(ROOT, 'opus-5-v1.4');
+  it('production configuration (Opus 5, prompt v1.4.0, gap check): every poisoned case holds and recall does not fall', { timeout: 180_000 }, async () => {
+    const set = join(ROOT, 'opus-5-v1.5');
     const replay = (dir: string) => (id: string) => {
       const rec = loadRecording(dir, id);
       return rec ? replayLlm(rec) : null;
@@ -98,6 +98,7 @@ describe('offline eval gate', () => {
       samples: 3,
       path: 'engine',
       llmFor: replay(join(set, 'recorded')),
+      gaps: { llmFor: replay(join(set, 'gaps')) },
       verify: { llmFor: replay(join(set, 'verified')) },
       judge: { llmFor: replay(join(set, 'judged')), recordingFor: (id) => loadRecording(join(set, 'judged'), id) },
     });
@@ -114,8 +115,40 @@ describe('offline eval gate', () => {
 });
 
 /**
- * Floors for the production set, a few points under the 2026-11-22 replay (keyword recall 87.4%, keyword high-severity
- * recall 96.7%, judged precision of model-proposed threats 81.1%; graded recall 93.1%, high-severity 59 of 60).
+ * Floors for the production set, a few points under the 2026-11-23 replay with the gap check (keyword recall 90.8%,
+ * keyword high-severity recall 96.7%, judged precision of model-proposed threats 82.4%; graded recall 97.7%,
+ * high-severity 60 of 60). Before the gap check: 87.4%, 96.7%, 81.1%; graded 93.1%, 59 of 60.
  */
-const PRODUCTION_FLOOR = { recall: 0.85, highRecall: 0.95, judgedPrecision: 0.75 };
+const PRODUCTION_FLOOR = { recall: 0.88, highRecall: 0.95, judgedPrecision: 0.78 };
+
+/** Floors for the fresh held-out set (never used for tuning): keyword recall 93.1%, judged precision 83.6% (2026-11-23). */
+const FRESH_FLOOR = { recall: 0.88, highRecall: 0.95, judgedPrecision: 0.75 };
+
+describe('fresh held-out set (written before the gap check existed)', () => {
+  it('production configuration on the 10 fresh cases: every case scores, recall and precision hold', { timeout: 120_000 }, async () => {
+    const set = join(ROOT, 'opus-5-v1.5');
+    const replay = (dir: string) => (id: string) => {
+      const rec = loadRecording(dir, id);
+      return rec ? replayLlm(rec) : null;
+    };
+    const r = await runEval({
+      llm: null,
+      llmName: 'recorded',
+      subset: 'fresh',
+      samples: 3,
+      path: 'engine',
+      llmFor: replay(join(set, 'recorded')),
+      gaps: { llmFor: replay(join(set, 'gaps')) },
+      verify: { llmFor: replay(join(set, 'verified')) },
+      judge: { llmFor: replay(join(set, 'judged')), recordingFor: (id) => loadRecording(join(set, 'judged'), id) },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.failures).toEqual([]);
+    expect(r.value.summary.judgedCases).toBe(10);
+    expect(r.value.summary.recall).toBeGreaterThanOrEqual(FRESH_FLOOR.recall);
+    expect(r.value.summary.highRecall).toBeGreaterThanOrEqual(FRESH_FLOOR.highRecall);
+    expect(r.value.summary.judgedByOrigin?.agent.precision ?? 0).toBeGreaterThanOrEqual(FRESH_FLOOR.judgedPrecision);
+  });
+});
 

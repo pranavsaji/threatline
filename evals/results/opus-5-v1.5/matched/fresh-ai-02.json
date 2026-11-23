@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-ai-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Same attack: attacker hides instructions in PR content to hijack bot into approving malicious code\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T5\",\n      \"reason\": \"Same weakness: bot token has merge rights, making it the actual security gate for repository\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T1\",\n      \"reason\": \"Same attack: bot reads private repository files and can be steered to leak them in public comments\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Bot can be steered to quote private repository files back into a public fork pull request"
+    },
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Fork contributor hides instructions in the diff to make the bot approve malicious code"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Bot approval misleads humans into skipping review of attacker-controlled code"
+    },
+    {
+      "id": "T4",
+      "stride": "DenialOfService",
+      "title": "Anyone can run up unbounded LLM cost by opening or updating fork pull requests"
+    },
+    {
+      "id": "T5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Bot token can approve and merge, so one hijacked review becomes a repository compromise"
+    },
+    {
+      "id": "T6",
+      "stride": "Tampering",
+      "title": "Files in the repository poison every review for all future pull requests"
+    }
+  ]
+}

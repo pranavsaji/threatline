@@ -1,0 +1,42 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Link posting is core feature; spam on public pages specific harm\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Images in comments track visitors; design allows embedded images\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Session-based operations in design; CSRF is specific attack\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Generic DoS, not material to comments feature\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1 XSS; moderator compromise already covered\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Deletion capability described; audit gap material to moderation\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Automated accounts flood product pages with spam and phishing links"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Attacker-chosen image URLs in comments report every visitor to the attacker's server"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Cross-site request forgery makes a victim post or delete comments unknowingly"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x5",
+      "stride": "ElevationOfPrivilege",
+      "title": "Comment markup executes in the moderator admin screen and abuses moderation powers"
+    },
+    {
+      "id": "x6",
+      "stride": "Repudiation",
+      "title": "Comment deletions by moderators leave no record of who deleted what"
+    }
+  ]
+}

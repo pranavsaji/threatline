@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe prompt injection in issue comments causing agent to execute attacker commands\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe single over-privileged token exposing all repositories beyond intended scope\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe agent pushing malicious code that could reach production\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Hidden instructions in issue comments or repo files hijack the agent"
+    },
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "One token with write access to every repository gives the agent unlimited blast radius"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Agent-pushed branches may be merged without human review"
+    }
+  ]
+}

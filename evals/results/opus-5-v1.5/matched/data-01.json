@@ -1,0 +1,22 @@
+{
+  "caseId": "data-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe all analysts accessing personal data without need-to-know restriction\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe missing audit logs preventing traceability of personal data queries\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Every analyst can read the full customer contact and purchase history"
+    },
+    {
+      "id": "T4",
+      "stride": "Repudiation",
+      "title": "No way to tell which analyst extracted which customer records"
+    }
+  ]
+}

@@ -47,7 +47,8 @@ export type Exposure = z.infer<typeof ExposureSchema>;
 export const ThreatStateSchema = z.enum(['proposed', 'accepted', 'dismissed', 'needs_human', 'covered', 'suppressed']);
 export type ThreatState = z.infer<typeof ThreatStateSchema>;
 
-export const DismissReasonSchema = z.enum(['false_positive', 'not_applicable', 'duplicate', 'already_mitigated']);
+/** `unconfirmed`: a gap-check candidate the verifier has not kept (yet); it never counted and has no requirement. */
+export const DismissReasonSchema = z.enum(['false_positive', 'not_applicable', 'duplicate', 'already_mitigated', 'unconfirmed']);
 export type DismissReason = z.infer<typeof DismissReasonSchema>;
 
 export const RequirementStatusSchema = z.enum(['Open', 'InProgress', 'Verified', 'AcceptedRisk', 'NotApplicable']);

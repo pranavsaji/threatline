@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-web-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Magic-link token generation is in design; weak token brute-force is concrete attack on sign-in.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design includes invoice listing and card update; IDOR across customers is concrete and distinct.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Public sign-in page emailing links supports email flooding/reputation DoS attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"7-day validity quoted; replay of emailed link by inbox observer is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Credential-in-URL leakage via history/logs/referrer is distinct vector from T4 inbox access.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Same attack and harm as T4: link holder replays and changes card on file.\",\"duplicateOf\":\"T4\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Public email-only sign-in supports account enumeration; distinct harm of customer-list disclosure.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

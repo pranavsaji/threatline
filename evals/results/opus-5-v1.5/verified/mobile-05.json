@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states map endpoint keyed on delivery id returning driver location and phone; IDOR attack concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design has client-pushed GPS updates; spoofing driver positions is a distinct attack on ingest.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design names 10-second updates from all drivers and live polling; flooding/saturation of named ingest path.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: tracking continuing past delivery via legitimate customer access, not id guessing.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same actor reaching same endpoint harvesting driver phone numbers; duplicate of T1's disclosure.\",\"duplicateOf\":\"T1\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Caching of the named map response is specific; design serves these documents repeatedly.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

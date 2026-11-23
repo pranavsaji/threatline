@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-data-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Both describe anyone with shared link accessing salary and health data without authorization\"},{\"expected\":\"E2\",\"reported\":\"T1\",\"reason\":\"Both describe viewers inheriting analyst's warehouse credentials and permissions through dashboard queries\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Both describe non-expiring links granting access after people leave or change roles\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Dashboards run with the analyst's warehouse credentials, so viewers inherit the analyst's access"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Anyone holding a shared dashboard link can read salary and health-plan rows"
+    },
+    {
+      "id": "T3",
+      "stride": "InformationDisclosure",
+      "title": "Row-level data for salary and health tables is published with no row-level restriction per viewer"
+    },
+    {
+      "id": "T4",
+      "stride": "DenialOfService",
+      "title": "Any employee with a link can trigger unbounded warehouse queries, running up cost and starving other jobs"
+    },
+    {
+      "id": "T5",
+      "stride": "Spoofing",
+      "title": "Links that never expire keep working for leavers and after role changes"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "Access to health and salary data is attributed to the analyst, not the viewer"
+    }
+  ]
+}

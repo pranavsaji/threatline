@@ -1,0 +1,10 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Automated abuse of a reachable endpoint — design has \"The search endpoint takes a free-text query and a sort column from the request\"; flooding/expensive queries already covered by listed threat 2 (DoS).\nStaff/admin screens showing other people's content — design names no admin, moderation or review screen; not applicable.\nPrivileged actions with no record (delete, refund, role change, money) — design describes only \"builds a SQL statement\" for search; no such action; not applicable.\nCacheable personal/financial documents or pages — no documents, accounts or personal data named; deterministic signals show \"dataClasses\":[], \"exposure\":\"internal\"; not applicable.\nAttacker text flowing into logs, CSV/spreadsheet exports, emails, headers or another system — design mentions only the request, the statement and \"the products database\"; no export, log or downstream sink stated; not applicable.\nSingle-reviewer threats (write/destroy via injection, over-privileged DB account) — listed threat 1 already states the injected fragment lets the attacker \"read any table the database user can reach (UNION SELECT), bypass filters, or write\", so these are blast-radius consequences of a listed threat, not gaps; privilege-limiting claims also rest on how it \"likely\" was built, which the design does not state.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-07\",\n  \"sketch\": {\n    \"components\": [\"Search API endpoint\", \"SQL statement builder\"],\n    \"dataStores\": [\"products database\"],\n    \"externalServices\": [],\n    \"trustBoundaries\": [\"request caller -> search endpoint\", \"search endpoint -> products database\"],\n    \"dataClasses\": [],\n    \"exposure\": \"internal\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

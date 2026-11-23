@@ -8,16 +8,17 @@ const root = fileURLToPath(new URL('../../..', import.meta.url));
 const cli = fileURLToPath(new URL('../src/cli.ts', import.meta.url));
 
 describe('pnpm threatline: argument checks', () => {
-  it('eval --subset is all or a positive whole number; anything else is an error, not zero cases', () => {
+  it('eval --subset is all, fresh or a positive whole number; anything else is an error, not zero cases', () => {
     expect(evalSubset('all')).toBe('all');
+    expect(evalSubset('fresh')).toBe('fresh');
     expect(evalSubset('30')).toBe(30);
     for (const raw of [undefined, '', 'x', '0', '-3', '1.5', '3x', 'holdout', ' 30'])
-      expect(() => evalSubset(raw), String(raw)).toThrow(/--subset takes all or a positive whole number/);
+      expect(() => evalSubset(raw), String(raw)).toThrow(/--subset takes all, fresh or a positive whole number/);
   });
 
-  it('rematch --subset is all, 30 or holdout', () => {
-    for (const raw of ['all', '30', 'holdout'] as const) expect(rematchSubset(raw)).toBe(raw);
-    for (const raw of [undefined, '10', 'x']) expect(() => rematchSubset(raw), String(raw)).toThrow(/all, 30 or holdout/);
+  it('rematch --subset is all, 30, holdout or fresh', () => {
+    for (const raw of ['all', '30', 'holdout', 'fresh'] as const) expect(rematchSubset(raw)).toBe(raw);
+    for (const raw of [undefined, '10', 'x']) expect(() => rematchSubset(raw), String(raw)).toThrow(/all, 30, holdout or fresh/);
   });
 
   it('--verify claude-code and resume are live (they ask first); recorded is not; anything else is an error', () => {
@@ -41,6 +42,6 @@ describe('pnpm threatline: argument checks', () => {
   it('a bad --subset exits with an error before anything runs', () => {
     const r = run(['eval', '--subset', 'thirty']);
     expect(r.status).toBe(1);
-    expect(r.stderr).toMatch(/--subset takes all or a positive whole number of cases, not "thirty"/);
+    expect(r.stderr).toMatch(/--subset takes all, fresh or a positive whole number of cases, not "thirty"/);
   }, 60_000);
 });

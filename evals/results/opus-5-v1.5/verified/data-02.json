@@ -1,0 +1,10 @@
+{
+  "caseId": "data-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states multi-gigabyte files; resource exhaustion of SFTP volume and parser is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Parser imports CSV contents directly; partner forging partner id/prices is a concrete tampering attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Injection via untrusted CSV fields into database is a distinct attack from row-level forgery.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"SFTP upload path exists with no authentication model; credential guessing/spoofed partner upload concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Large files plus unsignalled pickup yields truncated/duplicate imports; distinct from other threats.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared SFTP server without isolation lets partners read/overwrite peers' order files.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Design names import action; missing provenance linking orders to partner upload is specific.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

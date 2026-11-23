@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-api-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states filter string templated into SQL on a public API; concrete injection attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: filtering on non-public fields to infer hidden data via free-text filter syntax.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design names unlimited paging on public API; bulk scraping of catalogue is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: resource exhaustion via expensive filters and deep paging on quoted unlimited public endpoint.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

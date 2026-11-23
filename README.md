@@ -2,7 +2,7 @@
 
 ![tests](https://img.shields.io/badge/tests-1700%2B%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
-![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-59%2F60-blue)
+![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![runs on Atlassian](https://img.shields.io/badge/egress-none-informational)
 
@@ -31,9 +31,10 @@ someone allowed to accept it.
 
 **And the AI cannot be talked into approving.** Text that tries to instruct the model is flagged in the panel, the
 threats resting on it wait for a security champion, and the verdict is always computed by code, never by the model.
-Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, then the
-verifier): all 15 of 15 poisoned cases held, and a separate model grader found 59 of the 60 high-severity must-find
-threats (93.1% of all) on the full 55-case set ([eval](#eval), [how the engine works](docs/ENGINE.md)).
+Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, the gap
+check, then the verifier): all 15 of 15 poisoned cases held, and a separate model grader found all 60 high-severity
+must-find threats (97.7% of all) on the full 55-case set, and every must-find threat on 10 fresh cases written before
+the gap check existed ([eval](#eval), [how the engine works](docs/ENGINE.md)).
 
 ## Also in the box
 
@@ -67,36 +68,53 @@ Forge SQL. No egress: nothing leaves Atlassian.
 
 ## Eval
 
-**On the production model (`claude-opus-5`, prompt v1.4.0, 2026-11-22).** All 55 cases (40 clean, 15 poisoned twins)
-through Threatline Engine's full path: three runs, then the verifier, both on Opus 5, recorded in
-`evals/results/opus-5-v1.4/` and replayed offline (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`). CI
-replays this set on every change (`evals/runner/gate.test.ts`). Recall is graded two ways: by the keyword matcher, and by
-a separate `claude-sonnet-4-5` call per case that decides which shown threat, if any, finds each must-find threat
-(`pnpm threatline rematch`, verdicts in `matched/`, report `evals/results/2026-11-22-match-opus-5-v1.4-all.md`). The
-keyword matcher misses threats worded differently ("find out which email addresses have accounts" for user
-enumeration), so it under-reports recall by about 7 points.
+**On the production model (`claude-opus-5`, prompt v1.4.0, gap check `gaps-v2`, 2026-11-23).** All 55 cases (40
+clean, 15 poisoned twins) through Threatline Engine's full path: three runs, the gap check, then the verifier, all on
+Opus 5, recorded in `evals/results/opus-5-v1.5/` and replayed offline
+(`evals/results/2026-11-23-recorded-all-engine-opus-5-v1.5.md`). CI replays this set on every change
+(`evals/runner/gate.test.ts`). Recall is graded two ways: by the keyword matcher, and by a separate `claude-sonnet-4-5`
+call per case that decides which shown threat, if any, finds each must-find threat (`pnpm threatline rematch`, verdicts
+in `matched/`, report `evals/results/2026-11-23-match-opus-5-v1.5-all.md`). The keyword matcher misses threats worded
+differently ("find out which email addresses have accounts" for user enumeration), so it under-reports recall by about
+7 points.
 
-| Metric (40 clean + 15 poisoned cases) | Now | Before the clustering fix | Prompt v1.3.0 |
+| Metric (40 clean + 15 poisoned cases) | Now | Before the gap check | Before the clustering fix |
 | --- | --- | --- | --- |
 | Injection resistance | 15 of 15 | 15 of 15 | 15 of 15 |
-| High-severity recall, graded | **98.3% (59 of 60)** | 96.7% (58 of 60) | 95.0% (57 of 60) |
-| Recall, graded | **93.1% (81 of 87)** | 92.0% (80 of 87) | 92.0% (80 of 87) |
-| Recall, keyword matcher | 87.4% | 83.9% | 83.9% |
-| Severity of found threats vs the expert's | 37 same, 43 higher, 1 lower | 38 same, 42 higher, 0 lower | 27 same, 52 higher, 1 lower |
-| Blocking requirements per story (average) | 4.42 | 4.0 | 4.9 |
-| Precision, judged: threats the model proposed | 81.1% (101 of 142, all 40 cases) | 79.9% (32 cases judged) | 73.4% |
-| Citation grounding | 99.8% | 99.8% | 97.4% |
+| High-severity recall, graded | **100% (60 of 60)** | 98.3% (59 of 60) | 96.7% (58 of 60) |
+| Recall, graded | **97.7% (85 of 87)** | 93.1% (81 of 87) | 92.0% (80 of 87) |
+| Recall, keyword matcher | 90.8% | 87.4% | 83.9% |
+| Severity of found threats vs the expert's | 39 same, 45 higher, 1 lower | 37 same, 43 higher, 1 lower | 38 same, 42 higher, 0 lower |
+| Blocking requirements per story (average) | 4.97 | 4.42 | 4.0 |
+| Precision, judged: threats the model proposed | 82.4% (128 of 172, all 40 cases) | 81.1% (101 of 142) | 79.9% (32 cases judged) |
+| Citation grounding | 99.8% | 99.8% | 99.8% |
 
-Six threats are still missed. Five are Low: log injection, automated sign-ups as a load problem, an audit trail for
-comment deletion, billing data cached by shared proxies, and flooding an admin portal. One is High: a moderator's
-session hijacked by a script in a comment (web-02). Only one of the three runs raised it. It used to survive on votes
-borrowed from other threats in the same discussion. Since each threat now joins the closest matching group, those
-votes stay with the threats they belong to, and three threats that were being absorbed came back (two High, one
-Critical). One found threat is rated below
-the expert's severity (the grader's report does not say which; `rematch` lists only misses).
+**Fresh held-out set.** Ten new cases (`evals/fixtures/fresh-cases.ts`, two per domain) were written and committed
+before the gap check and the verifier changes were built, and nothing was tuned on them. Same runs, before and after:
+graded recall 100% both times (26 of 26 with one case ungraded before; 29 of 29 after), high-severity 12 of 12, judged
+precision of model-proposed threats 81.4% → 83.6% (`evals/results/2026-11-23-match-opus-5-v1.5-fresh.md`). They
+were written by the same author as the fixes, after seeing the misses below, so they test generalisation, not blindness.
+
+**The gap check** (stage 5 in [ENGINE.md](docs/ENGINE.md)). Six threats were missed before it, and five were Low:
+threats the runs left out because the prompt asks them to skip generic hygiene, or that only one of three runs raised.
+After the runs agree, one more Opus call reads the same context, the agreed threats and the ones only one run raised,
+writes a one-line check of each threat reviews commonly leave out (automated abuse of what is reachable, staff screens
+that show other people's content, no record of who deleted or paid, cached documents, attacker text reaching logs or
+exports), and names at most three gaps. Each is stored hidden until the verifier keeps it, so the gap check alone can
+never change what blocks. The verifier now also counts a repeat only when the attacker, the part of the feature and
+the harm are all the same (a script in a moderator's session is not the same threat as the script hitting visitors),
+and drops added threats that depend on how a feature might be built rather than on what the design says. It found the
+moderator-session hijack (High), log forging, proxy caching and the audit trail for comment deletion. Costs: one more
+model call per review, and 0.55 more blocking requirements per story.
+
+Two Low threats are still missed. `web-05` expects flooding or brute force of an internet-facing SSO admin portal;
+the gap check judged that covered by "the portal has no second factor or network restriction" and noted the design has
+no password form. `mobile-08` expects automated sign-ups as a load problem; the gap check raised it, and the verifier
+counted it as the credit-farming threat already shown. One found threat is rated below the expert's severity.
 
 What changed around the same model:
 
+- **The gap check and a sharper verifier** (2026-11-23), above.
 - **Clustering keeps threats the runs agree on** (2026-11-22). A threat counts when most of the three runs report it.
   Runs often file one attack under different STRIDE categories ("any service can mint tokens" was Elevation of
   privilege in one run and Spoofing in the next), and the clustering required the same category, so both halves were
@@ -130,8 +148,9 @@ came from one case (`api-06`) and was checked on all 55.
 Opus 5, 79.3% and 85.0% with Sonnet 5 runs checked by an Opus 5 verifier, and 78.0% and 84.2% on Sonnet 5 alone (38 of
 40 cases graded), which also let one poisoned case lower its blocking (14 of 15). The Engine stays on Opus 5
 (`evals/results/2026-11-22-claude-code-all-engine-sonnet-5.md`, `…-recorded-all-engine-sonnet-5-opus-verify.md`).
-Replay it with `pnpm threatline eval --subset all --llm recorded --path engine --verify recorded --judge recorded
---record-set opus-5-v1.4` and `pnpm threatline rematch --record-set opus-5-v1.4 --match recorded`.
+Replay it with `pnpm threatline eval --subset all --llm recorded --path engine --gaps recorded --verify recorded --judge
+recorded --record-set opus-5-v1.5` (`--subset fresh` for the fresh cases) and `pnpm threatline rematch --record-set
+opus-5-v1.5 --match recorded`. The set before the gap check is kept in `evals/results/opus-5-v1.4/`.
 
 **Older recordings: `claude-sonnet-4-5`, prompt v1.3.0, 30 cases** (24 clean, 6 poisoned; `evals/results/recorded/`,
 the set CI has replayed since 2026-11-20, `evals/results/2026-11-22-recorded-30.md`). With today's code: recall 88.9%,

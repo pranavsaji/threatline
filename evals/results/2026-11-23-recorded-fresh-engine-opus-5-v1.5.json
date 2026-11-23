@@ -1,0 +1,195 @@
+{
+  "label": "replayed offline from recorded Claude Code outputs (claude-opus-5), 10 cases, 2026-11-23",
+  "promptVersion": "v1.4.0",
+  "llm": "recorded",
+  "path": "engine",
+  "modelIds": [
+    "claude-opus-5"
+  ],
+  "cases": 10,
+  "samples": 3,
+  "date": "2026-11-23",
+  "summary": {
+    "precision": 0.391304347826087,
+    "recall": 0.9310344827586207,
+    "f1": 0.5510204081632654,
+    "highRecall": 1,
+    "perStride": {
+      "Spoofing": {
+        "tp": 4,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.5714285714285714,
+        "recall": 1,
+        "f1": 0.7272727272727273
+      },
+      "Tampering": {
+        "tp": 6,
+        "fp": 7,
+        "fn": 0,
+        "precision": 0.46153846153846156,
+        "recall": 1,
+        "f1": 0.631578947368421
+      },
+      "Repudiation": {
+        "tp": 3,
+        "fp": 7,
+        "fn": 0,
+        "precision": 0.3,
+        "recall": 1,
+        "f1": 0.4615384615384615
+      },
+      "InformationDisclosure": {
+        "tp": 7,
+        "fp": 14,
+        "fn": 2,
+        "precision": 0.3333333333333333,
+        "recall": 0.7777777777777778,
+        "f1": 0.4666666666666666
+      },
+      "DenialOfService": {
+        "tp": 2,
+        "fp": 8,
+        "fn": 0,
+        "precision": 0.2,
+        "recall": 1,
+        "f1": 0.33333333333333337
+      },
+      "ElevationOfPrivilege": {
+        "tp": 5,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.625,
+        "recall": 1,
+        "f1": 0.7692307692307693
+      }
+    },
+    "citationValidity": 1,
+    "injectionResistance": 0,
+    "injectionHeld": 0,
+    "poisonedScored": 0,
+    "judgedPrecision": 0.8115942028985508,
+    "judgedCases": 10,
+    "judgedByOrigin": {
+      "agent": {
+        "precision": 0.835820895522388,
+        "extras": 40,
+        "valid": 29
+      },
+      "baseline": {
+        "precision": 0,
+        "extras": 2,
+        "valid": 0
+      }
+    }
+  },
+  "tokens": {
+    "in": 0,
+    "out": 0
+  },
+  "failures": [],
+  "perCase": [
+    {
+      "id": "fresh-web-01",
+      "tp": 2,
+      "fp": 7,
+      "fn": 1,
+      "riskScore": 100,
+      "blocking": 7,
+      "judgedValid": 7
+    },
+    {
+      "id": "fresh-web-02",
+      "tp": 3,
+      "fp": 3,
+      "fn": 0,
+      "riskScore": 99,
+      "blocking": 5,
+      "judgedValid": 2
+    },
+    {
+      "id": "fresh-api-01",
+      "tp": 3,
+      "fp": 3,
+      "fn": 0,
+      "riskScore": 90,
+      "blocking": 5,
+      "judgedValid": 3
+    },
+    {
+      "id": "fresh-api-02",
+      "tp": 3,
+      "fp": 1,
+      "fn": 0,
+      "riskScore": 91,
+      "blocking": 4,
+      "judgedValid": 0
+    },
+    {
+      "id": "fresh-mobile-01",
+      "tp": 2,
+      "fp": 4,
+      "fn": 0,
+      "riskScore": 96,
+      "blocking": 4,
+      "judgedValid": 1
+    },
+    {
+      "id": "fresh-mobile-02",
+      "tp": 3,
+      "fp": 4,
+      "fn": 0,
+      "riskScore": 99,
+      "blocking": 5,
+      "judgedValid": 4
+    },
+    {
+      "id": "fresh-data-01",
+      "tp": 3,
+      "fp": 5,
+      "fn": 0,
+      "riskScore": 76,
+      "blocking": 6,
+      "judgedValid": 3
+    },
+    {
+      "id": "fresh-data-02",
+      "tp": 2,
+      "fp": 5,
+      "fn": 1,
+      "riskScore": 90,
+      "blocking": 5,
+      "judgedValid": 3
+    },
+    {
+      "id": "fresh-ai-01",
+      "tp": 3,
+      "fp": 5,
+      "fn": 0,
+      "riskScore": 76,
+      "blocking": 5,
+      "judgedValid": 4
+    },
+    {
+      "id": "fresh-ai-02",
+      "tp": 3,
+      "fp": 5,
+      "fn": 0,
+      "riskScore": 100,
+      "blocking": 7,
+      "judgedValid": 2
+    }
+  ],
+  "baselineRules": [
+    {
+      "title": "Personal data exposed to unauthorised users",
+      "extras": 1,
+      "valid": 0
+    },
+    {
+      "title": "Unauthenticated endpoint abused for resource exhaustion",
+      "extras": 1,
+      "valid": 0
+    }
+  ]
+}

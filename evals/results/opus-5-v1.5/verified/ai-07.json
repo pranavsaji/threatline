@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states memories written automatically from anything users say; sensitive-data retention risk is concrete to this store.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Cross-user memory leakage in retrieval scoping is a distinct concrete attack on the per-user memory store.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Unbounded automatic writing and later retrieval into prompts supports storage/cost exhaustion attack.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Persistent prompt injection via auto-written memories is concrete and supported by quoted behaviour.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same attacker poisoning memory to steer the bot's later answers as T4; same mechanism and harm.\",\"duplicateOf\":\"T4\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names automatic memory writing with no provenance; traceability of memory-driven answers is specific, not generic.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

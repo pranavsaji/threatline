@@ -1,0 +1,37 @@
+{
+  "caseId": "fresh-ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design allows anyone to open fork PRs triggering LLM reviews repeatedly, burning budget.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Design explicitly includes approving; other compromise vectors not in design; c2 covers token privilege.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Bot reads repository files; poisoned file content compromises all future reviews.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": false,\n      \"reason\": \"Assumes external LLM not in design; operational data handling, not attack scenario.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Investigation difficulty after attacks, not new attack; assumes token access components.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Anyone can run up unbounded LLM cost by opening or updating fork pull requests"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Bot token can approve and merge, so one hijacked review becomes a repository compromise"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Files in the repository poison every review for all future pull requests"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "All private repository code is sent to an external LLM provider on every pull request"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Bot approvals and merges leave no record of what decided them"
+    }
+  ]
+}

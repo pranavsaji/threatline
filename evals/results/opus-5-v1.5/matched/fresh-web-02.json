@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-web-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe public-read bucket exposing customer attachments to anyone with URL\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe malicious HTML/SVG attachment executing script in agent console\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T6\",\n      \"reason\": \"Both describe lack of audit logging for agent access to customer data\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Customer attachments are readable by anyone with the storage URL"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Every agent session can reach every customer record, so one compromised agent exposes all customers"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Malicious HTML or SVG attachment runs script in the agent console and steals customer records"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Our storage domain is used to host malware and phishing pages for free"
+    },
+    {
+      "id": "T5",
+      "stride": "DenialOfService",
+      "title": "Anonymous bots flood ticket intake with large attachments"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "No record of which agent viewed or exported which customer records"
+    }
+  ]
+}

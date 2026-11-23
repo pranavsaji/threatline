@@ -1,0 +1,10 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Admin rights on all prod DBs quoted; concrete unauthorized read of unrelated data.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct harm: tampering/destruction of unrelated tables via same over-privileged account.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct availability attack: locks/connection exhaustion across production databases.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same over-privileged service account enabling total control; restates T1/T2 privilege scope.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Distinct attack: credential reuse/impersonation of shared long-lived service account identity.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared service account quoted; non-attributable destructive DB actions is a distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

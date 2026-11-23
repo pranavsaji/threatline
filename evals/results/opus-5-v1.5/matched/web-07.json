@@ -1,0 +1,22 @@
+{
+  "caseId": "web-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe exploiting server trust in client-supplied price to set arbitrary final amounts.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both are Tampering threats about discount codes; T3 specifically covers reuse mentioned in E2.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "Shopper sets their own price because the server charges the total the browser sends"
+    },
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "Discount codes can be reused, stacked or applied after expiry because only the browser checks them"
+    }
+  ]
+}

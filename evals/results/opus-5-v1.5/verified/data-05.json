@@ -1,0 +1,10 @@
+{
+  "caseId": "data-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design shows support directly marking accounts deleted with no approval or scoping; concrete insider mass-deletion attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Quote confirms warehouse, logs, backups copies retained; concrete disclosure of supposedly deleted personal data.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design has customer deletion requests with no verification step; concrete impersonation attack causing victim account loss.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: restoring/re-importing deleted records from retained copies, different harm from reading them.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Specific to named privileged deletion action; no record of requester or acting agent, blocking attribution.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Distinct harm: flag-only deletion leaves live access working, request not honoured; not covered by other threats.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

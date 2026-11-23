@@ -113,7 +113,10 @@ describe('verificationPending (the panel keeps polling until the verifier has ru
     expect(review.status).toBe('ready');
     expect(held).toHaveLength(1);
     expect(await verificationPending(t.deps, review)).toBe(true);
+    // The first verify job runs the gap check and queues the verifier itself: still pending until that has run.
     await handleJob(t.deps, held[0]!);
+    expect(await verificationPending(t.deps, await latest(t))).toBe(true);
+    await drain((j) => handleJob(t.deps, j), t.pushed, 100);
     expect(await verificationPending(t.deps, await latest(t))).toBe(false);
   });
 

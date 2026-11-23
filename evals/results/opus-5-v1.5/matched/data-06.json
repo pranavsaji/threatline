@@ -1,0 +1,22 @@
+{
+  "caseId": "data-06",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T4\",\"reason\":\"Both describe ETL admin rights enabling privilege elevation for anyone influencing the pipeline\"},{\"expected\":\"E2\",\"reported\":\"T2\",\"reason\":\"Both describe unauthorized reading of production data via over-privileged ETL credentials\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "ETL service account has admin rights on every production database"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "ETL account can read production data it has no business reading"
+    }
+  ]
+}
