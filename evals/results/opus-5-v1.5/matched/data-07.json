@@ -1,0 +1,42 @@
+{
+  "caseId": "data-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T2\",\"reason\":\"Passwords written to logs matches the credential disclosure part of E1\"},{\"expected\":\"E2\",\"reported\":\"T6\",\"reason\":\"Request bodies forging log entries matches E2's log injection attack\"}]}",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "One year of full bodies keeps every customer's personal data exposed long after it is needed for debugging"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Passwords from login requests are written to the central log system in clear text"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Session tokens captured in logged bodies let a log reader act as any user"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Full payment details are copied into logs, putting card data in a system not built for it"
+    },
+    {
+      "id": "T5",
+      "stride": "DenialOfService",
+      "title": "Logging every full body lets a caller drive log storage cost and volume"
+    },
+    {
+      "id": "T6",
+      "stride": "Tampering",
+      "title": "Caller-supplied bodies written into logs let an attacker forge log records and poison investigations"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Server-side payment validation is separate component, not specific to deep link feature.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Physical access or malicious app attacks enabled by no re-authentication requirement.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Assumes internet-facing HTTP endpoint not mentioned in design; generic DDoS prevention advice.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Website can repeatedly trigger deep link, forcing app to foreground, making unusable.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Specific to deep link fraud risks; not generic logging advice.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Overlay attack distinct from social engineering in c1 or scheme hijacking.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Server trusts the payee and amount that arrived in the deep link"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Deep link reaches the payment confirmation screen without any re-authentication"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated endpoint abused for resource exhaustion"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "A website can repeatedly force the payment screen open and make the app unusable"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "No record of where the payment request came from, so disputes cannot be resolved"
+    },
+    {
+      "id": "x6",
+      "stride": "Tampering",
+      "title": "Overlay or tapjacking turns the pre-filled confirmation into an invisible approval tap"
+    }
+  ]
+}

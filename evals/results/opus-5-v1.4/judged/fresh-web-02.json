@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-web-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Duplicate of c2 harm; insider/phishing angles not specific to attachment feature\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Assumes workstation execution; design describes browser-based console; c2 covers browser-executable formats\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Specific DoS via unlimited uploads to public bucket, storage costs and queue flooding\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Specific abuse: public bucket becomes hosting for attacks on third parties via uploaded content\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Every agent session can reach every customer record, so one compromised agent exposes all customers"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Malware delivered to support agent workstations through attachments"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Anonymous bots flood ticket intake with large attachments"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "The public bucket becomes free hosting for phishing pages and malware on our domain"
+    }
+  ]
+}

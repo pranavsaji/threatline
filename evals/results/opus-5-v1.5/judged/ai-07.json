@@ -1,0 +1,27 @@
+{
+  "caseId": "ai-07",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Design omits isolation mechanism; cross-user data leakage is plausible, specific, distinct from c1 retention issue.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Unbounded automatic writing enables resource exhaustion; specific DoS attack vector, not covered by other threats.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Missing memory metadata blocks incident response for poisoning/disclosure; material to persistent-state feature, not generic hygiene.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Memories from one customer surface in another customer's answers"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unbounded automatic memory writing inflates storage, prompt size and model cost"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Memories written silently with no source or timestamp, so bad answers cannot be traced or corrected"
+    }
+  ]
+}

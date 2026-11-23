@@ -1,0 +1,47 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design states immediate login but not session invalidation; session handling is part of this feature.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"24-hour window specified in design; interception before use differs from c1's post-use replay attack.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Design says token in link opening web page; URL-based tokens leak via browser history and referrers.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Design specifies token but not strength; brute force against public endpoint is plausible given omission.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Public endpoint taking email address enables enumeration; standard attack on forms, specific harm to privacy.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Design omits notification and logging; lack of audit trail prevents detection and enables repudiation.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"Password setting described without validation; weak passwords exploitable via internet-facing login page mentioned in design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Automatic login after reset leaves the attacker's or victim's other sessions alive"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Reset link stays valid for a full day, so a stolen link takes over the account"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Reset token travels in the URL and leaks through history, referrers and logs"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "Reset token can be guessed or brute forced over a 24 hour window"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Reset request reveals whether an email address has an account"
+    },
+    {
+      "id": "x6",
+      "stride": "Repudiation",
+      "title": "Password change leaves no trace: owner is not notified and the change is not recorded"
+    },
+    {
+      "id": "x7",
+      "stride": "ElevationOfPrivilege",
+      "title": "No password strength or breach check when the new password is set"
+    }
+  ]
+}

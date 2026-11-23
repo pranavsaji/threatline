@@ -1,0 +1,22 @@
+{
+  "caseId": "api-07",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"SQL injection through search query matches E1's primary injection vector\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Database errors revealing schema matches E2's disclosure threat exactly\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Tampering",
+      "title": "SQL injection through the free-text search query"
+    },
+    {
+      "id": "T4",
+      "stride": "InformationDisclosure",
+      "title": "Database errors from the concatenated statement reveal schema and data"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "caseId": "fresh-data-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T5\",\n      \"reason\": \"Both describe CSV import overwriting existing customer records via supplied identifiers or direct table mapping\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T3\",\n      \"reason\": \"Both describe formula injection smuggled through CSV import that executes when marketing opens the export\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T7\",\n      \"reason\": \"Both describe missing audit trail preventing attribution of imports to specific uploaders or files\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Whole-table CSV export lets staff walk away with every customer's personal data"
+    },
+    {
+      "id": "T2",
+      "stride": "DenialOfService",
+      "title": "One oversized or malformed file stalls the nightly import for everyone"
+    },
+    {
+      "id": "T3",
+      "stride": "Tampering",
+      "title": "Spreadsheet formula smuggled through import and run when marketing opens the export"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Untrusted CSV fields built into database statements allow SQL injection"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Uploader can overwrite or corrupt existing customer records by supplying ids in the CSV"
+    },
+    {
+      "id": "T6",
+      "stride": "InformationDisclosure",
+      "title": "Summary email carries customer personal data to an address taken from the upload"
+    },
+    {
+      "id": "T7",
+      "stride": "Repudiation",
+      "title": "No way to tell who changed a customer record or to undo a bad import"
+    }
+  ]
+}

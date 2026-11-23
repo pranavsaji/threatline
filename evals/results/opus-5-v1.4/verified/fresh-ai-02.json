@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-ai-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has repo file reading plus comment posting on fork PRs; concrete exfiltration path.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Diff fed to LLM, fork-authored, bot can approve/merge; concrete injection-to-approval attack.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same attack and harm as T2: injected/misjudged fork PR gains approval and merge of malicious code.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Every PR triggers LLM review and forks are open to anyone; cost/queue exhaustion is supported.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design states token can approve and merge; over-privileged credential compromise distinct from injection path.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Bot reads repository files every review; persistent poisoning of future reviews is a distinct attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

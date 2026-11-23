@@ -1,0 +1,37 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: local filesystem access via URL schemes, not network SSRF\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c1: same attack and harm, just describing authentication enabler\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Design has no validation to bypass; threat targets hypothetical mitigation, not current design\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Distinct harm from c1: write/execute actions versus read-only information disclosure\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Distinct harm from c2: proxy abuse and reputation damage, not resource exhaustion\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Non-HTTP URL schemes let a caller read local files and container secrets"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Unauthenticated internal callers can drive the fetcher"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Redirect and DNS rebinding bypass any URL check done before the fetch"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service acts as a confused deputy to reach internal endpoints that require no authentication"
+    },
+    {
+      "id": "x5",
+      "stride": "DenialOfService",
+      "title": "Service works as an open forward proxy: attackers scrape or flood third parties from our egress IPs"
+    }
+  ]
+}

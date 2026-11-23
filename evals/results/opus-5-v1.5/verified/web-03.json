@@ -1,0 +1,10 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has profile update for logged-in user; IDOR/parameter substitution is a concrete attack on that endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states 30-day cookie sessions; no invalidation on contact change is a concrete, design-linked threat.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"CSRF on the no-password settings endpoint with long-lived cookie is a distinct attack vector.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Hijacked session escalating to permanent takeover via unverified instant email change; supported by quotes.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same attack on email change endpoint with unverified instant change; duplicates T4's email-takeover threat.\",\"duplicateOf\":\"T4\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Distinct harm: shipping address rewrite diverts physical goods, separate from email/account takeover.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"No notification/audit of immediate email change named by design; distinct repudiation/detection gap.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Design serves a page rendering email, phone, address; caching of that document is specific.\"},{\"id\":\"T9\",\"keep\":true,\"reason\":\"Phone field change hijacks SMS recovery — different field, different recovery path harm than email takeover.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

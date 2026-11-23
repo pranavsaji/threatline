@@ -1,0 +1,10 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has internet-facing SAML ACS reading assertion attributes; forged assertion attack is concrete.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Design never mentions RelayState or post-login redirect/return URL; attack rests on unmentioned component.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states internet-reachable admin portal gated only by SSO; credential-theft path is distinct from forgery.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design explicitly decides admin access from assertion role attribute; insider self-asserted role escalation is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Replay of captured assertion to internet-facing ACS is a distinct attack from forgery.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Signature-wrapping depends on XML parser/library implementation details, not design-stated behaviour; overlaps forged assertion.\",\"duplicateOf\":\"T1\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Design says role read once after login; stale admin session for leaver is concrete and distinct.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Design names admin login and admin access decisions but no audit log; repudiation is specific here.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -21,6 +21,7 @@ export * from './render/threat-model-storage.js';
 export * from './transparency.js';
 export * from './merge-gate.js';
 export * from './verify.js';
+export * from './gaps.js';
 export * from './compliance.js';
 export * from './suppressions.js';
 export * from './diagram.js';

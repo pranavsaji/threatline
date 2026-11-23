@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has notification send path; spoofed/fake notifications to customers is a concrete attack on it.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Lock-screen default plus full order/address payload directly supports shoulder-surfing disclosure.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Payload carrying order and address through third-party push infrastructure is a distinct disclosure path.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Push delivery implies device tokens; misdirected notifications to prior device owner is distinct harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

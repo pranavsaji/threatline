@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Checks (step 2):\n- Automated abuse reachable: \"The endpoint is public and accepts any JSON body\" — flooding covered by listed threat 5, order-id scraping/enumeration covered by listed threat 7; no sign-in, no email/SMS, no sign-up in the design.\n- Staff/admin screen showing user-supplied content: design states nothing beyond \"receives events from the payment provider and marks orders as paid\" — no admin/support UI described. Not applicable.\n- Money moving / state change with no record of who did it: present (\"marks orders as paid\") — already covered by listed threat 6.\n- Cacheable personal/financial pages or documents: design describes only an inbound webhook, no response page or document. Not applicable.\n- Attacker text into logs, exports, emails, headers: design mentions no logging, export, email or downstream text sink. Not applicable.\n- Unconfirmed single-reviewer threat (acting on other customers' orders): real, but already stated in listed threat 2 (\"send the id of someone else's order\"). Not a gap.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-03\",\n  \"sketch\": {\n    \"components\": [\"public payment webhook endpoint\", \"order status updater\"],\n    \"dataStores\": [\"orders\"],\n    \"externalServices\": [\"payment provider\"],\n    \"trustBoundaries\": [\"internet to webhook endpoint\"],\n    \"dataClasses\": [\"payment\"],\n    \"exposure\": \"public\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-api-02",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Check of commonly-missed threats:\n\n- Automated abuse reachable by anyone: design says \"The catalogue search API is public\" and \"paged 500 at a time with no limit on how many pages a client can read\" — present, but already covered by agreed threats 3 (bulk scraping) and 4 (deep paging / expensive filters).\n- Staff/admin/moderator screens showing other people's content: design has no such screen (only \"The catalogue search API is public\") — not present.\n- Deleting, moderating, refunding, role changes or money movement without a record: design describes only search (\"turns the filter into a database query\") — not present.\n- Personal/financial documents or pages browsers, proxies or CDNs could cache: design mentions no personal or account documents, only catalogue results — not present.\n- Attacker-controlled text flowing into logs, CSV/spreadsheet exports, emails or headers: design mentions no logging, export, email or header sink — not present.\n- Single-reviewer item 1 (costly filter expressions): same attack as agreed threat 4 — duplicate.\n- Single-reviewer item 2 (client-supplied paging/page-size): design only states \"Results are paged 500 at a time with no limit on how many pages a client can read\"; it never says page size or offset comes from the client, so this depends on how it might be built — excluded.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-02\",\n  \"sketch\": {\n    \"components\": [\"public search API\", \"filter-to-SQL templating layer\", \"paging\"],\n    \"dataStores\": [\"catalogue database\"],\n    \"externalServices\": [],\n    \"trustBoundaries\": [\"internet -> public search API\"],\n    \"dataClasses\": [],\n    \"exposure\": \"public\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

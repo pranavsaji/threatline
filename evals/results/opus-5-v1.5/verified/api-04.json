@@ -1,0 +1,10 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states fetcher downloads arbitrary URL from inside VPC next to metadata service; classic SSRF attack supported.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack via non-HTTP schemes reading local files, different target and fix than network SSRF.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design names no authentication for the URL-accepting endpoint; unauthenticated abuse and lack of attribution is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design says service downloads and resizes attacker-chosen images; decompression/oversize resource exhaustion is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Redirect/DNS rebinding bypass of validation is a distinct attack path on the described fetcher.\"},{\"id\":\"T6\",\"keep\":false,\"reason\":\"Same attacker using fetcher's in-VPC position to reach internal endpoints; restates T1's confused-deputy attack.\",\"duplicateOf\":\"T1\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Distinct harm: outbound proxy abuse against third parties, reputation/egress damage, not internal disclosure or memory exhaustion.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

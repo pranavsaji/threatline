@@ -1,0 +1,10 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states free SQL editor on production replica; over-reading unrelated tables is concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: write/DDL/cross-database via connection privileges, not just reading entitled tables.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Heavy ad-hoc queries saturating the named production replica is a specific, distinct harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design names the production query action; lack of per-user query attribution is specific here.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design only names audience, no auth check; unauthenticated access differs from authorised over-read.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

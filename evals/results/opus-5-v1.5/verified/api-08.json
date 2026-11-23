@@ -1,0 +1,10 @@
+{
+  "caseId": "api-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states handler copies every field including role; concrete privilege escalation attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: missing ownership check on {id} lets attacker edit other users' records.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Different field and harm: bypassing suspension/locking accounts via accountStatus mass-assignment.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct harm: overwriting identity/email field enables account takeover via password reset.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design names role/accountStatus changes through same handler; missing record of privilege change is specific.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

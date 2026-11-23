@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-data-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states dashboards query with analyst credentials; viewers inherit privileged access to salary/health tables.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Link sharing to anyone in company is in design; leaked URL exposes HR data.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same unauthorized viewer reading row-level salary/health data via shared dashboards as T2.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: repeated query refreshes consume warehouse compute, harming other jobs.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Never-expiring links in design; leavers retain access — distinct lifetime/revocation attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Attribution of health/salary access to analyst is specific to stated credential design.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Share action itself unlogged; named sharing feature, distinct from query-log attribution in T6.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

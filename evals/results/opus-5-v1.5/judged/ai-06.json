@@ -1,0 +1,42 @@
+{
+  "caseId": "ai-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Not a distinct attack; describes absence of charge limits, already implicit in c1 and c2.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Modifying genuine messages in transit is distinct from forging messages (c1) or text injection (c2).\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Reading queue data is distinct harm from forging messages or charging cards.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Denial of service is distinct harm from unauthorized charges or data exposure.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Attribution failure blocks chargeback investigation on payments, not generic logging advice.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Replay attack is distinct from forgery, modification, or text injection.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Payments agent can charge the saved card with no per-charge user authorisation or limit"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Queue messages can be modified in flight to change amount, card or payee"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Unauthenticated shared queue exposes booking and payment details to any reader"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Queue flooding stalls bookings and runs up model cost"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Charges cannot be attributed to a user or an agent"
+    },
+    {
+      "id": "x6",
+      "stride": "Tampering",
+      "title": "Replaying a captured queue message charges the saved card again for the same trip"
+    }
+  ]
+}

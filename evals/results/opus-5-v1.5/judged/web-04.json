@@ -1,0 +1,32 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design states 'customers download' which implies authentication; contradicts c1's authenticated model\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Specific DoS via scripted PDF generation abuse following from sequential IDs and PDF endpoint\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Specific information disclosure via ID enumeration distinct from c1's content access\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Specific repudiation and detection harms material to sensitive data downloads with predictable IDs\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Download endpoint may serve invoices without requiring a logged-in session"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Scripted bulk downloads force unbounded PDF generation"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Sequential invoice ids let an attacker enumerate how many customers and invoices exist"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No download audit record, so an invoice data leak cannot be attributed or scoped"
+    }
+  ]
+}

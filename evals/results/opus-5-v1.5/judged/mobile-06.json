@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"assumes internal services, queues, endpoints not mentioned in design\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"push providers necessarily involved in feature; bulk access distinct from c1\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"assumes device token lifecycle management not described in design\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Unauthenticated internal send path lets fake order notifications be pushed to customers"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Order contents and addresses handed to Apple/Google push infrastructure in the payload"
+    },
+    {
+      "id": "x3",
+      "stride": "Spoofing",
+      "title": "Stale device tokens deliver one customer's order and address to someone else's phone"
+    }
+  ]
+}

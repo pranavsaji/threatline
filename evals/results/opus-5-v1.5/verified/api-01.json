@@ -1,0 +1,10 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states keys never expire; permanent access from leaked key is concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Key in query string is in design; log/proxy leakage distinct from non-expiry.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"No rate limiting on public API supports key brute-force guessing.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design names public endpoint with no rate limiting; flooding exhausts capacity.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Bulk PII harvesting with valid key is distinct harm from availability or guessing.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names long-lived non-expiring keys per partner; attribution gap is specific.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Unscoped key granting all orders/emails is quoted; least-privilege gap distinct attack.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Caching of the served order/email documents is specific given credential-in-URL GET.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "api-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states public unauthenticated webhook marking orders paid; concrete forged-payment attack for free goods.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same unauthenticated POST of arbitrary order id/status to mark orders paid; different fields of same request.\",\"duplicateOf\":\"T1\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack on unconstrained status values/illegal transitions reviving refunded orders for reshipment.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Replay/idempotency is a separate attack on the webhook's handling of repeated genuine events.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design names a public internet-reachable webhook; flooding to stall genuine payment callbacks is specific.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names paid-status changes with no record of event source; disputes untraceable given unauthenticated endpoint.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Different harm: order id enumeration via differing responses discloses order existence and state.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

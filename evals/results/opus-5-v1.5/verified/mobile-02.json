@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states any website can trigger pre-filled payment deep link; concrete attacker-payee confirmation fraud.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Attacker-controlled payee/amount reaching backend; distinct server-side trust/validation attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Custom scheme registration is in design; distinct spoofing attack by malicious app harvesting credentials.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Design says deep link opens confirmation screen pre-filled; no step-up auth; distinct local/device-access attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Website-triggerable link enables repeated forced screen opens; distinct availability harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names externally triggered payment confirmation; missing origin record blocks dispute resolution — specific, not generic.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Overlay/tapjacking on the genuine pre-filled confirm control is a distinct attack vector and fix.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

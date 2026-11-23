@@ -1,0 +1,27 @@
+{
+  "caseId": "fresh-ai-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Specific DoS via unlimited PR triggers; follows from public fork design; not duplicate of existing threats.\"},{\"id\":\"x2\",\"valid\":false,\"reason\":\"Prompt injection already covered in c2; generic bugs/dependencies/credentials not specific to this feature design.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Distinct persistent poisoning via repository files; different from c2's transient PR injection; broader scope and impact.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Anyone can run up unbounded LLM cost by opening or updating fork pull requests"
+    },
+    {
+      "id": "x2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Bot token can approve and merge, so one hijacked review becomes a repository compromise"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Files in the repository poison every review for all future pull requests"
+    }
+  ]
+}

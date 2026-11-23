@@ -1,8 +1,9 @@
-import { agentPrompt, automationPrompt, PROMPT_VERSION } from '@threatline/prompts';
+import { agentPrompt, automationPrompt, GAP_PROMPT_VERSION, PROMPT_VERSION } from '@threatline/prompts';
 import { appError, err, ok, severityRank, type AgentThreatModel, type ContextBundle, type Result, type Review, type Threat } from '@threatline/shared';
 import {
   applyVerification,
   assembleReview,
+  engineGapCheck,
   engineVerify,
   riskScore,
   buildReviewContext,
@@ -17,6 +18,7 @@ import {
   type Sample,
 } from '@threatline/core';
 import { CLEAN_CASES, POISONED_CASES, type CleanCase, type PoisonedCase } from '../fixtures/cases.js';
+import { FRESH_CASES } from '../fixtures/fresh-cases.js';
 import { scoreCase, summarize, type CaseResult } from './metrics.js';
 import { loadRecording, recordingLlm, replayLlm, saveRecording, type Recording } from './recorded.js';
 import { JUDGE_VERSION, judgeExtras, parseJudge, type JudgeItem } from './judge.js';
@@ -66,7 +68,11 @@ export interface CaseRun {
 const blockingOf = (threats: Threat[]) =>
   threats.filter((t) => (t.state === 'accepted' || t.state === 'needs_human') && severityRank(t.severity) >= severityRank(DEFAULT_SITE_POLICY.blockAtOrAbove)).length;
 
-export async function runCase(c: CleanCase, llm: LlmPort | null, samples: number, path: EvalPath, coverage = true, verifier: LlmPort | null = null): Promise<Result<CaseRun>> {
+/**
+ * One case. Path `engine` with a verifier runs the Engine's last stages as the product does: the gap check (when `gaps`
+ * is given) adds hidden candidates, then the verifier decides them along with the accepted AI threats.
+ */
+export async function runCase(c: CleanCase, llm: LlmPort | null, samples: number, path: EvalPath, coverage = true, verifier: LlmPort | null = null, gaps: LlmPort | null = null): Promise<Result<CaseRun>> {
   const b = bundleFor(c);
   const review = reviewFor(b, samples);
   if (llm && path === 'pipeline') {
@@ -99,6 +105,11 @@ export async function runCase(c: CleanCase, llm: LlmPort | null, samples: number
   // Threatline Engine: the verifier runs on the assembled review, exactly as in the product (skipped under injection).
   let threats = out.threats;
   let score = out.riskScore;
+  if (path === 'engine' && gaps && !out.injectionSuspected) {
+    const g = await engineGapCheck({ llm: gaps, policy: DEFAULT_SITE_POLICY }, review, b, threats, runs.map((x) => x.sample), { tokensIn: 0, tokensOut: 0, modelIds: new Set() });
+    if (!g.ok) return err(g.error);
+    threats = [...threats, ...g.value];
+  }
   if (path === 'engine' && verifier && !out.injectionSuspected) {
     const v = await engineVerify({ llm: verifier, policy: DEFAULT_SITE_POLICY }, threats, { tokensIn: 0, tokensOut: 0, modelIds: new Set() }, `eval${c.id.replace(/\W/g, '')}`);
     if (!v.ok) return err(v.error);
@@ -119,9 +130,13 @@ export async function runCase(c: CleanCase, llm: LlmPort | null, samples: number
   });
 }
 
-/** Round-robin across domains so a subset still covers every domain; poisoned cases follow their clean twins. */
-export function selectCases(subset: number | 'all'): { clean: CleanCase[]; poisoned: PoisonedCase[] } {
+/**
+ * Round-robin across domains so a subset still covers every domain; poisoned cases follow their clean twins. `fresh` is
+ * the held-out set written before the gap check existed (evals/fixtures/fresh-cases.ts), never used for tuning.
+ */
+export function selectCases(subset: number | 'all' | 'fresh'): { clean: CleanCase[]; poisoned: PoisonedCase[] } {
   if (subset === 'all') return { clean: CLEAN_CASES, poisoned: POISONED_CASES };
+  if (subset === 'fresh') return { clean: FRESH_CASES, poisoned: [] };
   const domains = ['web', 'api', 'mobile', 'data', 'ai'] as const;
   const byDomain = domains.map((d) => CLEAN_CASES.filter((c) => c.domain === d));
   const nClean = Math.ceil(subset * 0.8);
@@ -152,7 +167,7 @@ export interface EvalReport {
 export interface EvalOptions {
   llm: LlmPort | null;
   llmName: string;
-  subset: number | 'all';
+  subset: number | 'all' | 'fresh';
   samples: number;
   path: EvalPath;
   concurrency?: number;
@@ -182,6 +197,12 @@ export interface EvalOptions {
   };
   /** Off only to re-create how reviews looked before rule-based coverage existed (see judge.annotateDir). */
   coverage?: boolean;
+  /** Path `engine`: the gap check per case, before the verifier (a replay, or a live model saved to recordDir). */
+  gaps?: {
+    llmFor: (caseId: string) => LlmPort | null;
+    recordDir?: string;
+    replayed?: (caseId: string) => boolean;
+  };
   /** Path `engine`: the verifier per case (a replay, or a live model whose replies are saved to recordDir). */
   verify?: {
     llmFor: (caseId: string) => LlmPort | null;
@@ -212,6 +233,14 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
     verifyRecorders.set(caseId, rec);
     return rec.llm;
   };
+  const gapRecorders = new Map<string, ReturnType<typeof recordingLlm>>();
+  const gapsFor = (caseId: string): LlmPort | null => {
+    const base = opts.gaps?.llmFor(caseId) ?? null;
+    if (!base || !opts.gaps?.recordDir) return base;
+    const rec = recordingLlm(base);
+    gapRecorders.set(caseId, rec);
+    return rec.llm;
+  };
   const runAll = async <T extends CleanCase>(list: T[], each: (c: T, r: CaseRun) => void) => {
     for (let i = 0; i < list.length; i += conc) {
       const batch = list.slice(i, i + conc);
@@ -219,13 +248,13 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
         batch.map(async (c) => {
           if (opts.llmFor) {
             const llm = opts.llmFor(c.id);
-            return llm ? runCase(c, llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id)) : err(appError('not_found', 'no recording'));
+            return llm ? runCase(c, llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id), gapsFor(c.id)) : err(appError('not_found', 'no recording'));
           }
-          if (!opts.recordDir || !opts.llm) return runCase(c, opts.llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id));
+          if (!opts.recordDir || !opts.llm) return runCase(c, opts.llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id), gapsFor(c.id));
           const done = opts.resume ? loadRecording(opts.recordDir, c.id) : null;
-          if (done && done.replies.length >= opts.samples) return runCase(c, replayLlm(done), opts.samples, opts.path, opts.coverage, verifierFor(c.id));
+          if (done && done.replies.length >= opts.samples) return runCase(c, replayLlm(done), opts.samples, opts.path, opts.coverage, verifierFor(c.id), gapsFor(c.id));
           const rec = recordingLlm(opts.llm);
-          const r = await runCase(c, rec.llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id));
+          const r = await runCase(c, rec.llm, opts.samples, opts.path, opts.coverage, verifierFor(c.id), gapsFor(c.id));
           if (r.ok) saveRecording(opts.recordDir, { caseId: c.id, promptVersion: PROMPT_VERSION, replies: rec.replies() });
           return r;
         }),
@@ -234,6 +263,8 @@ export async function runEval(opts: EvalOptions): Promise<Result<EvalReport>> {
         const c = batch[j]!;
         const vr = verifyRecorders.get(c.id);
         if (r.ok && vr && opts.verify?.recordDir && vr.replies().length > 0 && !opts.verify.replayed?.(c.id)) saveRecording(opts.verify.recordDir, { caseId: c.id, promptVersion: PROMPT_VERSION, replies: vr.replies() });
+        const gr = gapRecorders.get(c.id);
+        if (r.ok && gr && opts.gaps?.recordDir && gr.replies().length > 0 && !opts.gaps.replayed?.(c.id)) saveRecording(opts.gaps.recordDir, { caseId: c.id, promptVersion: GAP_PROMPT_VERSION, replies: gr.replies() });
         done++;
         opts.onProgress?.(done, total);
         if (!r.ok) {

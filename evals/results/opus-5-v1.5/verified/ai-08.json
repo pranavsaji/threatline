@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Runtime-installed third-party server receives agent context; exfiltration is concrete attack on quoted design.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Unvetted registry install of attacker-published server is supported by quotes and distinct from exfiltration harm.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same unvetted runtime install granting agent privileges; restates T2's missing review/allowlist gate.\",\"duplicateOf\":\"T2\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Code execution on agent host during install is a distinct attack path from tool-call data misuse.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Poisoned tool metadata from registry hijacking agent instructions is a distinct injection attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Resource exhaustion via unbounded runtime self-installation ties directly to quoted install behaviour.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"No record of which installed tool version acted; attribution gap specific to runtime installs without deploy.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Rug-pull via updated build at re-install is a distinct supply-chain attack, not initial vetting.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

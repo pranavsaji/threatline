@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states server trusts client purchased flag; concrete free-premium attack on named endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct replay/reuse attack on receipt binding, not covered by flag-trust threat.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same actor forging another field of same unlock request for same free-premium harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Different victim and harm: altering other customers' entitlements via unauthenticated endpoint.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Specific missing payment/transaction record for the entitlement grant the design names.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Distinct post-refund revocation gap tied to design's one-time client-driven unlock.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

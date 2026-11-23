@@ -1,0 +1,10 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Check of commonly-missed threats against this design:\n\n- Automated abuse (brute force, mass sign-up, email/SMS flooding, scraping): design has no sign-in, form or API — only \"Database backups are written nightly to a cloud storage bucket.\" Not present.\n- Staff/admin screens rendering user-supplied content: no UI, moderation or upload surface described. Not present.\n- Privileged actions with no record (delete, approve, move money, role change): design describes no admin action flow; deletion of backups and untraceable downloads are already covered by listed threats 2 and 4. Covered.\n- Personal/account pages cacheable by browsers, proxies or CDNs: no web response or document delivery in the design. Not present.\n- Attacker-controlled text flowing into logs, CSV/spreadsheet exports, emails or headers: design mentions no logging, export or email path. Not present.\n- Single-reviewer threats: the credential/secret-in-dump escalation items (#2, #5) rest on what \"a full database dump typically contains\", which the design never states — speculation about contents, so excluded. The public-bucket-misconfiguration item (#1) and the \"reporting only needs aggregates\" item (#6) are variants of listed threat 1 (same weakness, same harm). The repudiation item (#4) duplicates listed threat 4.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-04\",\n  \"sketch\": {\n    \"components\": [\"nightly backup job\", \"cloud storage bucket\", \"reporting team access\"],\n    \"dataStores\": [\"production database\", \"cloud storage bucket (backup files)\"],\n    \"externalServices\": [\"cloud storage provider\"],\n    \"trustBoundaries\": [\"database owners vs reporting team\", \"production vs shared bucket\"],\n    \"dataClasses\": [\"pii\"],\n    \"exposure\": \"internal\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

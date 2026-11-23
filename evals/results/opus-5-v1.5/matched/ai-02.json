@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-02",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe assistant bypassing permission checks to leak restricted HR/finance pages to unauthorized employees.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe attacker planting malicious content in wiki page that manipulates assistant answers via prompt injection.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Assistant answers from HR and finance pages the asker is not allowed to read"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Indirect prompt injection from wiki page content hijacks the assistant"
+    }
+  ]
+}

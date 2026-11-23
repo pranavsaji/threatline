@@ -1,0 +1,47 @@
+{
+  "caseId": "fresh-web-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"IDOR is plausible for multi-tenant portal; design shows customer data without specifying authorization checks.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"7-day validity directly from design; no single-use mentioned; replay attack is direct consequence.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Sign-in link in design means URL-based credential; leakage to logs and history is inherent.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Design allows card changes via link alone; no additional authentication specified for financial action.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Public sign-in page from design; user enumeration via response differences is plausible attack.\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": true,\n      \"reason\": \"Design displays sensitive invoices; caching threat is specific to this PII, not generic advice.\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"7-day multi-use tokens make audit trail material to distinguish legitimate use from replay abuse.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Invoice and card requests may trust a customer id supplied by the browser"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Sign-in link stays usable for 7 days, so anyone who sees the email becomes the customer"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "The sign-in secret travels in a URL and leaks through browser history, referrers and logs"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Card on file can be replaced using only a sign-in link, with no second check"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Public sign-in form reveals which email addresses have billing accounts"
+    },
+    {
+      "id": "x6",
+      "stride": "InformationDisclosure",
+      "title": "Invoice pages cached by browsers and shared proxies expose billing data after the session ends"
+    },
+    {
+      "id": "x7",
+      "stride": "Repudiation",
+      "title": "Card-on-file changes are recorded with no evidence of which link or device made them"
+    }
+  ]
+}

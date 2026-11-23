@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Check of commonly-missed items:\n\n1. Automated abuse reachable by anyone — design has it: \"The storefront uses a public GraphQL endpoint.\" Covered by listed threats 2 and 3 (scraping and query-cost DoS); no sign-in, email/SMS send, or sign-up exists in the design, so no brute-force/flooding variant applies.\n2. Staff/admin/moderator screens showing user-supplied content — design has no such thing; it names only \"nested queries of products, reviews and customer profiles\" with no admin or moderation UI. Not applicable.\n3. Delete/moderate/refund/role-change/money actions without a record — design describes only query capability (\"Clients can request nested queries\"); no mutations, no privileged actions, no audit surface stated. Not applicable.\n4. Personal/financial pages cacheable by browsers, proxies or CDNs — design mentions \"customer profiles\" but says nothing about caching, CDN or response headers; claiming it would depend on how it is built. Not applicable.\n5. Attacker-controlled text reaching logs, CSV exports, emails or headers — design states no export, logging, email or downstream system. Not applicable.\n\nSingle-reviewer items: #1 and #5 restate listed threat 3 (scraping); #3 restates listed threat 4 (nested traversal into profiles); #2 and #4 depend on resolver implementation, batching support and the existence of a lookup token or email-existence check that the design never states. No new gap.\n\n```json\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-02\",\n  \"sketch\": {\n    \"components\": [\"storefront GraphQL endpoint\", \"product resolvers\", \"review resolvers\", \"customer profile resolvers\", \"schema introspection\"],\n    \"dataStores\": [],\n    \"externalServices\": [],\n    \"trustBoundaries\": [\"internet to public GraphQL endpoint\"],\n    \"dataClasses\": [\"pii\"],\n    \"exposure\": \"public\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}\n```",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

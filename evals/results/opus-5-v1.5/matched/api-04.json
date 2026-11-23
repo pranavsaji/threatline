@@ -1,0 +1,42 @@
+{
+  "caseId": "api-04",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe SSRF to internal services and cloud metadata from within VPC\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe resource exhaustion from oversized or slow images\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Server-side request forgery: caller makes the service read internal services and cloud metadata"
+    },
+    {
+      "id": "T2",
+      "stride": "InformationDisclosure",
+      "title": "Non-HTTP URL schemes let a caller read local files and container secrets"
+    },
+    {
+      "id": "T3",
+      "stride": "Spoofing",
+      "title": "Unauthenticated internal callers can drive the fetcher"
+    },
+    {
+      "id": "T4",
+      "stride": "DenialOfService",
+      "title": "Oversized images and decompression bombs exhaust memory and CPU"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Redirect and DNS rebinding bypass any URL check done before the fetch"
+    },
+    {
+      "id": "T6",
+      "stride": "ElevationOfPrivilege",
+      "title": "Service acts as a confused deputy to reach internal endpoints that require no authentication"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has LLM converting user question to directly executed SQL; injection hijacking generation is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Quote names service credentials; privilege union across tables is a distinct concrete attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design runs generated SQL directly on analytics DB; unbounded query resource exhaustion is specific.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Destructive statements executing before display is a distinct harm from read access elevation.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"LLM provider receives question text/schema; data leaving trust boundary is supported and distinct.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Shared service credential decouples execution identity from requester; attribution loss is specific to design.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

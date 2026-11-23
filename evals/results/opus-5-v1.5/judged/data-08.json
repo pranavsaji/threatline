@@ -1,0 +1,32 @@
+{
+  "caseId": "data-08",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design doesn't specify read-only connection; write/DDL access is plausible without stated privilege restrictions.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Free SQL editor with no stated timeout, row limit, or resource cap enables replica exhaustion.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"No per-user query attribution mentioned; inability to investigate misuse follows from shared connection.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Design names audience but no authentication mechanism; unauthenticated access is plausible from omission.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shared database account may allow writes, DDL or access to other databases"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unbounded ad-hoc queries exhaust the replica and stall replication"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "No record of which person ran which query against production data"
+    },
+    {
+      "id": "x4",
+      "stride": "Spoofing",
+      "title": "No authentication or entitlement check stated for reaching the SQL editor"
+    }
+  ]
+}

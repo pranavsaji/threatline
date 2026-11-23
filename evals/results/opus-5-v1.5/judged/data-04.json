@@ -1,0 +1,22 @@
+{
+  "caseId": "data-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Deletion/DoS is distinct from c1 read access and c2 tampering; follows from shared bucket design.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Audit trail material given shared access design; harm differs from c1 (attribution vs exposure).\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Backups can be deleted or overwritten, leaving no recovery point"
+    },
+    {
+      "id": "x2",
+      "stride": "Repudiation",
+      "title": "No way to tell who copied a backup out of the shared bucket"
+    }
+  ]
+}

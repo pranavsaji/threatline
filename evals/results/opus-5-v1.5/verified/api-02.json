@@ -1,0 +1,10 @@
+{
+  "caseId": "api-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states public endpoint serving customer profiles; unauthenticated harvesting is a concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Nested arbitrary queries on public endpoint support resolver-fanout DoS.\"},{\"id\":\"T3\",\"keep\":false,\"reason\":\"Same unauthenticated bulk harvesting of profiles/data via public endpoint as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Distinct attack: authenticated shopper traverses nested resolvers/ids to read other customers' profiles.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design explicitly enables production introspection; schema disclosure is a concrete named risk.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

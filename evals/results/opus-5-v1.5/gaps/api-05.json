@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Check of commonly-missed items:\n\n1. Automated abuse / scraping / flooding — design has an endpoint returning bulk data: \"Account admins call POST /exports to export all users in their organisation as CSV\" — covered by listed threats 3 (repeated export DoS) and 5 (bulk PII pull).\n2. Staff/admin screens rendering user-supplied content — the admin opens an export containing user-controlled profile fields: \"including names, email addresses and phone numbers\" — covered by listed threat 4 (formula injection executing in the admin's spreadsheet).\n3. Privileged actions with no record — design describes no logging of exports: \"Account admins call POST /exports\" — covered by listed threat 6 (no record of who exported which organisation's data).\n4. Personal documents cacheable by browsers/proxies/CDNs — the design names only a POST endpoint and no download URL, storage location, cache or CDN: \"The organisation id comes from the request body.\" Nothing in the design states a cacheable GET/download exposure, so reporting this would depend on how it is built — not reported.\n5. Attacker-controlled text reaching logs, exports, emails or headers — present only as the CSV path, which is covered by listed threat 4; no logging, email or header sink is stated in the design — not covered by a new threat because the design does not state such a sink.\n\nSingle-reviewer threats: none provided.\n\nConclusion: the agreed list already covers every threat the design text supports.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-05\",\n  \"sketch\": {\n    \"components\": [\"POST /exports endpoint\", \"CSV export generator\", \"user directory\"],\n    \"dataStores\": [\"user directory\"],\n    \"externalServices\": [],\n    \"trustBoundaries\": [\"signed-in admin to API\", \"tenant/organisation boundary\"],\n    \"dataClasses\": [\"pii\"],\n    \"exposure\": \"internal\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

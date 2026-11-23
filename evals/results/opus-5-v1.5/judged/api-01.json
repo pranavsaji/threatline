@@ -1,0 +1,37 @@
+{
+  "caseId": "api-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Public API with no rate limiting enables brute-force key guessing; design explicitly states both conditions.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"No rate limiting plus broad access enables automated bulk extraction; specific harm to customer personal data.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Shared long-lived keys prevent attribution; material to investigation and breach response for customer data exposure.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Design grants all-or-nothing access; no scoping means compromise of minor tool yields full personal-data set.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Query-string auth makes responses appear unauthenticated to intermediaries; plausible caching consequence exposes customer data beyond key holder.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Spoofing",
+      "title": "Unlimited guessing of API keys against a public endpoint"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Bulk harvesting of customer email addresses through the unthrottled API"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Actions cannot be tied to a person because keys are shared and never rotated"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "One unscoped key grants all orders and customer emails, no least privilege"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Order and customer-email responses stored by browsers, shared proxies or CDNs"
+    }
+  ]
+}

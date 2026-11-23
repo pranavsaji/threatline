@@ -1,0 +1,10 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has agent reading internet emails plus forward tool; concrete injection exfiltration attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Summarisation step named; distinct attack manipulating human reviewers rather than direct exfiltration.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Publicly reachable inbox triggers LLM processing per design; flooding specific to named trigger.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Shared inbox cross-customer leak via reply is distinct victim/path from forwarding exfiltration.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design names outbound sends on behalf of sales team; attribution gap is specific.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Distinct harm: third-party victims receive attacker content under company identity, not inbox data leak.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Spoofed sender identity attack differs from injection; design states mail accepted from anyone.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

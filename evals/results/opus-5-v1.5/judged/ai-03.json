@@ -1,0 +1,32 @@
+{
+  "caseId": "ai-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Data exfiltration is distinct harm from c1's write focus; different security impact\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Resource exhaustion not covered; follows from design lacking runtime limits\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Attribution failure distinct from existing threats; follows from shared token\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Build code execution differs from c1's textual injection; plausible workflow\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Agent shell access can read the write token and all source code and send them out"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "A looping or baited agent run consumes build capacity and model spend"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "All agent pushes look the same, so nobody can tell which run or which developer caused a change"
+    },
+    {
+      "id": "x4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Repository content the agent executes runs attacker code on the agent host, no injection needed"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "web-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has stored rich-text comments rendered to every visitor; concrete stored XSS attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Link posting on public pages and manual moderator deletion are named; spam flooding is specific.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Delete action named; missing authorization lets any customer delete comments site-wide.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Image embedding in comments named; attacker-controlled URL leaks visitor data — distinct from script execution.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"CSRF on named post and delete endpoints is a distinct attack with victim-attributed actions.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Separate harm: script in moderator's privileged admin session abuses moderation powers; needs own fix.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Design names moderator deletion action; missing deletion record is specific accountability gap.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "caseId": "ai-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Distinct from c1: manipulates humans via poisoned summary rather than direct prompt injection for exfiltration.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"Public trigger with no accountability enables resource exhaustion DoS; not covered by existing information disclosure threats.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Audit trail gap for agent vs human authorship; distinct repudiation concern not covered by existing threats.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Using agent as mail relay to send attacker content to third parties; distinct from c1's inbox exfiltration.\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": false,\n      \"reason\": \"Duplicate of c2: attacker already gets customer info by asking in email; spoofing adds no new capability.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Misleading summaries steer the sales team into approving attacker-chosen actions"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Public inbox lets anyone drive unbounded LLM processing and outbound mail"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Mail sent on behalf of the sales team cannot be attributed to agent or person"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Agent used as a trusted mail relay to send attacker content to third parties"
+    },
+    {
+      "id": "x5",
+      "stride": "Spoofing",
+      "title": "Spoofed customer address gets the agent to reply with that account's information"
+    }
+  ]
+}

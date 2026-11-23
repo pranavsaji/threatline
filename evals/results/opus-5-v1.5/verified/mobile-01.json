@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states password login is the enrolment path; credential stuffing on that endpoint is concrete and distinct.\"},{\"id\":\"T2\",\"keep\":false,\"reason\":\"Same attack on plain-storage refresh token for account access as T4; token theft via filesystem/backup.\",\"duplicateOf\":\"T4\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design says biometrics only unlock screen; local-only check bypass is a distinct attack on the biometric control.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Plain app storage of refresh token quoted; theft and replay against refresh endpoint is concrete.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design shows single stored token with no rotation/revocation; persistent access after password change is a distinct harm.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design keeps biometric result client-side; lack of device-bound evidence for disputes is specific to this design.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Distinct attack: OS-enrolled second biometric, no tooling or token theft; different actor and mechanism from T3.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

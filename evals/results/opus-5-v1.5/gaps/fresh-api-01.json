@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-api-01",
+  "promptVersion": "gaps-v2",
+  "replies": [
+    {
+      "text": "Check (step 2):\n- Automated abuse of a reachable endpoint: design has \"Logistics partners call POST /shipments with an API key to create shipments\" and \"Shipments are billed to the merchant automatically\" — covered by listed threat 3 (bulk shipment creation) and 2 (leaked key).\n- Staff/admin/moderator screens showing partner-supplied content: design names no internal console, queue or review screen — no such thing in this design.\n- Delete/moderate/refund/approve/role-change/money move without a record of who did it: design has \"Shipments are billed to the merchant automatically\" with multiple partners per merchant — covered by listed threat 5 (repudiation of which partner created the charge).\n- Personal/financial documents or pages a browser, proxy or CDN could cache: design describes only a POST create call, no document or page delivery — no such thing in this design.\n- Attacker-controlled text reaching logs, CSV/spreadsheet exports, emails, headers or another system: design mentions only \"The request names the merchantId to bill and the declared value\" with no export, notification or downstream rendering named — no such thing stated.\n- Single-reviewer item (replay / duplicate billing): the design states no idempotency, retry or duplicate behaviour at all; the claim rests on how the endpoint would be built, and its harm (extra billable shipments charged to the merchant) is the same as listed threat 3 — not a gap.\n\n{\n  \"schema\": \"threatline.threatmodel.v1\",\n  \"issueKey\": \"EVAL-01\",\n  \"sketch\": {\n    \"components\": [\"POST /shipments\", \"partner API key auth\", \"shipment billing\"],\n    \"dataStores\": [],\n    \"externalServices\": [\"logistics partners\"],\n    \"trustBoundaries\": [\"partner -> platform API\"],\n    \"dataClasses\": [\"secrets\"],\n    \"exposure\": \"partner\",\n    \"llmFeatures\": false\n  },\n  \"threats\": []\n}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

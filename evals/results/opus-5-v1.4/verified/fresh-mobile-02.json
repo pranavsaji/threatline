@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-mobile-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Open seller sign-up plus chat/photo sending supports concrete phishing abuse path.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Server-stored photos with no access control; concrete enumeration attack on private images.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states full chat history in local DB; device-access disclosure attack is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Open sign-up plus unbounded server uploads supports concrete storage/CPU exhaustion attack.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Unvalidated upload rendered in recipient's chat; concrete malicious-file attack on victim.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Photos served as-is to stranger counterparty; concrete EXIF location leak.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

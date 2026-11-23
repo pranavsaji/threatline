@@ -66,7 +66,11 @@ async function applyAssembly(deps: CoreDeps, review: Review, bundle: ContextBund
     ...(prior.value ? { prior: prior.value } : {}),
     ...(suppressions ? { suppressions } : {}),
   });
-  const saved = await deps.reviews.saveThreats(review.id, out.threats, out.discarded);
+  // Gap-check threats are not made by assembly: a re-assembly (a late run) keeps them, for the verifier to decide.
+  const stored = await deps.reviews.threats(review.id);
+  if (!stored.ok) return stored;
+  const gapThreats = stored.value.filter((t) => t.foundBy === 'gap_check' && !out.threats.some((x) => x.id === t.id));
+  const saved = await deps.reviews.saveThreats(review.id, [...out.threats, ...gapThreats], out.discarded);
   if (!saved.ok) return saved;
   // Until every agent run is in, consensus is provisional: only rule-based threats get requirement rows, so threats
   // that later lose the vote never leave orphan requirements behind.

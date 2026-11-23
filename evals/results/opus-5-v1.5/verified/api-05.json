@@ -1,0 +1,10 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states org id comes from request body; cross-tenant export is concrete attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Missing role check on named endpoint; distinct attacker and path from T1.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Expensive full-directory export endpoint named; resource exhaustion attack is specific.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"CSV of user-supplied names; formula injection harming admin opening file is distinct.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same bulk export of all org users as legitimate admin call; harm duplicates T1/T2 disclosure.\",\"duplicateOf\":\"T1\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Missing export audit record tied to named endpoint and attacker-controlled org id.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

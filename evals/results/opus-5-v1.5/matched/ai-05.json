@@ -1,0 +1,22 @@
+{
+  "caseId": "ai-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe destructive SQL (DELETE/UPDATE/DROP) executing without review or authorization controls\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe analysts reading data beyond their granted permissions via shared service credentials\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "LLM-written SQL runs with no review, so destructive statements execute"
+    },
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Shared service credentials give every question the union of all data access"
+    }
+  ]
+}

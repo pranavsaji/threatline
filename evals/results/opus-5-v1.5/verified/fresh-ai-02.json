@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-ai-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design has repo file reading plus comment posting on fork PRs; concrete exfiltration attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Injection in fork diff to obtain bot approval/merge is supported by quotes.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct harm via human trust in approval signal; approval behaviour is in design.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Internet-reachable trigger for every PR; cost/queue exhaustion is specific.\"},{\"id\":\"T5\",\"keep\":false,\"reason\":\"Same hijacked-bot-token merge compromise as T2's over-privileged approve/merge path.\",\"duplicateOf\":\"T2\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Different attack: poisoning repo files read on every review to suppress future findings.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Design states repo files sent to LLM; third-party egress of proprietary code is distinct.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Design names approve/merge actions by shared bot token; missing decision record is specific.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

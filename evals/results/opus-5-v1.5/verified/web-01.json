@@ -1,0 +1,10 @@
+{
+  "caseId": "web-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Immediate login quoted; stale sessions not evicted is a concrete distinct attack on the session issuer.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Token replay after use is a distinct weakness from the 24h window; quotes support token-based reset.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"24-hour validity quoted; interception of reset email leading to takeover is concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Token in link quoted; leakage via history, logs and referrer is a distinct disclosure channel.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Internet-facing public reset page with token; guessing/brute force of tokens is a distinct attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names email-based reset request form; account enumeration is concrete disclosure.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Public unauthenticated reset request endpoint named; flooding/email quota exhaustion is specific.\"},{\"id\":\"T8\",\"keep\":true,\"reason\":\"Design names password change action; missing notification and record of change is specific accountability gap.\"},{\"id\":\"T9\",\"keep\":true,\"reason\":\"Reset page password field and internet-facing login quoted; weak-password acceptance enabling guessing is concrete.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-web-02",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states public-read bucket; concrete unauthenticated access to other customers' attachments.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design states console has access to every customer record; broad access abuse is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Any file attachable and opened in agent browser; script-in-attachment attack distinct from T2.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Any file accepted plus public URL on our domain; distinct malware/phishing hosting abuse.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Public unauthenticated intake named in design; flooding/cost and queue harm is specific.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Missing audit of access to named customer records; distinct from T2's access scoping.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

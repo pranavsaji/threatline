@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-api-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states client-supplied merchantId and partners serve several merchants; cross-merchant billing abuse is concrete.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design names API key as sole credential; leaked-key abuse creating billable shipments is supported and distinct.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Internet-reachable billable endpoint; bulk creation flooding causes distinct cost/junk harm.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Declared value is client-supplied and billing is automatic; manipulation attack is concrete and distinct.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Design names automatic billing by third-party partners; missing partner attribution on charges is specific.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Caller-supplied merchantId enables enumeration of merchant existence/relationships; distinct disclosure harm.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

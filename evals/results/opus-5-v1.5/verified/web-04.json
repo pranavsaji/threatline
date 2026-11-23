@@ -1,0 +1,10 @@
+{
+  "caseId": "web-04",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms sequential ids, PDF with PII; concrete IDOR enumeration attack on named endpoint.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack: unauthenticated access rather than cross-customer ownership bypass; endpoint and PII supported.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Concrete resource-exhaustion attack on named download endpoint generating PDFs; distinct harm from disclosure.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Sequential id scheme named in design; enumeration of existence/volume is distinct harm from retrieving PDFs.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Caching of the documents the design serves is specific; distinct attacker and path from IDOR.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names the download action; missing audit record of that action is specific, not generic hygiene.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Insecure URL access to uploaded photos: specific to this feature's server storage with no access controls stated.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Resource exhaustion via open sign-up and unbounded uploads: specific to this feature's combination of elements.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Malicious file upload rendered in chat: specific to this feature's upload and display of user content.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Different harm from c1: c1 is about phishing buyers; x4 is about inability to enforce accountability.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Uploaded chat photos readable by anyone who has or guesses the image URL"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unbounded photo uploads let anyone fill server storage and run up cost"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Uploaded image files are not validated, so a seller can push malicious content into a buyer's app"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Chat history kept only on the phone, so abusive senders cannot be held to account"
+    }
+  ]
+}

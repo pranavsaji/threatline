@@ -1,0 +1,27 @@
+{
+  "caseId": "mobile-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Design specifies 10-second updates and live polling. DoS from surge or replay follows. Specific harm stated.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": true,\n      \"reason\": \"No end condition stated in design. Customer tracking post-delivery follows from that omission. Specific scenario.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": false,\n      \"reason\": \"Introduces components (CDN, proxy, shared devices) and users (later device users) not mentioned in design.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "DenialOfService",
+      "title": "Ten-second updates from every driver plus live polling can overwhelm the location pipeline"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "No stated end to tracking, so drivers are followed home after the delivery"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Driver location and phone number cached by browsers, shared proxies or CDNs"
+    }
+  ]
+}

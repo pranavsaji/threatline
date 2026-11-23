@@ -1,0 +1,47 @@
+{
+  "caseId": "fresh-ai-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T2\",\n      \"reason\": \"Both describe outsider email hijacking agent via instructions in message body to perform unauthorized actions.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe attacker emailing to trigger agent attaching and sending private drive files to external recipient.\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe spoofed invites sent in employee's name to attacker-specified recipients without verification.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "InformationDisclosure",
+      "title": "Attacker uses an emailed meeting request to pull private drive files out to themselves"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "Anyone who can email an employee can give the assistant instructions (prompt injection)"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Assistant runs with the employee's full inbox, calendar and drive access"
+    },
+    {
+      "id": "T4",
+      "stride": "Spoofing",
+      "title": "Sender and attendee addresses from the email are trusted without verification"
+    },
+    {
+      "id": "T5",
+      "stride": "Tampering",
+      "title": "Earlier inbox content poisons later decisions"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "Actions taken without the employee cannot be distinguished from their own"
+    },
+    {
+      "id": "T7",
+      "stride": "DenialOfService",
+      "title": "Automated email flood turns into calendar spam and uncapped LLM cost"
+    }
+  ]
+}

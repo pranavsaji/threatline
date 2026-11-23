@@ -1,0 +1,27 @@
+{
+  "caseId": "fresh-mobile-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"No access control stated; URL enumeration is plausible server-side vulnerability\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Open sign-up plus no upload limits enables resource exhaustion attack\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"No file validation stated; malicious content injection is specific and distinct\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Uploaded chat photos readable by anyone who has or guesses the image URL"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unbounded photo uploads let anyone fill server storage and run up cost"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Uploaded image files are not validated, so a seller can push malicious content into a buyer's app"
+    }
+  ]
+}

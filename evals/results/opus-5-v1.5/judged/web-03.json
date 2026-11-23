@@ -1,0 +1,47 @@
+{
+  "caseId": "web-03",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": false,\n      \"reason\": \"Design states 'logged-in user' implies session-based identity; threat assumes implementation flaw contradicting design\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Generic unauthorized access concern, not specific to this account settings feature\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Valid: email not verified, enables misdirected notifications and third-party takeover\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Valid: address change diverts shipments; distinct attack vector from c2's CSRF\"\n    },\n    {\n      \"id\": \"x5\",\n      \"valid\": true,\n      \"reason\": \"Valid: no notification to old email enables undetected takeover window\"\n    },\n    {\n      \"id\": \"x6\",\n      \"valid\": false,\n      \"reason\": \"Generic caching hygiene, not made material by this settings page design\"\n    },\n    {\n      \"id\": \"x7\",\n      \"valid\": true,\n      \"reason\": \"Valid: phone change enables SMS interception for persistent access, distinct from c3\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Server may trust a user identifier sent by the settings form"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Personal data exposed to unauthorised users"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "New email address is accepted without proving the user owns it"
+    },
+    {
+      "id": "x4",
+      "stride": "Tampering",
+      "title": "Shipping address can be rewritten to divert goods"
+    },
+    {
+      "id": "x5",
+      "stride": "Repudiation",
+      "title": "Email change is silent, so a hijack goes unnoticed and undisputed"
+    },
+    {
+      "id": "x6",
+      "stride": "InformationDisclosure",
+      "title": "Account settings page with email, phone and address left in browser or proxy cache"
+    },
+    {
+      "id": "x7",
+      "stride": "ElevationOfPrivilege",
+      "title": "Instant phone number change redirects SMS recovery and step-up codes to the attacker"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Missing role check lets non-admins access admin endpoint - specific authorization flaw in feature design\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Expensive synchronous bulk operation with no rate limit or async handling - specific DoS risk\"},{\"id\":\"x3\",\"valid\":false,\"reason\":\"Feature allows admins to export all users by design - compromised admin is generic account security issue\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Logging material due to c1 IDOR risk - inability to scope cross-tenant breaches is separate harm\"},{\"id\":\"x5\",\"valid\":false,\"reason\":\"Cache header hygiene is generic - bulk download doesn't make it specific to this feature design\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any member, not just an admin, can pull the whole user directory"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Repeated full-directory export requests exhaust database and server resources"
+    },
+    {
+      "id": "x3",
+      "stride": "InformationDisclosure",
+      "title": "Unbounded bulk PII export gives one compromised admin account the whole directory in one request"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No record of who exported which organisation's personal data"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Exported CSV of names, emails and phone numbers left cacheable by browsers and shared proxies"
+    }
+  ]
+}

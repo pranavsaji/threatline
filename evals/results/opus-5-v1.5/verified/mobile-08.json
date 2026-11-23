@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-08",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design confirms email-only signup and $10 dual credit; concrete mass farming attack on credit budget.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Design names referral codes; enumeration/guessing of codes to redeem against strangers is a distinct attack.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Distinct attack: replaying or stacking redemptions on one account against the credit grant described.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same attacker signing up own referral code with new email for same credit harm as T1.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Email-only sign-up quoted; account enumeration is a distinct disclosure harm to real users.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Design names real-money credit grant at unauthenticated sign-up; missing redemption attribution is specific, not generic.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

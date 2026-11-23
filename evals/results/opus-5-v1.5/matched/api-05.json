@@ -1,0 +1,42 @@
+{
+  "caseId": "api-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"Both describe exploiting client-controlled org id in request body to export another organisation's user data\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"Both describe CSV formula injection via user-supplied fields executing commands when admin opens the export\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Organisation id taken from the request body lets a caller export another organisation's users"
+    },
+    {
+      "id": "T2",
+      "stride": "ElevationOfPrivilege",
+      "title": "Any member, not just an admin, can pull the whole user directory"
+    },
+    {
+      "id": "T3",
+      "stride": "DenialOfService",
+      "title": "Repeated full-directory export requests exhaust database and server resources"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Formula injection in exported CSV runs commands when an admin opens the file"
+    },
+    {
+      "id": "T5",
+      "stride": "InformationDisclosure",
+      "title": "Unbounded bulk PII export gives one compromised admin account the whole directory in one request"
+    },
+    {
+      "id": "T6",
+      "stride": "Repudiation",
+      "title": "No record of who exported which organisation's personal data"
+    }
+  ]
+}

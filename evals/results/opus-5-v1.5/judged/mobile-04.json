@@ -1,0 +1,37 @@
+{
+  "caseId": "mobile-04",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":true,\n    \"reason\":\"Design explicitly states server trusts client flag; direct bypass attack is specific and plausible.\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":false,\n    \"reason\":\"Duplicate of x1—same vulnerability (server trusts client input) described from receipt angle instead of flag.\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":false,\n    \"reason\":\"Assumes absence of authentication not stated; design scope is payment flow not full API security.\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":false,\n    \"reason\":\"Describes impact and consequences of x1, not a separate attack; lacks attacker action.\"\n  },\n  {\n    \"id\":\"x5\",\n    \"valid\":true,\n    \"reason\":\"One-way unlock without revocation logic enables buy-refund cycling; distinct temporal attack from c1's spatial reuse.\"\n  }\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Client can unlock premium for free by sending purchased: true"
+    },
+    {
+      "id": "x2",
+      "stride": "Spoofing",
+      "title": "Receipt is accepted without server-side validation against the app store"
+    },
+    {
+      "id": "x3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Unlock endpoint has no stated authentication or account binding"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "No link from an unlocked account back to a real store transaction"
+    },
+    {
+      "id": "x5",
+      "stride": "Tampering",
+      "title": "Premium stays unlocked after refund or cancellation, enabling buy-and-refund cycles"
+    }
+  ]
+}

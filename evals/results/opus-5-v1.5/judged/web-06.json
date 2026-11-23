@@ -1,0 +1,37 @@
+{
+  "caseId": "web-06",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":true,\"reason\":\"Link expiry explicit in design; leak without revocation follows; distinct from enumeration threat c1.\"},{\"id\":\"x2\",\"valid\":true,\"reason\":\"Unlimited downloads and uploads follow from design; cost DOS is specific attack; not duplicate.\"},{\"id\":\"x3\",\"valid\":true,\"reason\":\"Upload without type restrictions follows from design; same-origin XSS differs from phishing threat c3.\"},{\"id\":\"x4\",\"valid\":true,\"reason\":\"Anonymous access explicit in design; attribution loss is specific harm; not previously counted.\"},{\"id\":\"x5\",\"valid\":true,\"reason\":\"Public links enable bot indexing; search discovery is distinct from deliberate enumeration in c1.\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Links never expire, so a leaked link grants permanent access with no way to revoke"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "Unauthenticated downloads and unrestricted uploads run up S3 storage and egress cost"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Uploaded HTML or SVG served from the share domain runs attacker script in viewers' browsers"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Anonymous access leaves no record of who read a shared file"
+    },
+    {
+      "id": "x5",
+      "stride": "InformationDisclosure",
+      "title": "Crawlers, link previews and caches index shared documents into public search results"
+    }
+  ]
+}

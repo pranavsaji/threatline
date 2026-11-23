@@ -1,0 +1,10 @@
+{
+  "caseId": "data-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Design states every internal service can consume topic with card BIN/last four/customer id; concrete disclosure attack.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct attack on produce path: forging payment events corrupts downstream ledgers; shared topic supported by quotes.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Flooding the named shared payment topic stalls consumers; specific to this design's single unprotected channel.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same broad read access to card data across internal consumers; restates T1's disclosure harm.\",\"duplicateOf\":\"T1\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Missing producer identity/attribution on named payment events prevents attributing forged ledger entries; specific accountability gap.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

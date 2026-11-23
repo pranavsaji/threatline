@@ -39,6 +39,11 @@ export const ThreatSchema = z
       })
       .strict()
       .optional(),
+    /**
+     * `gap_check`: Threatline Engine's gap check proposed it after the runs. It starts hidden (dismissed, `unconfirmed`)
+     * and becomes active only when the verifier keeps it.
+     */
+    foundBy: z.literal('gap_check').optional(),
     /** For a `covered` rule-based threat: the id of the AI threat in the same review that covers it. */
     coveredBy: z.string().min(1).optional(),
     /**

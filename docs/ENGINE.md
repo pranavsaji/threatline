@@ -14,7 +14,8 @@ Each stage is its own queue job, so every model call fits a function timeout and
 | 2. Injection check (quarantined) | balanced (`claude-sonnet-5`, falling back to `claude-sonnet-4-6`, then `claude-sonnet-4-5-20250929`) | the raw untrusted text, fenced with a random nonce | a typed sketch whose `injectionSuspected` flag joins the scanner's: if set, every AI threat waits for a champion and the verifier is skipped. If the check cannot complete, the verifier is skipped too |
 | 3. Three independent runs, in parallel | deep (`claude-opus-5`, falling back through `claude-opus-4-8`, `-4-7`, `-4-6`) | the Threatline agent prompt over the review context, with untrusted text fenced by a random nonce: exactly what a Rovo agent run sees | three threat models, each threat quoting its evidence |
 | 4. Assemble (deterministic) | none | the three runs | consensus (a threat needs a majority of runs; runs match on the quoted passage and wording, whatever STRIDE category each gave, each threat joins the closest match, and one run counts once per threat, for votes and for severity alike), quotes checked word for word against the sources, the rule-based floor, coverage, severity and STRIDE/ASVS/CWE mappings, the risk score |
-| 5. Verify (adversarial) | deep | each accepted AI threat with the quotes it rests on, fenced as data | keep or drop, with a reason |
+| 5. Gap check | deep | the same fenced review context, the threats the runs agreed on, and the ones only one run raised | at most 3 threats the list misses, after a one-line check of each threat reviews commonly leave out (automated abuse, staff screens showing other people's content, no record of who deleted or paid, cached documents, attacker text reaching logs or exports). Each is stored **hidden** (dismissed, "unconfirmed") until the verifier keeps it |
+| 6. Verify (adversarial) | deep | each accepted AI threat and each gap-check candidate (listed last, marked "added") with the quotes it rests on, fenced as data | keep or drop, with a reason |
 
 Code decides what a verifier verdict does:
 
@@ -25,8 +26,11 @@ Code decides what a verifier verdict does:
   disappears.
 - Rule-based threats are never sent to the verifier. One that a dropped AI threat covered becomes active again, with
   its requirement.
-- When injection is suspected anywhere in the material, the verifier does not run. A threat citing a flagged source is
-  never demoted.
+- A gap-check candidate becomes active (with its requirement) only when the verifier keeps it; otherwise it stays
+  hidden with the verifier's reason. So the gap check alone never changes what gates Done, and a candidate citing a
+  flagged source is never made active.
+- When injection is suspected anywhere in the material, neither the gap check nor the verifier runs. A threat citing a
+  flagged source is never demoted.
 
 Model errors become failed runs, so a review whose model never answers settles as failed and the gate blocks (AI
 errors count as missing). Failed runs never count as answers: an outage keeps the earlier revision's AI threats
@@ -64,8 +68,8 @@ On this model the verifier does not raise precision: when it drops an AI threat,
 threat covered comes back (the floor working as designed). Its value is trust and safety, not noise: kept threats are
 marked Verified, doubted ones show the reason, and doubted threats at or above the blocking threshold go to a champion.
 In the product both stages run on `claude-opus-5`. Measured on that model through the same path (all 55 cases, verifier on
-Opus 5, prompt v1.4.0): 15 of 15 poisoned cases held, graded high-severity recall 98.3% (59 of 60) and recall 93.1%,
-judged precision of model-proposed threats 81.1% (`evals/results/2026-11-22-recorded-all-engine-opus-5-v1.4.md`,
-`evals/results/2026-11-22-match-opus-5-v1.4-all.md`). Severity is computed from each threat's `rating` (attacker, effort,
+Opus 5, prompt v1.4.0, with the gap check): 15 of 15 poisoned cases held, graded high-severity recall 100% (60 of 60) and
+recall 97.7% (85 of 87), judged precision of model-proposed threats 82.4% (`evals/results/2026-11-23-recorded-all-engine-opus-5-v1.5.md`,
+`evals/results/2026-11-23-match-opus-5-v1.5-all.md`); before the gap check 98.3% (59 of 60), 93.1% and 81.1%. Severity is computed from each threat's `rating` (attacker, effort,
 reach, harm) by a fixed table, lowered by at most one level from the model's own score, and the runs' median counts. The in-product verifier uses its own rubric (does the quoted
 evidence support the threat?), not the offline judge's, so judged precision is not the product grading itself.

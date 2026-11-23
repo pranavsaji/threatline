@@ -1,0 +1,17 @@
+{
+  "caseId": "fresh-api-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[{\"id\":\"x1\",\"valid\":false,\"reason\":\"Design does not mention sensitive fields like cost price or internal flags that could be exposed\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Free-text filters let the public filter on fields that were never meant to be public"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-data-02",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":false,\n    \"reason\":\"Duplicate of c1: same attack (open shared link) and harm (unauthorized reading of salary/health data)\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":false,\n    \"reason\":\"Duplicate of c1: c1 already covers reading salary and health-plan rows; export is implicit capability\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":true,\n    \"reason\":\"Distinct DoS attack via query abuse; specific to broad sharing plus permanent links design\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":true,\n    \"reason\":\"Distinct repudiation issue: audit trail misattribution specific to health data compliance requirements\"\n  }\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Anyone holding a shared dashboard link can read salary and health-plan rows"
+    },
+    {
+      "id": "x2",
+      "stride": "InformationDisclosure",
+      "title": "Row-level data for salary and health tables is published with no row-level restriction per viewer"
+    },
+    {
+      "id": "x3",
+      "stride": "DenialOfService",
+      "title": "Any employee with a link can trigger unbounded warehouse queries, running up cost and starving other jobs"
+    },
+    {
+      "id": "x4",
+      "stride": "Repudiation",
+      "title": "Access to health and salary data is attributed to the analyst, not the viewer"
+    }
+  ]
+}

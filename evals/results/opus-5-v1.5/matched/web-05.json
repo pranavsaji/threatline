@@ -1,0 +1,52 @@
+{
+  "caseId": "web-05",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"matches\": [\n    {\n      \"expected\": \"E1\",\n      \"reported\": \"T1\",\n      \"reason\": \"T1 describes forged assertions through signature validation failure, matching E1's forging attack.\"\n    },\n    {\n      \"expected\": \"E2\",\n      \"reported\": \"T4\",\n      \"reason\": \"T4 exactly describes user-influenced role attribute manipulation granting admin access.\"\n    },\n    {\n      \"expected\": \"E3\",\n      \"reported\": null,\n      \"reason\": \"No reported threat describes DoS, brute-force, or flooding attacks.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "Spoofing",
+      "title": "Forged SAML assertion accepted because the signature is not fully validated"
+    },
+    {
+      "id": "T2",
+      "stride": "Tampering",
+      "title": "RelayState used after login sends employees to an attacker's site"
+    },
+    {
+      "id": "T3",
+      "stride": "ElevationOfPrivilege",
+      "title": "Internet-facing admin portal has no second factor or network restriction for admin sessions"
+    },
+    {
+      "id": "T4",
+      "stride": "ElevationOfPrivilege",
+      "title": "Admin access granted from a role attribute the user can influence"
+    },
+    {
+      "id": "T5",
+      "stride": "Spoofing",
+      "title": "Captured assertion can be replayed to log in as that employee"
+    },
+    {
+      "id": "T6",
+      "stride": "Tampering",
+      "title": "XML signature wrapping lets an attacker swap assertion contents past signature checks"
+    },
+    {
+      "id": "T7",
+      "stride": "ElevationOfPrivilege",
+      "title": "Revoked or demoted employees keep admin access because roles are only read at login"
+    },
+    {
+      "id": "T8",
+      "stride": "Repudiation",
+      "title": "No record of who signed in as admin or what they changed in the portal"
+    }
+  ]
+}

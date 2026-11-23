@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-data-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"verdicts\":[\n  {\n    \"id\":\"x1\",\n    \"valid\":true,\n    \"reason\":\"Export function stated in design, bulk exfiltration of all customer PII is direct consequence.\"\n  },\n  {\n    \"id\":\"x2\",\n    \"valid\":true,\n    \"reason\":\"Nightly job with no stated size limits, large/malformed file causes denial of service.\"\n  },\n  {\n    \"id\":\"x3\",\n    \"valid\":false,\n    \"reason\":\"Assumes CSV contains customer IDs and import updates existing records, neither stated in design.\"\n  },\n  {\n    \"id\":\"x4\",\n    \"valid\":false,\n    \"reason\":\"Assumes summary contains row data and email from untrusted input, contradicts 'emails the uploader'.\"\n  }\n]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "InformationDisclosure",
+      "title": "Whole-table CSV export lets staff walk away with every customer's personal data"
+    },
+    {
+      "id": "x2",
+      "stride": "DenialOfService",
+      "title": "One oversized or malformed file stalls the nightly import for everyone"
+    },
+    {
+      "id": "x3",
+      "stride": "Tampering",
+      "title": "Uploader can overwrite or corrupt existing customer records by supplying ids in the CSV"
+    },
+    {
+      "id": "x4",
+      "stride": "InformationDisclosure",
+      "title": "Summary email carries customer personal data to an address taken from the upload"
+    }
+  ]
+}

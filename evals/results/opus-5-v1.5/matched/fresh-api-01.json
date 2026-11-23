@@ -1,0 +1,42 @@
+{
+  "caseId": "fresh-api-01",
+  "promptVersion": "match-v1",
+  "replies": [
+    {
+      "text": "```json\n{\"matches\":[{\"expected\":\"E1\",\"reported\":\"T1\",\"reason\":\"Same attack: partner bills unauthorized merchant by naming merchantId they don't serve\"},{\"expected\":\"E2\",\"reported\":\"T4\",\"reason\":\"Same attack: manipulating declared value in request to affect billing or insurance\"},{\"expected\":\"E3\",\"reported\":\"T5\",\"reason\":\"Same attack: partner denies creating shipments due to missing audit trail\"}]}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "stride": "ElevationOfPrivilege",
+      "title": "Partner can bill any merchant by naming a merchantId it does not work for"
+    },
+    {
+      "id": "T2",
+      "stride": "Spoofing",
+      "title": "A leaked static API key lets anyone create billable shipments"
+    },
+    {
+      "id": "T3",
+      "stride": "DenialOfService",
+      "title": "Automated bulk shipment creation runs up merchant cost"
+    },
+    {
+      "id": "T4",
+      "stride": "Tampering",
+      "title": "Declared value is taken from the partner request and trusted for billing"
+    },
+    {
+      "id": "T5",
+      "stride": "Repudiation",
+      "title": "Merchants cannot prove which partner created a disputed shipment charge"
+    },
+    {
+      "id": "T6",
+      "stride": "InformationDisclosure",
+      "title": "Merchant ids can be probed to confirm which merchants exist and who they work with"
+    }
+  ]
+}

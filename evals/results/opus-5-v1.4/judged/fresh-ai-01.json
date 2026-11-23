@@ -1,0 +1,32 @@
+{
+  "caseId": "fresh-ai-01",
+  "promptVersion": "judge-v1",
+  "replies": [
+    {
+      "text": "```json\n{\n  \"verdicts\": [\n    {\n      \"id\": \"x1\",\n      \"valid\": true,\n      \"reason\": \"Email body as agent input enables prompt injection, distinct from c1's designed feature abuse.\"\n    },\n    {\n      \"id\": \"x2\",\n      \"valid\": false,\n      \"reason\": \"Assumes agent retrieves old emails as context; design only specifies reading inbox, not cross-email RAG.\"\n    },\n    {\n      \"id\": \"x3\",\n      \"valid\": true,\n      \"reason\": \"Acting autonomously in employee identity with no approval creates attribution gap; design confirms this.\"\n    },\n    {\n      \"id\": \"x4\",\n      \"valid\": true,\n      \"reason\": \"Any sender triggers agent with no rate limit stated; flood is plausible DoS.\"\n    }\n  ]\n}\n```",
+      "modelId": "claude-sonnet-4-5"
+    }
+  ],
+  "items": [
+    {
+      "id": "x1",
+      "stride": "Tampering",
+      "title": "Anyone who can email an employee can give the assistant instructions (prompt injection)"
+    },
+    {
+      "id": "x2",
+      "stride": "Tampering",
+      "title": "Earlier inbox content poisons later decisions"
+    },
+    {
+      "id": "x3",
+      "stride": "Repudiation",
+      "title": "Actions appear to come from the employee with no record of why the agent did them"
+    },
+    {
+      "id": "x4",
+      "stride": "DenialOfService",
+      "title": "Automated email flood turns into calendar spam and uncapped LLM cost"
+    }
+  ]
+}

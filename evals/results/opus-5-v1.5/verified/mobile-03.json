@@ -1,0 +1,10 @@
+{
+  "caseId": "mobile-03",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Shared-device session inheritance is a concrete spoofing attack supported by the shared-device quote.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Distinct repudiation harm: offline note authorship cannot be attributed; needs its own fix.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Design states unencrypted local SQLite cache on shared tablets; concrete disclosure attack.\"},{\"id\":\"T4\",\"keep\":false,\"reason\":\"Same attacker reading cached patient data from shared tablet cache for same harm as T3.\",\"duplicateOf\":\"T3\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Client-side tampering of local rows/sync payloads corrupting backend records is a distinct attack.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Stale offline device overwriting newer clinical notes on sync; design states offline work and shared devices.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Revoked account retaining offline access to cached records is a distinct authorization-persistence attack.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

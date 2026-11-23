@@ -19,7 +19,7 @@ export interface ClockPort {
 }
 
 export type ModelTier = 'fast' | 'balanced' | 'deep';
-export type LlmPurpose = 'extract' | 'propose' | 'verify' | 'requirements' | 'explain' | 'release';
+export type LlmPurpose = 'extract' | 'propose' | 'gaps' | 'verify' | 'requirements' | 'explain' | 'release';
 
 export interface LlmRequest {
   system: string;

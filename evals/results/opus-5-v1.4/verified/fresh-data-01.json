@@ -1,0 +1,10 @@
+{
+  "caseId": "fresh-data-01",
+  "promptVersion": "v1.4.0",
+  "replies": [
+    {
+      "text": "{\"verdicts\":[{\"id\":\"T1\",\"keep\":true,\"reason\":\"Export to CSV is in design; concrete bulk PII exfiltration by insider.\"},{\"id\":\"T2\",\"keep\":true,\"reason\":\"Upload and nightly batch job present; oversized file stalling imports is concrete.\"},{\"id\":\"T3\",\"keep\":true,\"reason\":\"Import without sanitisation plus export both in design; CSV formula injection concrete.\"},{\"id\":\"T4\",\"keep\":true,\"reason\":\"Rows written straight into customers table supports injection attack on import path.\"},{\"id\":\"T5\",\"keep\":true,\"reason\":\"Direct row-to-table mapping supports record overwrite/reassignment by uploader.\"},{\"id\":\"T6\",\"keep\":true,\"reason\":\"Summary email to uploader is in design; PII leakage/redirection plausible attack.\"},{\"id\":\"T7\",\"keep\":true,\"reason\":\"Direct writes with no provenance; unattended bulk import repudiation is design-linked.\"}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
