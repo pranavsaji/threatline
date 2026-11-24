@@ -5,6 +5,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import type { ReviewJob } from '../jobs/types.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 export const RERUN_LABEL = 'threatline-review';
 
@@ -106,7 +107,13 @@ export async function onIssueChange(deps: CoreDeps, raw: unknown): Promise<void>
     if (allowed) job = { kind: 'gather', issueId: e.issue.id, reason: 'rerun', ...actor };
     else if (items.some((i) => names(i).some((n) => RELEVANT.has(n)))) job = { kind: 'gather', issueId: e.issue.id, reason: 'updated', ...actor };
   }
-  const jobs = [job, await incidentJob(deps, e, items, policy.value, actor)].filter((j): j is ReviewJob => j !== null);
+  let jobs = [job, await incidentJob(deps, e, items, policy.value, actor)].filter((j): j is ReviewJob => j !== null);
+  // Paid via Atlassian: an inactive license queues no review (a gather, or an incident's re-reviews); verdict refreshes
+  // still run. The manifest's appIsLicensed filter normally skips this trigger first (docs/LICENSING.md).
+  if (jobs.some((j) => j.kind === 'gather' || j.kind === 'incident') && !isLicensed(await deps.license.state())) {
+    licenseRefusal('trigger.issue', { issueId: e.issue.id });
+    jobs = jobs.filter((j) => j.kind !== 'gather' && j.kind !== 'incident');
+  }
   if (jobs.length === 0) return;
   const pushed = await deps.queue.push(jobs);
   if (!pushed.ok) log('trigger.issue.push_failed', { issueId: e.issue.id, code: pushed.error.code });

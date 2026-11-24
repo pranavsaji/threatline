@@ -2,6 +2,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import type { ReviewJob } from '../jobs/types.js';
 import { ownPageId } from '../services/confluence-page.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 type PageEvent = { content?: { id?: unknown }; page?: { id?: unknown }; atlassianId?: unknown };
 
@@ -22,6 +23,11 @@ export async function onPageChange(deps: CoreDeps, raw: unknown): Promise<void> 
   const own = await Promise.all(ids.map((issueId) => ownPageId(deps, issueId)));
   const jobs: ReviewJob[] = ids.filter((_, n) => own[n] !== id).map((issueId) => ({ kind: 'gather', issueId, reason: 'page_changed', ...actor }));
   if (jobs.length === 0) return;
+  // Paid via Atlassian: an inactive license queues no review (docs/LICENSING.md).
+  if (!isLicensed(await deps.license.state())) {
+    licenseRefusal('trigger.page', { pageId: id });
+    return;
+  }
   const pushed = await deps.queue.push(jobs);
   if (!pushed.ok) log('trigger.page.push_failed', { pageId: id, code: pushed.error.code });
 }

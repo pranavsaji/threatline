@@ -19,6 +19,7 @@ import { Notifications } from './Notifications.js';
 import { Runs } from './Runs.js';
 import { DataRetention } from './DataRetention.js';
 import { Suppressions } from './Suppressions.js';
+import { LicenseBanner } from '../components/LicenseBanner.js';
 
 const SECTIONS = [
   { id: 'setup', title: 'Setup checklist', needsPolicy: false },
@@ -80,6 +81,7 @@ export function AdminPage({ api }: { api: AdminApi }) {
           ))}
         </ul>
       </nav>
+      {dto?.licenseInactive && <LicenseBanner />}
       {dto && wizard && <FirstRun api={api} policy={dto.policy} onSaved={onSaved} />}
       {at('setup', <SetupChecklist api={api} reviewAuthors={dto?.policy.reviewAuthors?.length ?? 0} {...(dto?.policy.reviewMode ? { reviewMode: dto.policy.reviewMode } : {})} />)}
       {policyError && (

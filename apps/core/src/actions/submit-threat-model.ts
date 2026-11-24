@@ -9,6 +9,7 @@ import { INGEST_LAST_AT_KEY } from '../resolvers/admin.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
 import { consumeSubmissionToken } from '../services/submission-token.js';
 import { callerOf, ISSUE_KEY, type ActionPayload } from './common.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 export interface IngestResult {
   reviewId: string;
@@ -87,7 +88,9 @@ export async function ingestSample(
 
 export type SubmitResult =
   | { saved: true; valid: boolean; received: number; expected: number; message: string }
-  | { saved: false; error: 'invalid_input' | 'invalid_token' | 'not_found' | 'not_review_author' | 'engine_mode' | 'project_not_enabled' | 'complete' | 'budget' | 'rate_limited' | 'unavailable' };
+  | { saved: false; error: 'invalid_input' | 'invalid_token' | 'not_found' | 'not_review_author' | 'engine_mode' | 'project_not_enabled' | 'complete' | 'budget' | 'rate_limited' | 'unavailable' }
+  /** Paid via Atlassian: the site's license is inactive, so no agent run is saved (docs/LICENSING.md). */
+  | { saved: false; error: 'license_inactive'; message: string };
 
 /**
  * CREATE action the agent calls to save its threat model (Automation "take actions" runs it unattended; chat and
@@ -101,6 +104,7 @@ export async function submitThreatModel(payload: ActionPayload & { issueKey?: un
     return { saved: false as const, error };
   };
   if (!ISSUE_KEY.test(issueKey) || typeof payload.threatModelJson !== 'string') return deny('invalid_input', 'invalid_input');
+  if (!isLicensed(await deps.license.state())) return { saved: false, error: 'license_inactive', message: licenseRefusal('action.submit') };
   const caller = callerOf(payload);
   if (!caller) return deny('no_caller', 'not_found');
   const issue = await deps.jira.issue(issueKey);

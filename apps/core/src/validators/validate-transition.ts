@@ -2,6 +2,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { readVerdict, refreshVerdict } from '../services/verdict-service.js';
 import { VALIDATOR_SEEN_KEY } from '../resolvers/admin.js';
+import { isLicensed } from '../services/license.js';
 
 /** Remembers (once a day per project) that the gate ran, for the admin setup checklist. Best effort. */
 async function markSeen(deps: CoreDeps, issueKey: string | undefined): Promise<void> {
@@ -28,11 +29,17 @@ const blocked = (errorMessage: string): Outcome => ({ result: false, errorMessag
 /**
  * The Done gate. Reads the verdict from app storage, which only Threatline can write — never the `threatline.verdict` issue
  * property, which anyone who can edit the work item can overwrite. No stored verdict yet: compute it once. Fails closed:
- * only `pass` and `warn` let the transition through; every error or unknown value blocks with a message.
+ * only `pass` and `warn` let the transition through; every error or unknown value blocks with a message. The one
+ * exception: with an inactive Paid via Atlassian license the gate is open, so lapsed billing never traps work.
  */
 export async function validateTransition(deps: CoreDeps, args: { issue?: { key?: string; id?: string } }): Promise<Outcome> {
   let id = args.issue?.id;
   await markSeen(deps, args.issue?.key);
+  // Paid via Atlassian: an inactive license never traps a customer's work behind the gate (docs/LICENSING.md).
+  if (!isLicensed(await deps.license.state())) {
+    log('license.gate_open', { project: args.issue?.key?.split('-')[0]?.slice(0, 64) ?? '' });
+    return { result: true };
+  }
   if (!id && args.issue?.key) {
     const issue = await deps.jira.issue(args.issue.key);
     if (!issue.ok) return blocked(UNREADABLE);

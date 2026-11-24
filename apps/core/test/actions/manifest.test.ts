@@ -119,3 +119,19 @@ describe('Marketplace readiness (Task 33)', () => {
     expect(scopes.filter((s) => /fetch|backend|client/.test(s))).toEqual([]);
   });
 });
+
+describe('manifest: Paid via Atlassian licensing stays off until the February flip (docs/LICENSING.md)', () => {
+  it('licensing is not enabled yet, so production can still be installed by link', () => {
+    // Step 1 of the February runbook in docs/LICENSING.md changes this test in the same commit as the manifest.
+    expect((m.app.licensing as { enabled?: unknown } | undefined)?.enabled).not.toBe(true);
+  });
+
+  it('the patch in docs/LICENSING.md names triggers that exist here', () => {
+    const doc = readFileSync(join(root, '..', '..', 'docs', 'LICENSING.md'), 'utf8');
+    const keys = new Set(m.modules.trigger!.map((t) => t.key as string));
+    for (const k of ['issue-events', 'page-events']) {
+      expect(keys.has(k)).toBe(true);
+      expect(doc).toContain(`key: ${k}`);
+    }
+  });
+});
