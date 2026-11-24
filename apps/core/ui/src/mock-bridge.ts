@@ -12,6 +12,15 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
   const dto = FIXTURES[state] ?? FIXTURES.ready!;
   return {
     get: async () => structuredClone(dto),
+    // `?view=status` previews the context column; like panel.status it sends only the verdict's top reason.
+    status: async () => ({
+      issueKey: dto.issueKey,
+      verdict: dto.verdict ? { ...structuredClone(dto.verdict), reasons: dto.verdict.reasons.slice(0, 1) } : null,
+      review: dto.review ? { status: dto.review.status, ...(dto.review.failureReason ? { failureReason: dto.review.failureReason } : {}) } : null,
+      inScope: dto.inScope ?? true,
+      ...(dto.scopeMessage ? { scopeMessage: dto.scopeMessage } : {}),
+      ...(dto.licenseInactive ? { licenseInactive: true as const } : {}),
+    }),
     threats: async () => ({ threats: [], cursor: null }),
     rerun: async () => ({ ok: true }),
     diff: async (from, to) => ({ ...structuredClone(DIFF_FIXTURE), ...(from ? { from } : {}), ...(to ? { to } : {}) }),

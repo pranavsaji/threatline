@@ -10,7 +10,7 @@ import { log } from '../adapters/log.js';
 import { RERUN_LABEL } from '../triggers/on-issue-change.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
 import { rolesOf } from '../services/roles.js';
-import { readVerdict, refreshVerdict, scopeRefusal, verdictKey } from '../services/verdict-service.js';
+import { readVerdict, refreshVerdict, scopeRefusal, verdictKey, type StoredVerdict } from '../services/verdict-service.js';
 import { newScopeCache, scopeForViewer, type ScopeCache } from '../services/viewer-scope.js';
 import { PAGE_KEY } from '../services/confluence-page.js';
 import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
@@ -175,6 +175,67 @@ function viewerVerdict<V extends object>(verdict: V | null, score: number | unde
   return (score === undefined ? rest : { ...rest, riskScore: score }) as V;
 }
 
+/**
+ * The verdict this viewer is shown: the stored copy (computed once, which also stores it, when a reviewed item has no
+ * KVS copy yet because it was reviewed before the mirror existed), with ancestors the viewer cannot browse anonymised.
+ */
+async function shownVerdict(deps: CoreDeps, v: Viewer, review: Review | null, stored: StoredVerdict | undefined): Promise<StoredVerdict | null> {
+  let verdict: StoredVerdict | null = stored ?? null;
+  if (!verdict && review) {
+    const fresh = await refreshVerdict(deps, v.issueId);
+    if (fresh.ok) verdict = (await deps.state.get<StoredVerdict>(verdictKey(v.issueId)).catch(() => undefined)) ?? fresh.value;
+  }
+  return verdict ? scopeVerdict(deps, v.accountId, verdict) : null;
+}
+
+/**
+ * The gate status the work item's context column shows (jira:issueContext): the verdict as this viewer sees it, with
+ * its top reason only, and the review's status. No threats, history, requirements or diagram.
+ */
+export interface StatusDto {
+  issueKey: string;
+  verdict: Pick<Verdict, 'state' | 'blockingCount' | 'reasons' | 'overridden' | 'validUntil'> | null;
+  review: Pick<Review, 'status' | 'failureReason'> | null;
+  inScope?: boolean;
+  scopeMessage?: string;
+  licenseInactive?: true;
+}
+
+/**
+ * The same authorisation and verdict as panel.get at a fraction of its reads (no viewer scoping of threats, history or
+ * requirements), because the context column loads it on every work item someone opens.
+ */
+export async function panelStatus(deps: CoreDeps, v: Viewer): Promise<StatusDto | Denied> {
+  const auth = await authorise(deps, v, 'browse');
+  if ('error' in auth) return auth;
+  const [latest, policy, stored, license] = await Promise.all([
+    deps.reviews.latest(v.issueId),
+    deps.config.site(),
+    readVerdict(deps, v.issueId).then((r) => (r.ok ? r.value : undefined)),
+    deps.license.state(),
+  ]);
+  if (!latest.ok || !policy.ok) return { error: 'unavailable' };
+  const review = latest.value;
+  const verdict = await shownVerdict(deps, v, review, stored);
+  const outOfScope = scopeRefusal(auth.issue, policy.value);
+  return {
+    issueKey: auth.issueKey,
+    verdict: verdict
+      ? {
+          state: verdict.state,
+          blockingCount: verdict.blockingCount,
+          reasons: verdict.reasons.slice(0, 1),
+          ...(verdict.overridden ? { overridden: true } : {}),
+          ...(verdict.validUntil ? { validUntil: verdict.validUntil } : {}),
+        }
+      : null,
+    review: review ? { status: review.status, ...(review.failureReason ? { failureReason: review.failureReason } : {}) } : null,
+    inScope: outOfScope === null,
+    ...(outOfScope ? { scopeMessage: outOfScope } : {}),
+    ...(isLicensed(license) ? {} : { licenseInactive: true as const }),
+  };
+}
+
 export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | Denied> {
   const auth = await authorise(deps, v, 'browse');
   if ('error' in auth) return auth;
@@ -189,13 +250,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const [page, license] = await Promise.all([deps.state.get<{ url?: unknown }>(PAGE_KEY(v.issueId)).catch(() => undefined), deps.license.state()]);
   if (!latest.ok || !history.ok || !requirements.ok || !ledger.ok || !policy.ok) return { error: 'unavailable' };
   const review = latest.value;
-  let verdict = stored ?? null;
-  if (!verdict && review) {
-    // No KVS copy yet (reviewed before the mirror existed): compute it once, which also stores it.
-    const fresh = await refreshVerdict(deps, v.issueId);
-    if (fresh.ok) verdict = (await deps.state.get<Verdict & { panelUrl?: string }>(verdictKey(v.issueId)).catch(() => undefined)) ?? fresh.value;
-  }
-  if (verdict) verdict = await scopeVerdict(deps, v.accountId, verdict);
+  const verdict = await shownVerdict(deps, v, review, stored);
   const roles = await rolesOf(deps, v.accountId, v.issueId, policy.value);
 
   const cache = newScopeCache();

@@ -95,6 +95,22 @@ describe('manifest: posture surfaces (Task 29)', () => {
   });
 });
 
+describe('manifest: the gate status in the work item context column', () => {
+  it('a jira:issueContext module serves the status view through the shared UI and resolver, with the panel icon', () => {
+    const ctx = (m.modules['jira:issueContext'] ?? []).find((x) => x.key === 'threatline-status');
+    const panel = (m.modules['jira:issuePanel'] ?? []).find((x) => x.key === 'threatline-panel');
+    expect(ctx).toMatchObject({ resource: 'panel', resolver: { function: 'panelResolverFn' }, title: 'Threatline', icon: panel!.icon });
+    // Jira requires a label (the context button's text).
+    expect(ctx!.label).toBeTruthy();
+  });
+
+  it('the UI router has a view for every Custom UI module key', () => {
+    const router = readFileSync(join(root, 'ui', 'src', 'router.tsx'), 'utf8');
+    const keys = ['jira:issuePanel', 'jira:issueContext', 'jira:adminPage', 'jira:globalPage', 'jira:dashboardGadget'].flatMap((mod) => (m.modules[mod] ?? []).map((x) => x.key as string));
+    for (const k of keys) expect(router, k).toContain(`case '${k}':`);
+  });
+});
+
 describe('Marketplace readiness (Task 33)', () => {
   /**
    * Modules checked as not EAP. EAP modules can only be enabled on development environments, so one here would block
@@ -102,8 +118,10 @@ describe('Marketplace readiness (Task 33)', () => {
    * developer.atlassian.com on 2026-11-18 (both Preview); the rest per docs/research/forge-api-notes.md. A new module
    * fails this test until its status is checked and added.
    */
-  const NOT_EAP = new Set(['sql', 'trigger', 'consumer', 'scheduledTrigger', 'jira:issuePanel', 'jira:adminPage', 'jira:globalPage', 'jira:dashboardGadget', 'jira:workflowValidator', 'jira:entityProperty', 'action', 'rovo:skill', 'rovo:mcp', 'rovo:agent', 'function', 'llm', 'webtrigger']);
+  const NOT_EAP = new Set(['sql', 'trigger', 'consumer', 'scheduledTrigger', 'jira:issuePanel', 'jira:issueContext', 'jira:adminPage', 'jira:globalPage', 'jira:dashboardGadget', 'jira:workflowValidator', 'jira:entityProperty', 'action', 'rovo:skill', 'rovo:mcp', 'rovo:agent', 'function', 'llm', 'webtrigger']);
   // `webtrigger` (CI verification, docs/CI_VERIFICATION.md): a long-standing GA Forge module, no scope needed.
+  // `jira:issueContext` (the gate status in the context column): listed with no EAP or Preview label in the Jira module
+  // index on developer.atlassian.com, checked 2026-11-24.
   // `llm` (Forge LLMs, Threatline Engine): generally available; checked 2026-11-20 (Atlassian community: "Forge LLMs GA").
   it('uses no EAP module, so no separate production manifest is needed', () => {
     const unknown = Object.keys(m.modules).filter((k) => !NOT_EAP.has(k));

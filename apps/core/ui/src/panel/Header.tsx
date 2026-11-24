@@ -3,14 +3,7 @@ import { token } from '@atlaskit/tokens';
 import { RiskRing } from '../components/RiskRing.js';
 import type { PanelDto } from '../types.js';
 import { day, utc } from '../text.js';
-
-const VERDICT: Record<'pass' | 'block' | 'warn', { label: string; icon: string; appearance: 'success' | 'removed' | 'moved' }> = {
-  pass: { label: 'Ready for Done', icon: '✓', appearance: 'success' },
-  block: { label: 'Blocks Done and merge', icon: '✕', appearance: 'removed' },
-  warn: { label: 'Warn only', icon: '!', appearance: 'moved' },
-};
-
-const OVERRIDDEN = { label: 'Gate overridden (break-glass)', icon: '!', appearance: 'moved' as const };
+import { OVERRIDDEN, VERDICT } from './verdict-labels.js';
 
 function relative(iso: string, now = Date.now()): string {
   const m = Math.round((now - Date.parse(iso)) / 60_000);

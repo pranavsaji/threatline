@@ -1,7 +1,7 @@
 import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto, Stride, SuppressionRule, SuppressionsDto } from './types.js';
 import { ciApiOver, type CiApi } from './admin/ci-api.js';
 
-import type { ControlsPostureDto, DeliveryDto } from './types.js';
+import type { ControlsPostureDto, DeliveryDto, StatusDto } from './types.js';
 
 /** A compliance control on the posture page: framework id (SOC2, ISO27001, PCIDSS) and control id. */
 export interface ControlDrillQuery {
@@ -54,6 +54,11 @@ export interface CreatedRequirements {
 /** Everything the panel asks the backend. The Forge implementation and the local mock share this interface. */
 export interface PanelApi {
   get(): Promise<PanelDto | ApiError>;
+  /**
+   * The gate status alone, for the context column (panel.status: the same authorisation and verdict as get, without
+   * threats or history). Absent in an API built by hand, where the context column derives it from get.
+   */
+  status?(): Promise<StatusDto | ApiError>;
   threats(cursor: number): Promise<{ threats: Threat[]; cursor: number | null } | ApiError>;
   rerun(): Promise<{ ok: true } | ApiError>;
   enrich(): Promise<{ added: number; partial: boolean; facts: FactDto[] } | ApiError>;
@@ -92,6 +97,7 @@ export async function forgeApi(): Promise<PanelApi> {
 export function panelApiOver(invoke: Invoke): PanelApi {
   return {
     get: () => invoke('panel.get'),
+    status: () => invoke('panel.status'),
     threats: (cursor) => invoke('panel.threats', { cursor }),
     rerun: () => invoke('panel.rerun'),
     enrich: () => invoke('panel.enrich'),

@@ -105,6 +105,16 @@ modules:
       title: Threatline security review
       # The brand icon, bundled (docs/brand/icon.svg); Forge accepts resource:<key>;<path> for module icons.
       icon: resource:icons;threatline.svg
+  # The gate status on every work item, in the context column on the right, without opening the panel (panel.status:
+  # the panel's authorisation and verdict, without its threats or history). No new scope.
+  jira:issueContext:
+    - key: threatline-status
+      resource: panel
+      resolver:
+        function: panelResolverFn
+      title: Threatline
+      label: Security gate
+      icon: resource:icons;threatline.svg
   jira:adminPage:
     - key: threatline-admin
       resource: panel
