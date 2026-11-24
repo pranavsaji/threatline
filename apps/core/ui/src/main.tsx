@@ -44,6 +44,7 @@ async function start() {
     if (view === 'admin') moduleKey = 'threatline-admin';
     if (view === 'posture') moduleKey = 'threatline-posture';
     if (view === 'gadget') moduleKey = 'threatline-posture-gadget';
+    if (view === 'status') moduleKey = 'threatline-status';
   }
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

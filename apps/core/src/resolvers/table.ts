@@ -1,4 +1,4 @@
-import { panelDelivery, panelDiff, panelEnrich, panelGet, panelRerun, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
+import { panelDelivery, panelDiff, panelEnrich, panelGet, panelRerun, panelStatus, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
 import { requirementsCreate, requirementsSetStatus } from './requirements.js';
 import { reviewConfirm, threatsTriage } from './threats.js';
 import { confluencePublish } from './confluence.js';
@@ -28,6 +28,7 @@ export type ResolverFn = (deps: CoreDeps, v: ResolverViewer, payload: Record<str
 export function resolverTable(env: { enricher: () => Enricher; delivery?: () => DeliverySource; signingKeysReady: () => Promise<boolean>; gateExtensionKey?: () => string | null; ciTriggerUrl?: () => Promise<string> }): Record<string, ResolverFn> {
   return {
     'panel.get': (deps, v) => panelGet(deps, v),
+    'panel.status': (deps, v) => panelStatus(deps, v),
     'panel.threats': (deps, v, payload) => panelThreats(deps, v, payload as { cursor?: unknown }),
     'panel.rerun': (deps, v) => panelRerun(deps, v),
     'panel.enrich': (deps, v) => panelEnrich(deps, v, env.enricher()),
