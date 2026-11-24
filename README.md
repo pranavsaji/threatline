@@ -1,6 +1,6 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1%2C857%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1%2C858%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
@@ -53,7 +53,7 @@ someone allowed to accept it.
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
 | **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
-| **Quality** | 1,857 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Quality** | 1,858 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
 | **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
 
 ## The problem
@@ -421,7 +421,7 @@ pnpm threatline eval --llm fake                             # deterministic base
 
 ## Quality: tests and CI
 
-- **1,857 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **1,858 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
 - **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
   under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
   are tested but not part of that figure.
