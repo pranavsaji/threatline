@@ -8,7 +8,7 @@ import { acceptanceDecide, acceptanceRequest, acceptanceRevoke, breakGlassOverri
 import { ledgerExport, ledgerProof, ledgerTreeHead, ledgerVerify } from './ledger.js';
 import { postureDrill, postureGet, releaseReport } from './posture.js';
 import { complianceExport, postureControlDrill, postureControls } from './compliance.js';
-import { attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
+import { attestationCheck, attestationCopy, keysCopied, keysPublic, keysRotate } from './attestations.js';
 import { inboxDecide, inboxList } from './inbox.js';
 import { suppressionsCreate, suppressionsList, suppressionsRevoke, suppressionsUnhide } from './suppressions.js';
 import { ciCreateToken, ciRevokeToken, ciTokens } from './ci.js';
@@ -70,6 +70,7 @@ export function resolverTable(env: { enricher: () => Enricher; delivery?: () => 
     'ledger.proof': (deps, v, payload) => ledgerProof(deps, { accountId: v.accountId }, payload),
     'ledger.treeHead': (deps, v) => ledgerTreeHead(deps, { accountId: v.accountId }),
     'attestation.copy': (deps, v, payload) => attestationCopy(deps, v, payload),
+    'attestation.check': (deps, v, payload) => attestationCheck(deps, v, payload),
     'keys.public': (deps, v) => keysPublic(deps, { accountId: v.accountId }),
     'keys.rotate': (deps, v) => keysRotate(deps, { accountId: v.accountId }),
     'keys.copied': (deps, v) => keysCopied(deps, { accountId: v.accountId }),

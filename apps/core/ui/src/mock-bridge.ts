@@ -54,6 +54,16 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
       const token = `threatline-att.v1.mock-${repo.replace('/', '-')}-${commitSha.slice(0, 7)}.sig`;
       return { token, expiresAt: new Date(Date.now() + 86_400_000).toISOString(), prDescriptionSnippet: `Threatline attestation for ${dto.issueKey} (expires tomorrow):\n${token}` };
     },
+    // Fixture only: the mock tokens above count as valid; anything else fails as a changed signature.
+    checkAttestation: async (token, expect = {}) => {
+      const m = /^threatline-att\.v1\.mock-([\w.-]+?)-([\w.-]+)-([0-9a-f]{7})\.sig$/.exec(token.trim().split(/\s+/).at(-1) ?? '');
+      if (!token.includes('att.v1.')) return { valid: false, reason: 'malformed', message: 'Malformed — this is not a complete Threatline attestation.' };
+      if (!m) return { valid: false, reason: 'bad_signature', message: 'Signature invalid — the token was changed after signing.' };
+      const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
+      const attestation = { kid: 'mockkid000000000', issueKey: dto.issueKey, repo: `${m[1]}/${m[2]}`, commitSha: m[3]!.padEnd(40, '0'), verdict: 'pass' as const, issuedAt: new Date().toISOString(), expiresAt, requirements: { verified: 2, total: 2 } };
+      if (expect.commitSha && !expect.commitSha.toLowerCase().startsWith(m[3]!)) return { valid: false, reason: 'other_commit', attestation, message: `For a different commit — the signature is genuine, but it is for commit ${m[3]}.` };
+      return { valid: true, attestation, message: `Valid — signed by Threatline key ${attestation.kid} for ${dto.issueKey} at ${attestation.repo}@${m[3]}, verdict pass, expires ${expiresAt.slice(0, 16).replace('T', ' ')} UTC.` };
+    },
     publish: async () => ({ pageId: '900', url: 'https://example.atlassian.net/wiki/spaces/PAY/pages/900', created: true }),
     explain: async (_r, threatId) => {
       const t = dto.threats.find((x) => x.id === threatId);
