@@ -16,6 +16,8 @@ names to re-capture only some, for example `pnpm exec tsx scripts/listing-screen
 8. `jira-8-check-attestation.png` — "Check an attestation" under Requirements: a pasted merge attestation checks as Valid, with its commit and requirements.
 9. `jira-9-check-attestation-tampered.png` — the same check (dark theme) after one character of the signature changed: "Signature invalid".
 10. `jira-10-setup-use-group.png` — the admin setup checklist on a site without the champion group: one click uses a group the admin is already in.
+11. `jira-11-live-status-label.jpg` — live site (threatline-demo, production), not from the script: the Security gate label in the
+    right-hand column and the panel's headline on a story that blocks Done.
 
 ## Threatline for Bitbucket
 

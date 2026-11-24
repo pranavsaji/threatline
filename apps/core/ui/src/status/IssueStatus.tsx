@@ -67,6 +67,11 @@ export function IssueStatus({ api }: { api: PanelApi }) {
           {view.line}
         </p>
       )}
+      {view.next && (
+        <p title={view.next} style={{ margin: 0, ...small, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {view.next}
+        </p>
+      )}
     </section>
   );
 }

@@ -15,6 +15,8 @@ export interface StatusView {
   open: string | null;
   /** The top reason, or what the state means; null when there is nothing to add. */
   line: string | null;
+  /** The second reason while the gate blocks or warns, so the column (Jira gives it a fixed minimum height) says more than one thing. */
+  next?: string;
 }
 
 const REVIEWING = new Set(['queued', 'gathering', 'awaiting_agent', 'modeling']);
@@ -26,6 +28,7 @@ const REVIEWING = new Set(['queued', 'gathering', 'awaiting_agent', 'modeling'])
 export function statusOf(dto: StatusDto): StatusView {
   const v = dto.verdict;
   const top = v?.reasons[0]?.message ?? null;
+  const second = v?.reasons[1]?.message;
   const open = v && v.state !== 'pass' && v.blockingCount > 0 ? `${v.blockingCount} open` : null;
   const view = (kind: StatusKind, label: string, appearance: StatusView['appearance'], icon: string | null, line: string | null, withOpen = false): StatusView => ({
     kind,
@@ -34,6 +37,7 @@ export function statusOf(dto: StatusDto): StatusView {
     appearance,
     open: withOpen ? open : null,
     line,
+    ...(withOpen && line === top && second ? { next: second } : {}),
   });
 
   // Paid via Atlassian: with the license inactive the Done gate does not block (docs/LICENSING.md), so no verdict is shown.

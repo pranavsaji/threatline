@@ -1,6 +1,6 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1%2C854%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1%2C857%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
@@ -53,7 +53,7 @@ someone allowed to accept it.
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
 | **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
-| **Quality** | 1,854 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Quality** | 1,857 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
 | **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
 
 ## The problem
@@ -108,15 +108,18 @@ node scripts/verify-ledger-proof.mjs docs/examples/ledger-proof.json   # check a
 | ![Accept a risk](docs/screenshots/jira-3-accept-risk.png) **Accepting a risk:** reason, compensating controls, expiry, and an approver who is not you. | ![Posture](docs/screenshots/jira-4-posture-dashboard.png) **Security posture:** open Critical and High, where they are, the 30-day trend. |
 | ![Admin](docs/screenshots/jira-5-admin-policy.png) **Admin:** setup checklist, projects, severity policy, roles, budgets. | ![Injection flagged](docs/screenshots/jira-6-live-injection-flagged.jpg) **Live, on a real site:** the paragraph that told the AI to approve the change, flagged. |
 | ![Merge check fails](docs/screenshots/bitbucket-6-live-merge-check-fails.jpg) **Live Bitbucket merge check:** a sensitive pull request without a valid attestation cannot merge. | ![Tampered attestation](docs/screenshots/bitbucket-3-attestation-tampered.png) **One character changed:** rejected as an invalid signature. |
-<!-- NEW-SCREENSHOTS -->
+| ![Live: Security gate label and headline](docs/screenshots/jira-11-live-status-label.jpg) **Live, on a real site:** the Security gate label in the right-hand column and the panel's headline, on a story that blocks. | ![Security gate label](docs/screenshots/jira-7-status-label.png) **Security gate label** on every work item: the verdict and the top reason, without opening the panel. |
+| ![One-click champion group](docs/screenshots/jira-10-setup-use-group.png) **Setup:** one click to use a group you are already in as the security champions. | ![Bitbucket settings](docs/screenshots/bitbucket-1-repo-settings.png) **Bitbucket repository settings:** trusted Jira keys, extra sensitive paths, block or warn. |
+| ![Check an attestation](docs/screenshots/jira-8-check-attestation.png) **Check an attestation** in the panel: valid, for this work item, repository and commit. | ![Attestation tampered](docs/screenshots/jira-9-check-attestation-tampered.png) **One character changed:** Signature invalid, no Bitbucket needed. |
 
-All listing screenshots come from `scripts/listing-screenshots.ts` against the previews; the two marked *live* are from
+All listing screenshots come from `scripts/listing-screenshots.ts` against the previews; the three marked *live* are from
 the production apps ([index](docs/screenshots/README.md)).
 
 ## What's new
 
 | Version (Jira / Bitbucket) | Date | What changed |
 | --- | --- | --- |
+| Next release | 2026-11 | The Security gate label sizes its frame to its content and shows the second reason when two things block Done; setup checklist items keep their status beside long text. |
 | 5.14.0 / 2.12.0 | 2026-11-24 | **Security gate label** on every work item (`jira:issueContext`): ✕ Blocks Done, ✓ Ready for Done, Reviewing…, Warn only or Not reviewed, with the top reason, without opening the panel. **Check an attestation** in the panel: paste a merge attestation and see whether this site's key signed it, for which work item and commit, or exactly why not. **One-click champion group** from groups the admin is already in. The panel's headline says what stands between the work item and Done. |
 | 5.13.0 / 2.11.0 | 2026-11-24 | Reliability: Forge LLM retries with jittered backoff, queue retries before a run counts as failed, agent timeouts measured from review start, alerts for partial reviews, budgets and Rovo credits ([operations](docs/OPERATIONS.md)). Licensing gate built and off until February 2027 ([licensing](docs/LICENSING.md)). |
 | 5.12.0 | 2026-11-24 | Production cap of 5 Engine reviews per site per month, with per-review ceilings of 400,000 input and 60,000 output tokens. |
@@ -418,7 +421,7 @@ pnpm threatline eval --llm fake                             # deterministic base
 
 ## Quality: tests and CI
 
-- **1,854 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **1,857 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
 - **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
   under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
   are tested but not part of that figure.

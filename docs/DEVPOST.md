@@ -60,7 +60,7 @@ Two Forge apps (Jira + Confluence, and Bitbucket) and a GitHub Action, in TypeSc
 a chain of queue jobs with checkpoints; Forge SQL stores reviews, requirements and the ledger; Forge KVS and secret
 storage hold policy and signing keys; Custom UI with Atlaskit for every surface. The design rule: the model proposes,
 code decides. Consensus, quote grounding, scoring, the verdict and the gates are deterministic and unit-tested
-(1,854 tests, browser journeys, and a 55-case eval set with poisoned twins).
+(1,857 tests, browser journeys, and a 55-case eval set with poisoned twins).
 
 ## Challenges
 
@@ -88,7 +88,7 @@ verbatim quotes, coverage, the verifier) mattered more than adding threat types.
 Marketplace listing, a check that a pull request really touches the code a requirement points to, Teamwork Graph
 memory of past incidents across the organisation, and fix suggestions proposed as pull requests.
 
-## Demo video (3:08)
+## Demo video (3:22)
 
 A rough cut with synthetic narration is built from real screenshots of a fresh site (outside the repo, in
 `threatline-video/`: `python3 build.py` renders the frames, narration and captions into `threatline-demo.mp4` and
@@ -101,6 +101,7 @@ title, and upload it as **public** (the Codegeist rules require a public YouTube
 | 2 | The problem | Every team says it does security review. A checklist in the ticket. A threat model page nobody updates. A reviewer pinged the night before release. It's advisory, so it loses to the deadline. And A.I. made it worse: a chatbot will write you a threat model, but it invents risks, misses real ones, and can be talked into saying the change is fine. |
 | 3 | A new story on a brand-new Jira site | Here is a story on a brand-new Jira site. Customers want to export their order history as a CSV, through a shareable link to a public bucket, chosen by a customer I.D. parameter. And the link never expires. |
 | 4 | Reviewed by itself on Atlassian-hosted Claude models | Nobody set anything up. Within minutes, Threatline Engine reviewed it on Atlassian-hosted Claude models: three independent analyses that must agree, and quote their evidence word for word, then a verifier that checks each threat against those quotes. Risk, one hundred. It blocks Done, and merge. |
+| 4b | The gate's answer where you already look, live on the site | And nobody has to open anything to know. Beside the work item, the Security gate label says it blocks Done, with sixteen items open and the top reason, and the panel's first line names exactly what stands between this story and Done. |
 | 5 | Plain language, quoted, verified, mapped to ASVS and CWE | The threats read like a colleague wrote them. Anyone who can guess the address can download other people's order history. Critical, quoted, verified, and mapped to A.S.V.S. and C.W.E. When the verifier doubts a high-severity threat, here a duplicate, it can't quietly drop it. A security champion decides. |
 | 6 | Move it to Done: blocked, with the reason | Now try to ship it. Done is blocked, and Jira says exactly why: open security requirements at High or above, with a link back to the review. Missing, failed, or out of date reviews block too. The gate fails closed. |
 | 7 | Prompt injection is flagged, never obeyed | Here's the attack that breaks most A.I. reviewers. This epic's design page hides an instruction telling the A.I. to approve the change. Threatline flags the page, treats the text as data, and the threats resting on it wait for a security champion. The model never decides the verdict. Code does. |
