@@ -21,12 +21,27 @@ function relative(iso: string, now = Date.now()): string {
   return h < 48 ? `${h} h ago` : day(iso);
 }
 
-/** Risk ring, verdict (icon + words, never colour alone), last reviewed time, then the top three actions. */
+/**
+ * One sentence a reader takes away from the panel: what stands between this work item and Done, or that nothing does.
+ * Exported for tests; null before the first verdict.
+ */
+export function headlineOf(v: PanelDto['verdict']): string | null {
+  if (!v) return null;
+  const n = v.reasons.length;
+  const things = `${n} ${n === 1 ? 'thing stands' : 'things stand'}`;
+  if (v.state === 'pass' && v.overridden) return `Done and merge are let through by a break-glass override, but ${things} in the way.`;
+  if (v.state === 'pass') return 'Nothing stands between this work item and Done or merge.';
+  if (v.state === 'warn') return `Warn only: Done and merge go through for now, but ${things} in the way.`;
+  return `${things.charAt(0).toUpperCase()}${things.slice(1)} between this work item and Done${n > 3 ? ' (the first three below)' : ''}:`;
+}
+
+/** Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline, then the top three actions. */
 export function Header({ dto, onRerun, busy = false }: { dto: PanelDto; onRerun?: () => void; busy?: boolean }) {
   const v = dto.verdict;
   const overridden = v?.state === 'pass' && v.overridden === true;
   const meta = overridden ? OVERRIDDEN : v ? VERDICT[v.state] : null;
   const actions = (v?.reasons ?? []).slice(0, 3);
+  const headline = headlineOf(v ?? null);
   return (
     <header style={{ display: 'grid', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -49,6 +64,11 @@ export function Header({ dto, onRerun, busy = false }: { dto: PanelDto; onRerun?
           </span>
         </div>
       </div>
+      {headline && dto.review && (
+        <p style={{ margin: 0, font: token('font.heading.xsmall') }} data-testid="threatline-headline">
+          {headline}
+        </p>
+      )}
       {actions.length > 0 && (v?.state !== 'pass' || overridden) && (
         <ul aria-label="What to do next" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
           {actions.map((a, i) => (

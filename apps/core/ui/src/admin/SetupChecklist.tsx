@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react';
+import Button from '@atlaskit/button/new';
 import Lozenge from '@atlaskit/lozenge';
 import { token } from '@atlaskit/tokens';
 import { errorText, isError, type AdminApi, type SetupStatus } from '../bridge.js';
@@ -6,7 +7,7 @@ import type { ApiError } from '../types.js';
 import type { ChampionGroupStatus } from '../../../src/resolvers/setup-groups.js';
 import { AddGate } from './AddGate.js';
 
-type Item = { done: boolean | null; text: string; gate?: boolean; link?: { href: string; label: string } };
+type Item = { done: boolean | null; text: string; gate?: boolean; link?: { href: string; label: string }; useGroups?: string[] };
 
 /** `admin.championGroupStatus`, when the bridge offers it. */
 type GroupApi = { championGroupStatus?: () => Promise<ChampionGroupStatus | ApiError> };
@@ -20,11 +21,13 @@ const SECOND_APPROVER = 'High and Critical risk acceptances need a second person
 export function championGroupItem(g: ChampionGroupStatus): Item {
   const link = { href: g.groupsUrl, label: 'Open Atlassian Administration' };
   const where = 'Atlassian Administration → Directory → Groups';
+  const useGroups = g.candidates && g.candidates.length > 0 ? { useGroups: g.candidates } : {};
   if (g.exists === false)
     return {
       done: false,
-      text: `Security champion group “${g.group}” not found. Create it in ${where} and add yourself, or name an existing group under Roles. Until then nobody can confirm flagged threats. ${SECOND_APPROVER}`,
+      text: `Security champion group “${g.group}” not found. ${useGroups.useGroups ? 'Use a group you are already in, or create' : 'Create'} it in ${where} and add yourself, or name an existing group under Roles. Until then nobody can confirm flagged threats. ${SECOND_APPROVER}`,
       link,
+      ...useGroups,
     };
   if (g.exists === null)
     return { done: null, text: `Could not check the security champion group “${g.group}”: make sure it exists in ${where} and that you are in it. ${SECOND_APPROVER}`, link };
@@ -33,6 +36,7 @@ export function championGroupItem(g: ChampionGroupStatus): Item {
     done: false,
     text: `Security champion group “${g.group}” exists, but ${g.member === false ? 'you are not in it' : 'Threatline could not tell whether you are in it'}: add yourself in ${where} to confirm flagged threats. ${SECOND_APPROVER}`,
     link,
+    ...useGroups,
   };
 }
 
@@ -103,6 +107,25 @@ export function SetupChecklist({
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [group, setGroup] = useState<ChampionGroupStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [using, setUsing] = useState<string | null>(null);
+  const [useError, setUseError] = useState<string | null>(null);
+
+  const loadGroup = () =>
+    void api
+      .championGroupStatus?.()
+      .catch((): ApiError => ({ error: 'unavailable' }))
+      .then((r) => (r && !isError(r) ? setGroup(r) : undefined));
+
+  /** Points the policy's champion group at a group the admin is already in (ledgered as policy.changed). */
+  const useGroup = async (name: string) => {
+    setUsing(name);
+    setUseError(null);
+    const current = await api.getPolicy().catch((): ApiError => ({ error: 'unavailable' }));
+    const saved = isError(current) ? current : await api.setPolicy({ ...current.policy, championGroup: name }).catch((): ApiError => ({ error: 'unavailable' }));
+    setUsing(null);
+    if (isError(saved)) return setUseError(errorText(saved));
+    loadGroup();
+  };
 
   useEffect(() => {
     void api
@@ -110,10 +133,7 @@ export function SetupChecklist({
       .catch((): ApiError => ({ error: 'unavailable' }))
       .then((r) => (isError(r) ? setError(errorText(r)) : setStatus(r)));
     // The group check is its own item: when it fails, the rest of the checklist still shows.
-    void api
-      .championGroupStatus?.()
-      .catch((): ApiError => ({ error: 'unavailable' }))
-      .then((r) => (r && !isError(r) ? setGroup(r) : undefined));
+    loadGroup();
   }, [api]);
 
   return (
@@ -140,9 +160,19 @@ export function SetupChecklist({
                 </a>
               )}
               {item.gate && <AddGate api={api} />}
+              {item.useGroups?.map((name) => (
+                <Button key={name} spacing="compact" isDisabled={using !== null} onClick={() => void useGroup(name)}>
+                  {using === name ? 'Saving…' : `Use “${name}”`}
+                </Button>
+              ))}
             </li>
           ))}
         </ul>
+      )}
+      {useError && (
+        <p role="alert" style={{ margin: 0, color: token('color.text.danger') }}>
+          {useError}
+        </p>
       )}
     </section>
   );

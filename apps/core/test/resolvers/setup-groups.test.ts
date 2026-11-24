@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ok } from '@threatline/shared';
-import { adminChampionGroupStatus, GROUPS_ADMIN_URL } from '../../src/resolvers/setup-groups.js';
+import { adminChampionGroupStatus, championCandidates, GROUPS_ADMIN_URL } from '../../src/resolvers/setup-groups.js';
 import { coreDeps } from '../support/core-deps.js';
 
 const admin = { accountId: 'acc-admin' };
@@ -32,5 +32,23 @@ describe('admin.championGroupStatus (setup checklist)', () => {
   it('Jira administrators only; it creates nothing', async () => {
     const t = deps({ isAdmin: false });
     expect(await adminChampionGroupStatus(t.deps, admin)).toEqual({ error: 'forbidden', message: 'Only a Jira administrator can do this.' });
+  });
+
+  it('offers groups the admin is already in, security and admin groups first, never everyone-groups', async () => {
+    const groups = ['jira-users-acme', 'site-admins', 'confluence-users', 'appsec', 'jira-admins-acme', 'atlassian-addons-admin', 'trusted-users-1', 'security-team'];
+    expect(await adminChampionGroupStatus(deps({ exists: false, groups }).deps, admin)).toMatchObject({
+      exists: false,
+      member: false,
+      candidates: ['security-team', 'jira-admins-acme', 'site-admins', 'appsec'],
+    });
+  });
+
+  it('offers nothing once the admin is in the champion group', async () => {
+    expect(await adminChampionGroupStatus(deps({ exists: true, groups: [GROUP, 'site-admins'] }).deps, admin)).not.toHaveProperty('candidates');
+  });
+
+  it('candidates: at most five, no duplicates, never the current group', () => {
+    expect(championCandidates(['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g1', GROUP], GROUP)).toEqual(['g1', 'g2', 'g3', 'g4', 'g5']);
+    expect(championCandidates(['jira-software-users', 'jira-servicemanagement-users-acme', 'users'], GROUP)).toEqual([]);
   });
 });

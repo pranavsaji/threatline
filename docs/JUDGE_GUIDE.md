@@ -23,10 +23,11 @@ its requirements were handled. No Rovo, Automation rule or other setup was neede
 ## The 2-minute path
 
 1. **Open the admin page**: Jira settings → Apps → **Threatline**. The first-run wizard asks for a project, the transition
-   to guard (for example Done) and the security champion group. Save. Threatline does not create groups: a new site has
-   no `threatline-security-champions` group, so create it (or name an existing group) in **Atlassian Administration →
-   Directory → Groups** and add yourself. The setup checklist says whether the group exists and whether you are in it;
-   only its members confirm flagged threats.
+   to guard (for example Done) and the security champion group. Save. A new site has no `threatline-security-champions`
+   group, and Threatline never creates groups, so the setup checklist offers the groups you are already in: click
+   **Use “site-admins”** (or another) and that group becomes the champion group. You can also create a dedicated group
+   in **Atlassian Administration → Directory → Groups** and name it under Roles. Only its members confirm flagged
+   threats.
 2. **Add the gate**: click **Add the gate for me** (right after saving the wizard, or on the setup checklist).
    Threatline adds **Threatline security gate** to the transition you chose, in team-managed and company-managed
    projects alike. (Jira's team-managed workflow editor does not list app rules, so this is the way there; in a

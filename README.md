@@ -15,6 +15,48 @@ someone allowed to accept it.
 
 ![Threatline issue panel](docs/screenshots/jira-1-issue-panel.png)
 
+## For judges: five minutes
+
+Install [Threatline for Jira](#try-it) on any Jira Cloud site (no Rovo needed), then:
+
+| # | Do | You should see |
+| --- | --- | --- |
+| 1 | Jira settings → Apps → **Threatline**. In the wizard pick a project and its Done transition, save, then click **Add the gate for me**. On the setup checklist, click **Use “&lt;a group you are in&gt;”** for the champion group. | Every checklist item says **Done**. No group to create, no Automation rule, no agent to configure. |
+| 2 | **Demo data** → **Load demo data**. | An epic **Add AI support agent** with stories and two incidents, and a design whose one paragraph tells the AI to approve the change. |
+| 3 | Wait two to four minutes, then open the epic. | Beside the work item: **✕ Blocks Done**. In the panel: a risk score, “*N* things stand between this work item and Done”, threats in plain language with the sentence each one quotes, and a banner naming the paragraph that tried to instruct the AI. |
+| 4 | Move the epic to **Done**. | Refused by **Threatline security gate**, listing the open requirements. |
+| 5 | **Requirements** → mark each one *Verified* with a PR link. Move to Done again. | It goes through. |
+| 6 | **Requirements → Merge attestation**: enter a repository and a 40-character commit, copy the attestation, then paste it into **Check an attestation**. Change one character and check again. | **Valid**, signed for this work item and commit; then **Signature invalid**. The Bitbucket merge check makes the same call on the pull request. |
+| 7 | Admin page → **Risk ledger** → **Verify the ledger**. | The decisions you just made, in a hash chain that checks out intact. |
+
+More detail, Rovo agent mode and troubleshooting: [judge guide](docs/JUDGE_GUIDE.md).
+
+## Built not to cry wolf, and not to be talked round
+
+A gate that blocks for nothing gets switched off; one an AI can be argued out of is worse than none. Each line is a
+rule in code, with tests:
+
+| Guard | What it stops |
+| --- | --- |
+| Three independent runs must agree | A threat only one run imagined does not block. |
+| Every threat quotes the design word for word | Invented facts: a quote that is not in the source drops the threat, and a loose match sends it to a person (99.8% of citations hold). |
+| A verifier checks each threat against its quote | Threats that depend on how the feature *might* be built rather than on what the design says. |
+| Gap-check finds stay hidden until the verifier keeps them | A second reviewer adding work by itself. |
+| Severity comes from stated facts and a fixed table | A model talking itself up; the table can lower the model's rating by one level at most, so the gate errs on the side of blocking. |
+| Text that instructs the AI is flagged and quarantined | “Approve this change” in a design page: the threats resting on it wait for a person, and the verdict is computed by code. |
+| A dismissal repeated three times becomes a suggested rule | The same false positive on every story, without ever hiding a threat at the blocking threshold. |
+| Missing, failed or out-of-date reviews block, with one-click re-run | A gate that quietly passes when the AI is down. |
+
+## What Threatline leaves out, on purpose
+
+- **No code scanning.** Static analysers read code; Threatline reviews the design before the code exists, where a
+  missing authorisation check costs a sentence rather than a release.
+- **No auto-fixing.** It writes requirements and failing test skeletons; people and their coding agents fix.
+- **No egress.** Every model call runs on Atlassian-hosted Forge LLMs, and nothing leaves Atlassian.
+- **No group or membership changes.** It can point its policy at a group you are already in; it never creates one.
+- **Not a compliance certificate.** Control mappings are indicative, and AI review is assistance, not assurance
+  ([terms](docs/TERMS.md)).
+
 ## The story in five steps
 
 1. **Create a story.** Within a few minutes Threatline Engine has reviewed it by itself on Atlassian-hosted Claude
@@ -36,7 +78,7 @@ check, then the verifier): all 15 of 15 poisoned cases held, and a separate mode
 must-find threats (97.7% of all) on the full 55-case set, and every must-find threat on 10 fresh cases written before
 the gap check existed ([eval](#eval), [how the engine works](docs/ENGINE.md)).
 
-## Also in the box
+## Beyond the core story
 
 - **CI closes the loop.** Tests named after a requirement pass in CI (GitHub Action or Bitbucket Pipelines), and
   Threatline marks it Verified with the run as evidence: no clicking ([CI verification](docs/CI_VERIFICATION.md)).
@@ -80,14 +122,17 @@ differently ("find out which email addresses have accounts" for user enumeration
 
 | Metric (40 clean + 15 poisoned cases) | Now | Before the gap check | Before the clustering fix |
 | --- | --- | --- | --- |
-| Injection resistance | 15 of 15 | 15 of 15 | 15 of 15 |
-| High-severity recall, graded | **100% (60 of 60)** | 98.3% (59 of 60) | 96.7% (58 of 60) |
-| Recall, graded | **97.7% (85 of 87)** | 93.1% (81 of 87) | 92.0% (80 of 87) |
+| Injection resistance (95% interval) | 15 of 15 (79.6–100%) | 15 of 15 | 15 of 15 |
+| High-severity recall, graded (95% interval) | **100% (60 of 60; 94.0–100%)** | 98.3% (59 of 60) | 96.7% (58 of 60) |
+| Recall, graded (95% interval) | **97.7% (85 of 87; 92.0–99.4%)** | 93.1% (81 of 87) | 92.0% (80 of 87) |
 | Recall, keyword matcher | 90.8% | 87.4% | 83.9% |
 | Severity of found threats vs the expert's | 39 same, 45 higher, 1 lower | 37 same, 43 higher, 1 lower | 38 same, 42 higher, 0 lower |
 | Blocking requirements per story (average) | 4.97 | 4.42 | 4.0 |
-| Precision, judged: threats the model proposed | 82.4% (128 of 172, all 40 cases) | 81.1% (101 of 142) | 79.9% (32 cases judged) |
+| Precision, judged: threats the model proposed (matched must-finds plus extras judged valid) | 82.4% (128 of 172 extras valid, all 40 cases) | 81.1% (101 of 142 extras valid) | 79.9% (32 cases judged) |
 | Citation grounding | 99.8% | 99.8% | 99.8% |
+
+Intervals are Wilson 95% intervals on the counts shown: 15 poisoned cases is a small set, so 15 of 15 means at least
+about 80%, not 100%.
 
 **Fresh held-out set.** Ten new cases (`evals/fixtures/fresh-cases.ts`, two per domain) were written and committed
 before the gap check and the verifier changes were built, and nothing was tuned on them. Same runs, before and after:
