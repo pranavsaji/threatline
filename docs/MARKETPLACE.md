@@ -58,12 +58,9 @@ payment model is hard to change after listing, so choose it once.
 
 - **Licensing.** Add `app.licensing.enabled: true` to `apps/core/manifest.yml`. Engine reviews should run only for
   licensed or evaluation installs. See the Forge licensing overview.
-- **Token ceilings.** Set the per-review token ceilings in production, alongside the review cap.
-  - Production today sets only `THREATLINE_MAX_REVIEWS_PER_MONTH=10`.
-  - Run `forge variables set -e production THREATLINE_MAX_TOKENS_IN_PER_REVIEW 400000` and the same for
-    `THREATLINE_MAX_TOKENS_OUT_PER_REVIEW 60000`.
-  - Without them, a site admin can raise the per-review token caps, and the $3.50 per-review ceiling in `PRICING.md`
-    no longer holds.
+- **Token ceilings.** Done (2026-11-24, 5.12.0). Production sets `THREATLINE_MAX_REVIEWS_PER_MONTH=5`,
+  `THREATLINE_MAX_TOKENS_IN_PER_REVIEW=400000` and `THREATLINE_MAX_TOKENS_OUT_PER_REVIEW=60000`, so a site admin
+  cannot raise the per-review token caps and the $3.50 per-review ceiling in `PRICING.md` holds.
 - **Real token use.** Measure it from production `llm.call` logs (10 to 20 reviews) and update the numbers in
   `PRICING.md`. The repo's recordings have no usage fields, so its cost per review is an estimate.
 
