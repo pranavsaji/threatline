@@ -16,8 +16,10 @@ read from Atlassian's pages on 2026-11-23 (sources at the end). Recheck them bef
 | Same, if the real tokenizer counts 35% more tokens than characters ÷ 4 | $0.37 median, $0.43 p90 |
 | Planning cost per review, a real story plus one linked design page, calibrated to live logs | **about $0.65** |
 | Heavy review (three full design pages) | about $0.81, so plan on **$1.00** |
-| Hard ceiling per review (the default per-review caps of 400,000 input and 60,000 output tokens, all at Opus 5 rates; developer-enforced only once the two token variables are set, see section 4) | **$3.50** |
-| Per site per month at the production cap of 10 reviews | $2.74 (recordings) · **$6.48 (planning)** · $35.00 (ceiling) |
+| Measured in production (`llm.call` logs, 2026-11-21, six Engine reviews before the gap check existed) | **$0.54 to $0.64** per review; about $1.17 when agent runs were retried. Add about $0.10 to $0.15 for the gap check |
+| Hard ceiling per review (400,000 input and 60,000 output tokens, all at Opus 5 rates; enforced in production by `THREATLINE_MAX_TOKENS_IN_PER_REVIEW` / `_OUT_PER_REVIEW` since 2026-11-24) | **$3.50** |
+| Per site per month at the production cap of 5 reviews (since 2026-11-24) | **$3.24 (planning)** · $17.50 (ceiling) |
+| Per site per month at a cap of 10 reviews (the cap this analysis was first written for) | $2.74 (recordings) · **$6.48 (planning)** · $35.00 (ceiling) |
 | Recommended price | **$20 a month flat for 1 to 10 users; $2.50 per user for 11 to 100; $2.00 for 101 to 250; $1.50 for 251 to 1,000; $1.00 above that** |
 | Tier that loses money first | 1 to 10 users: profitable at the 10-review cap on planning cost, loses money if every review hits the ceiling, or if the cap rises above about 25 reviews |
 

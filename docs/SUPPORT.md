@@ -70,7 +70,7 @@ How Threatline defends itself is in the [security review](SECURITY_REVIEW.md).
 
 - **AI review is assistance, not assurance.** Threat models are written by AI and can miss risks or include wrong ones
   (see the [terms](TERMS.md)). The gate is computed by code, but what it gates on starts from the model's findings.
-- **Monthly review cap.** Each site has a monthly review cap, currently 10 reviews per site per month on Threatline
+- **Monthly review cap.** Each site has a monthly review cap, currently 5 reviews per site per month on Threatline
   Engine, set by the publisher. A site admin can lower it but not raise it above that.
   - Every new revision counts: the first review, a re-run, and a change brought in by an incident or a create.
   - At the cap, new reviews pause, and the gate blocks the affected work items until a security champion confirms.
