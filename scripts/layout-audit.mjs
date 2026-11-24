@@ -136,18 +136,34 @@ export const fillField = (selector, value) => `(() => {
   return true;
 })()`;
 
-/** Loads one surface, runs its steps ({ click } by visible text or { fill: [selector, value] }) and optionally saves a PNG. */
-export async function capture(b, { url, theme, width, steps = [], file, maxHeight = 4000 }) {
+/**
+ * Loads one surface, runs its steps ({ click } by visible text, { fill: [selector, value] }, or { eval } for an expression
+ * that must return true) and optionally saves a PNG: the page from the top (at most maxHeight), or with `clip` (a CSS
+ * selector) just that element plus `pad` px around it.
+ */
+export async function capture(b, { url, theme, width, steps = [], file, maxHeight = 4000, clip, pad = 12 }) {
   await b.send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 2, mobile: false });
   await b.send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}theme=${theme}` });
   await sleep(1800);
   for (const step of steps) {
-    const expression = step.click ? clickByText(step.click) : fillField(step.fill[0], step.fill[1]);
+    const expression = step.click ? clickByText(step.click) : step.fill ? fillField(step.fill[0], step.fill[1]) : step.eval;
     const { result } = await b.send('Runtime.evaluate', { expression, returnByValue: true });
     if (!result.value) throw new Error(`${url}: step failed ${JSON.stringify(step).slice(0, 120)}`);
     await sleep(600);
   }
   if (!file) return;
+  if (clip) {
+    const expression = `(() => { const el = document.querySelector(${JSON.stringify(clip)}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height }; })()`;
+    const { result } = await b.send('Runtime.evaluate', { expression, returnByValue: true });
+    if (!result.value) throw new Error(`${url}: nothing matches ${clip}`);
+    const r = result.value;
+    const x = Math.max(0, Math.floor(r.x - pad));
+    const y = Math.max(0, Math.floor(r.y - pad));
+    const region = { x, y, width: Math.min(width, Math.ceil(r.x + r.width + pad)) - x, height: Math.ceil(r.y + r.height + pad) - y, scale: 1 };
+    const { data } = await b.send('Page.captureScreenshot', { format: 'png', clip: region, captureBeyondViewport: true });
+    writeFileSync(file, Buffer.from(data, 'base64'));
+    return;
+  }
   const { contentSize } = await b.send('Page.getLayoutMetrics');
   const height = Math.min(maxHeight, Math.ceil(contentSize.height));
   const { data } = await b.send('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width, height, scale: 1 }, captureBeyondViewport: true });
