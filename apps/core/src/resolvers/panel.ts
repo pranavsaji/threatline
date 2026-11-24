@@ -322,7 +322,8 @@ export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true 
     // Only while something is actually running: Engine runs, or a Rovo run that has already reported. A Rovo review no
     // run has answered may mean the Automation rule never fired, and re-running (which re-adds the label) is the fix.
     const running = l && l.status === 'awaiting_agent' && (policy.value.reviewMode === 'engine' || l.samplesReceived > 0);
-    if (running && deps.clock.now().getTime() - Date.parse(l.updatedAt) < timeoutMs) return { error: 'conflict', message: STILL_RUNNING_MESSAGE };
+    // Counted from when the review started, like the sweeper's deadline (not from its last run).
+    if (running && deps.clock.now().getTime() - Date.parse(l.createdAt) < timeoutMs) return { error: 'conflict', message: STILL_RUNNING_MESSAGE };
   }
   const limit = await checkRerunLimit(deps, v.accountId);
   if (!limit.ok) return { error: limit.error.code === 'budget' ? 'rate_limited' : 'unavailable' };

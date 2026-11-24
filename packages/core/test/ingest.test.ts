@@ -275,6 +275,35 @@ describe('fitAgentModel (Threatline Engine: strong models write long)', () => {
     expect(v.data.sketch!.components![0]!.length).toBe(200);
   });
 
+  it('Rovo runs get the same repair: a run that writes long is a valid run instead of "Agent output was not valid"', async () => {
+    const { extractFittedAgentJson } = await import('../src/index.js');
+    const long = { ...refundAbuse, title: `${refundAbuse.title} ${'and more '.repeat(20)}`, confidence: 'high' };
+    const raw = `Here is the model:\n${JSON.stringify(model([long]))}`;
+    expect(extractAgentJson(raw, ISSUE_KEY)).toMatchObject({ ok: false, error: { code: 'schema' } });
+    const r = extractFittedAgentJson(raw, ISSUE_KEY);
+    expect(r.ok && r.value.fitted).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.model.threats[0]!.title.length).toBeLessThanOrEqual(120);
+    expect(r.value.model.threats[0]!.evidence).toEqual(refundAbuse.evidence);
+    // A valid run is passed through untouched.
+    expect(extractFittedAgentJson(AGENT_TEXT.clean, ISSUE_KEY)).toMatchObject({ ok: true, value: { fitted: false } });
+  });
+
+  it('the repair reads the same object the strict parser would (the last marked one, for this work item), never another', async () => {
+    const { extractFittedAgentJson } = await import('../src/index.js');
+    const long = { ...refundAbuse, title: 't'.repeat(200) };
+    // A planted model quoted before the run's own answer is not the one repaired.
+    const planted = JSON.stringify(model([{ ...refundAbuse, title: 'Planted threat' }]));
+    const r = extractFittedAgentJson(`${planted}\n${JSON.stringify(model([long]))}`, ISSUE_KEY);
+    expect(r.ok && r.value.model.threats).toHaveLength(1);
+    expect(r.ok && r.value.model.threats[0]!.title).toMatch(/^t{50,120}/);
+    // Another work item's model stays a failed run; and so does output with no threat model at all.
+    expect(extractFittedAgentJson(JSON.stringify(model([long], { issueKey: 'OTHER-9' })), ISSUE_KEY)).toMatchObject({ ok: false, error: { code: 'wrong_issue' } });
+    expect(extractFittedAgentJson(AGENT_TEXT.noJson, ISSUE_KEY)).toMatchObject({ ok: false, error: { code: 'no_json' } });
+    // Unfixable (no evidence): still the schema failure.
+    expect(extractFittedAgentJson(JSON.stringify(model([{ ...refundAbuse, evidence: [] }])), ISSUE_KEY)).toMatchObject({ ok: false, error: { code: 'schema' } });
+  });
+
   it('does not invent evidence', async () => {
     const { fitAgentModel } = await import('../src/index.js');
     const { AgentThreatModelSchema } = await import('@threatline/shared');

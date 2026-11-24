@@ -90,7 +90,7 @@ export function parseFirstObject(text: string): Record<string, unknown> | null {
   return null;
 }
 
-function tryExtract(text: string, expectedIssueKey: string): Result<AgentThreatModel, { code: ExtractErrorCode; message: string }> {
+function objectsIn(text: string): Array<Record<string, unknown>> {
   const parsed: unknown[] = [];
   for (const c of candidates(text)) {
     if (!c.startsWith('{')) continue;
@@ -100,9 +100,15 @@ function tryExtract(text: string, expectedIssueKey: string): Result<AgentThreatM
       /* not this candidate */
     }
   }
-  const objects = parsed.filter((p): p is Record<string, unknown> => typeof p === 'object' && p !== null && !Array.isArray(p));
-  // The last marked object: a run that quotes an example or planted threat model before its own answer is read by its answer.
-  const marked = objects.filter((o) => o.schema === AGENT_SCHEMA_MARKER || o.schema === LEGACY_SCHEMA_MARKER).at(-1);
+  return parsed.filter((p): p is Record<string, unknown> => typeof p === 'object' && p !== null && !Array.isArray(p));
+}
+
+/** The last marked object: a run that quotes an example or planted threat model before its own answer is read by its answer. */
+const lastMarked = (objects: Array<Record<string, unknown>>) => objects.filter((o) => o.schema === AGENT_SCHEMA_MARKER || o.schema === LEGACY_SCHEMA_MARKER).at(-1);
+
+function tryExtract(text: string, expectedIssueKey: string): Result<AgentThreatModel, { code: ExtractErrorCode; message: string }> {
+  const objects = objectsIn(text);
+  const marked = lastMarked(objects);
   if (!marked) {
     if (objects.length > 0) return err({ code: 'schema', message: `no JSON object with "schema": "${AGENT_SCHEMA_MARKER}"` });
     return err(text.includes('{') ? { code: 'invalid_json', message: 'JSON could not be parsed (truncated or malformed)' } : { code: 'no_json', message: 'no JSON found in agent response' });
@@ -124,6 +130,23 @@ export function extractAgentJson(raw: string, expectedIssueKey: string): Result<
   if (first.ok || (first.error.code !== 'no_json' && first.error.code !== 'invalid_json') || !/&quot;|&#34;/.test(raw)) return first;
   const decoded = tryExtract(htmlToText(raw), expectedIssueKey);
   return decoded.ok ? decoded : first;
+}
+
+/**
+ * extractAgentJson, then the deterministic repair the Engine already applies to its own runs: on a schema miss, the
+ * same object (the last marked one, for the expected work item) is fitted to the contract (fitAgentModel: unknown keys
+ * dropped, long wording trimmed, quotes only shortened so still verbatim, at most 25 threats) and checked again. A strong
+ * model that writes a little long is then a valid run instead of a failed one. `fitted` says whether the repair was used.
+ */
+export function extractFittedAgentJson(raw: string, expectedIssueKey: string): Result<{ model: AgentThreatModel; fitted: boolean }, { code: ExtractErrorCode; message: string }> {
+  const first = extractAgentJson(raw, expectedIssueKey);
+  if (first.ok) return ok({ model: first.value, fitted: false });
+  if (first.error.code !== 'schema') return first;
+  const marked = lastMarked(objectsIn(raw)) ?? (/&quot;|&#34;/.test(raw) ? lastMarked(objectsIn(htmlToText(raw))) : undefined);
+  if (!marked) return first;
+  const fitted = AgentThreatModelSchema.safeParse(fitAgentModel(marked));
+  if (!fitted.success || fitted.data.issueKey.toUpperCase() !== expectedIssueKey.toUpperCase()) return first;
+  return ok({ model: fitted.data, fitted: true });
 }
 
 export interface AssembleInput {

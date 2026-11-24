@@ -32,10 +32,14 @@ Code decides what a verifier verdict does:
 - When injection is suspected anywhere in the material, neither the gap check nor the verifier runs. A threat citing a
   flagged source is never demoted.
 
-Model errors become failed runs, so a review whose model never answers settles as failed and the gate blocks (AI
-errors count as missing). Failed runs never count as answers: an outage keeps the earlier revision's AI threats
-rather than dropping the ones no run raised again. A queue job that hits a brief Jira or storage outage is retried
-(up to three times, a minute apart). A failed verification leaves the review as assembled, which is stricter, never looser.
+A rate-limited or overloaded model call (429, 5xx, network error) is retried on the same model with jittered
+exponential backoff, within 120 s, before the next model is tried. A run or injection check that still fails
+transiently is retried by the queue: its job runs again later, up to three times, at growing, jittered delays. Only
+then does the model error become a failed run. A review whose model never answers settles as failed and the gate
+blocks (AI errors count as missing). Failed runs never count as answers: an outage keeps the earlier revision's AI
+threats rather than dropping the ones no run raised again. A queue job that hits a brief Jira or storage outage is
+retried the same way. A failed verification leaves the review as assembled, which is stricter, never looser. What to
+watch and what each alert means: [OPERATIONS.md](OPERATIONS.md).
 
 ## Cost and limits
 
