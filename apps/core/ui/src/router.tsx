@@ -3,6 +3,7 @@ import { AdminPage } from './admin/AdminPage.js';
 import { IssuePanel } from './panel/IssuePanel.js';
 import { PostureDashboard } from './posture/PostureDashboard.js';
 import { GlobalPage } from './inbox/GlobalPage.js';
+import { IssueStatus } from './status/IssueStatus.js';
 
 /** One UI bundle serves every Threatline surface; the module key picks the view. */
 export function Router({ moduleKey, api, admin, posture, inbox }: { moduleKey: string; api: PanelApi; admin: AdminApi; posture: PostureApi; inbox?: InboxApi }) {
@@ -14,6 +15,8 @@ export function Router({ moduleKey, api, admin, posture, inbox }: { moduleKey: s
       return inbox ? <GlobalPage posture={posture} inbox={inbox} /> : <PostureDashboard api={posture} />;
     case 'threatline-posture-gadget':
       return <PostureDashboard api={posture} compact />;
+    case 'threatline-status':
+      return <IssueStatus api={api} />;
     case 'threatline-panel':
     default:
       return <IssuePanel api={api} />;

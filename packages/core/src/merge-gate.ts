@@ -75,6 +75,11 @@ export interface PrFacts {
 export { namedIssueKeys };
 const FULL_SHA = /^[0-9a-f]{40}$/;
 
+/** How the gate matches an attestation to a pull request's repository: the full name, ignoring case. */
+export const repoMatches = (attested: string, repo: string): boolean => attested.toLowerCase() === repo.toLowerCase();
+/** How the gate matches an attestation to a commit: the full 40-character hash, ignoring case (never a prefix). */
+export const commitMatches = (attested: string, commit: string): boolean => FULL_SHA.test(commit.toLowerCase()) && attested.toLowerCase() === commit.toLowerCase();
+
 /**
  * Trusted public keys as an admin pastes them, one per line: `<base64url key>` or `<base64url key> until=<ISO date or
  * time>` (a date alone means 00:00 UTC that day). Shared by Threatline for Bitbucket's settings and the GitHub Action's
@@ -172,9 +177,8 @@ function decide(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | nu
 
   const tokens = findAttestations(unescapeMarkdown(i.pr.description));
   if (tokens.length === 0) return missing;
-  const repo = i.pr.repoFullName.toLowerCase();
   const peeked = tokens.map((t) => ({ t, p: peek(t) }));
-  const mine = peeked.filter((x) => x.p?.repo.toLowerCase() === repo).sort((a, b) => b.p!.iat - a.p!.iat);
+  const mine = peeked.filter((x) => x.p && repoMatches(x.p.repo, i.pr.repoFullName)).sort((a, b) => b.p!.iat - a.p!.iat);
   if (mine.length === 0) {
     // Every token is readable but none is for this repository → say which repository they are for.
     const others = [...new Set(peeked.flatMap((x) => (x.p ? [x.p.repo] : [])))];
@@ -223,7 +227,7 @@ function decide(i: { pr: PrFacts; files: DiffFile[]; repoPolicyYaml: string | nu
   // 12-character hashes; Threatline for Bitbucket resolves them to the full hash before calling the gate.
   if (!FULL_SHA.test(head))
     return { success: false, outcome: 'fail_stale_commit', message: `Threatline: the PR head commit ${head.slice(0, 12) || '(none)'} is not a full 40-character hash, so the attestation cannot be matched to it. Re-run the check.` };
-  if (p.commitSha !== head)
+  if (!commitMatches(p.commitSha, head))
     return { success: false, outcome: 'fail_stale_commit', message: `Threatline: attestation is for commit ${p.commitSha.slice(0, 7)} but the PR head is ${head.slice(0, 7)}. Request a new attestation for the latest commit.` };
   // The attestation must be for a work item this PR names: otherwise any passing item's token could carry a blocked change.
   if (named.length === 0)

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import './setup-dom.js';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { SetupChecklist, championGroupItem } from '../src/admin/SetupChecklist.js';
 import { mockAdminApi } from '../src/mock-bridge.js';
 import type { ChampionGroupStatus } from '../../src/resolvers/setup-groups.js';
@@ -40,4 +40,27 @@ describe('Setup checklist: security champion group (fresh site)', () => {
     render(<SetupChecklist api={{ ...mockAdminApi(), setupStatus }} reviewMode="engine" />);
     expect(await screen.findByText(/Signing keys created/)).toBeTruthy();
   });
+
+  it('offers a group the admin is already in: one click points the policy at it, and the item turns done', async () => {
+    const base = mockAdminApi();
+    const saved: string[] = [];
+    let current = status({ exists: false, member: false, candidates: ['site-admins'] });
+    const api = {
+      ...base,
+      setupStatus,
+      championGroupStatus: async () => current,
+      setPolicy: async (policy: Parameters<typeof base.setPolicy>[0]) => {
+        saved.push(policy.championGroup);
+        current = status({ group: policy.championGroup });
+        return { policy };
+      },
+    };
+    render(<SetupChecklist api={api} reviewMode="engine" />);
+    const list = await screen.findByRole('list', { name: 'Setup checklist' });
+    const item = (await within(list).findByText(/not found\. Use a group you are already in/)).closest('li')!;
+    fireEvent.click(within(item).getByRole('button', { name: 'Use “site-admins”' }));
+    await waitFor(() => expect(within(list).getByText(/Security champion group “site-admins” exists and you are in it/)).toBeTruthy());
+    expect(saved).toEqual(['site-admins']);
+  });
 });
+

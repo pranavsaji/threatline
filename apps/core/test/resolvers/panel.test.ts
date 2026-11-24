@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ok, type Threat } from '@threatline/shared';
 import { normalizeFact } from '@threatline/core';
-import { panelDelivery, panelEnrich, panelGet, panelRerun, panelThreats, STILL_RUNNING_MESSAGE, threatExplain } from '../../src/resolvers/panel.js';
+import { panelDelivery, panelEnrich, panelGet, panelRerun, panelStatus, panelThreats, STILL_RUNNING_MESSAGE, threatExplain } from '../../src/resolvers/panel.js';
 import { handleJob } from '../../src/consumers/review-consumer.js';
 import { coreDeps, jiraIssue, POLICY } from '../support/core-deps.js';
 import { verdictKey } from '../../src/services/verdict-service.js';
@@ -307,6 +307,74 @@ describe('panel.get scope', () => {
     // Never reviewed and out of scope: nothing is written for it (no KVS verdict, no issue property).
     expect(out.verdicts._written.size).toBe(0);
     expect(out.kv.data.has(verdictKey(ISSUE))).toBe(false);
+  });
+});
+
+describe('panel.status (the context column: the gate status alone)', () => {
+  it('refuses a viewer without browse permission, or with no account, exactly like panel.get', async () => {
+    const { t } = await reviewed({ canBrowse: false });
+    expect(await panelStatus(t.deps, viewer())).toEqual({ error: 'not_found' });
+    const ok2 = await reviewed();
+    expect(await panelStatus(ok2.t.deps, { accountId: '', issueId: ISSUE })).toEqual({ error: 'not_found' });
+  });
+
+  it('returns the same verdict as panel.get with its top reason only, the review status, and nothing else', async () => {
+    const { t } = await reviewed();
+    t.kv.data.set('verdict:10042', {
+      state: 'block', blockingCount: 2, maxOpenSeverity: 'High', inheritedFrom: [], updatedAt: '2026-11-15T12:00:00Z', message: 'gate message',
+      reasons: [{ code: 'open_requirement', message: '2 open security requirements at High or above.', requirementIds: ['req_a', 'req_b'] }, { code: 'review_stale', message: 'The design or linked work changed since the last review.' }],
+    });
+    const full = await panelGet(t.deps, viewer());
+    const s = await panelStatus(t.deps, viewer());
+    if ('error' in s || 'error' in full) throw new Error('unexpected error');
+    expect(s).toEqual({
+      issueKey: 'PAY-7',
+      verdict: { state: full.verdict!.state, blockingCount: 2, reasons: [full.verdict!.reasons[0]] },
+      review: { status: 'awaiting_agent' },
+      inScope: true,
+    });
+    expect(JSON.stringify(s)).not.toMatch(/gate message|thr_|riskScore/);
+  });
+
+  it('a never-reviewed item in scope: no verdict and no review', async () => {
+    const t = coreDeps({ issues: [jiraIssue({ id: ISSUE, key: 'PAY-7' })] });
+    expect(await panelStatus(t.deps, viewer())).toEqual({ issueKey: 'PAY-7', verdict: null, review: null, inScope: true });
+  });
+
+  it('out of scope: says why, and writes nothing', async () => {
+    const out = coreDeps({ issues: [jiraIssue({ id: ISSUE, key: 'OPS-7', project: { id: '1', key: 'OPS' } })] });
+    expect(await panelStatus(out.deps, viewer())).toMatchObject({ inScope: false, review: null, verdict: null, scopeMessage: expect.stringContaining('OPS') });
+    expect(out.verdicts._written.size).toBe(0);
+    expect(out.kv.data.has(verdictKey(ISSUE))).toBe(false);
+  });
+
+  it('computes and stores the verdict when the KVS copy is missing, like panel.get', async () => {
+    const { t } = await reviewed();
+    t.kv.data.delete('verdict:10042');
+    const s = await panelStatus(t.deps, viewer());
+    expect(!('error' in s) && s.verdict?.state).toBe('block');
+    expect(t.kv.data.has('verdict:10042')).toBe(true);
+  });
+
+  it('an inherited top reason from a parent the viewer cannot browse does not name it', async () => {
+    const { t } = await reviewed();
+    t.kv.data.set('verdict:10042', {
+      state: 'block', blockingCount: 1, maxOpenSeverity: 'High', inheritedFrom: ['SEC-9'], updatedAt: '2026-11-15T12:00:00Z',
+      reasons: [{ code: 'open_requirement', message: 'SEC-9: 1 open security requirement at High or above: SEC-10.', requirementIds: ['req_sec'] }],
+    });
+    t.jira.canBrowse = async (_a, id) => ok(id !== 'SEC-9');
+    const s = await panelStatus(t.deps, viewer());
+    if ('error' in s) throw new Error(s.error);
+    expect(JSON.stringify(s)).not.toMatch(/SEC-9|SEC-10|req_sec/);
+    expect(s.verdict?.reasons[0]!.message).toMatch(/^A parent work item/);
+  });
+
+  it('flags an inactive license, as panel.get does', async () => {
+    const { t } = await reviewed();
+    t.setLicense('unlicensed');
+    expect(await panelStatus(t.deps, viewer())).toMatchObject({ licenseInactive: true });
+    t.setLicense('licensed');
+    expect(await panelStatus(t.deps, viewer())).not.toHaveProperty('licenseInactive');
   });
 });
 

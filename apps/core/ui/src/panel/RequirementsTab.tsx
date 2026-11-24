@@ -7,6 +7,7 @@ import { errorText as errorTextOf, isError, type PanelApi } from '../bridge.js';
 import { SeverityLozenge } from '../components/SeverityLozenge.js';
 import type { PanelDto, Requirement, RequirementStatus } from '../types.js';
 import { AcceptRiskModal } from './AcceptRiskModal.js';
+import { CheckAttestation } from './CheckAttestation.js';
 import { CopyAttestation } from './CopyAttestation.js';
 import { EvidenceForm } from './EvidenceForm.js';
 import { ControlLozenges } from './ControlLozenges.js';
@@ -199,6 +200,7 @@ export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: Pa
         ))}
       </ul>
       {canEdit && <CopyAttestation api={api} />}
+      <CheckAttestation api={api} />
     </div>
   );
 }
