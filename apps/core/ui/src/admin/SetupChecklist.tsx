@@ -145,7 +145,8 @@ export function SetupChecklist({
       {status && (
         <ul aria-label="Setup checklist" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
           {[...itemsOf(status, reviewMode, reviewAuthors), ...(group ? [championGroupItem(group)] : [])].map((item) => (
-            <li key={item.text} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            // The label stays beside the text however long it runs; links and buttons go on their own row under it.
+            <li key={item.text} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
               <span style={{ flexShrink: 0 }}>
                 {item.done === null ? (
                   <Lozenge>Info</Lozenge>
@@ -153,18 +154,24 @@ export function SetupChecklist({
                   <Lozenge appearance={item.done ? 'success' : 'moved'}>{item.done ? 'Done' : 'To do'}</Lozenge>
                 )}
               </span>
-              <span>{item.text}</span>
-              {item.link && (
-                <a href={item.link.href} target="_blank" rel="noreferrer" style={{ color: token('color.link') }}>
-                  {item.link.label}
-                </a>
-              )}
-              {item.gate && <AddGate api={api} />}
-              {item.useGroups?.map((name) => (
-                <Button key={name} spacing="compact" isDisabled={using !== null} onClick={() => void useGroup(name)}>
-                  {using === name ? 'Saving…' : `Use “${name}”`}
-                </Button>
-              ))}
+              <div style={{ display: 'grid', gap: 6, flex: 1, minWidth: 0 }}>
+                <span>{item.text}</span>
+                {(item.link || item.gate || item.useGroups) && (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {item.link && (
+                      <a href={item.link.href} target="_blank" rel="noreferrer" style={{ color: token('color.link') }}>
+                        {item.link.label}
+                      </a>
+                    )}
+                    {item.gate && <AddGate api={api} />}
+                    {item.useGroups?.map((name) => (
+                      <Button key={name} spacing="compact" isDisabled={using !== null} onClick={() => void useGroup(name)}>
+                        {using === name ? 'Saving…' : `Use “${name}”`}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </li>
           ))}
         </ul>
