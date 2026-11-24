@@ -62,5 +62,13 @@ describe('Setup checklist: security champion group (fresh site)', () => {
     await waitFor(() => expect(within(list).getByText(/Security champion group “site-admins” exists and you are in it/)).toBeTruthy());
     expect(saved).toEqual(['site-admins']);
   });
+
+  it('the fixture bridge previews a site without the group (?group=missing): one click uses a group the admin is in', async () => {
+    render(<SetupChecklist api={{ ...mockAdminApi('ready', 'missing'), setupStatus }} reviewMode="engine" />);
+    const list = await screen.findByRole('list', { name: 'Setup checklist' });
+    const item = (await within(list).findByText(/not found\. Use a group you are already in/)).closest('li')!;
+    fireEvent.click(within(item).getByRole('button', { name: 'Use “appsec-team”' }));
+    await waitFor(() => expect(within(list).getByText(/Security champion group “appsec-team” exists and you are in it/)).toBeTruthy());
+  });
 });
 

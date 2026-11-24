@@ -6,6 +6,7 @@ import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
 import { INBOX_FIXTURE } from './inbox/fixtures.js';
 import { SUPPRESSIONS_FIXTURE } from './admin/suppressions-fixture.js';
 import { mockCiApi } from './admin/ci-api.js';
+import { MOCK_KID, checkMockAttestation, mockAttestationToken } from './mock-attestation.js';
 
 /** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
@@ -60,19 +61,13 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
     revokeAcceptance: async () => ({ entryHash: 'd'.repeat(64) }),
     breakGlass: async (_r, hours) => ({ entryHash: 'c'.repeat(64), until: new Date(Date.now() + hours * 3_600_000).toISOString() }),
     attestation: async (repo, commitSha) => {
-      const token = `threatline-att.v1.mock-${repo.replace('/', '-')}-${commitSha.slice(0, 7)}.sig`;
-      return { token, expiresAt: new Date(Date.now() + 86_400_000).toISOString(), prDescriptionSnippet: `Threatline attestation for ${dto.issueKey} (expires tomorrow):\n${token}` };
+      const iat = Math.floor(Date.now() / 1000);
+      const requirements = dto.requirements.map((r) => ({ id: r.id, status: r.status }));
+      const token = mockAttestationToken({ v: 1, kid: MOCK_KID, issueKey: dto.issueKey, repo, commitSha: commitSha.toLowerCase(), verdict: 'pass', requirements, iat, exp: iat + 86_400, nonce: Math.random().toString(36).slice(2, 12) });
+      return { token, expiresAt: new Date((iat + 86_400) * 1000).toISOString(), prDescriptionSnippet: `Threatline attestation for ${dto.issueKey} (expires tomorrow):\n${token}` };
     },
-    // Fixture only: the mock tokens above count as valid; anything else fails as a changed signature.
-    checkAttestation: async (token, expect = {}) => {
-      const m = /^threatline-att\.v1\.mock-([\w.-]+?)-([\w.-]+)-([0-9a-f]{7})\.sig$/.exec(token.trim().split(/\s+/).at(-1) ?? '');
-      if (!token.includes('att.v1.')) return { valid: false, reason: 'malformed', message: 'Malformed — this is not a complete Threatline attestation.' };
-      if (!m) return { valid: false, reason: 'bad_signature', message: 'Signature invalid — the token was changed after signing.' };
-      const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
-      const attestation = { kid: 'mockkid000000000', issueKey: dto.issueKey, repo: `${m[1]}/${m[2]}`, commitSha: m[3]!.padEnd(40, '0'), verdict: 'pass' as const, issuedAt: new Date().toISOString(), expiresAt, requirements: { verified: 2, total: 2 } };
-      if (expect.commitSha && !expect.commitSha.toLowerCase().startsWith(m[3]!)) return { valid: false, reason: 'other_commit', attestation, message: `For a different commit — the signature is genuine, but it is for commit ${m[3]}.` };
-      return { valid: true, attestation, message: `Valid — signed by Threatline key ${attestation.kid} for ${dto.issueKey} at ${attestation.repo}@${m[3]}, verdict pass, expires ${expiresAt.slice(0, 16).replace('T', ' ')} UTC.` };
-    },
+    // Fixture only: tokens sealed by mock-attestation.ts (the ones above) check as valid; one changed character fails.
+    checkAttestation: async (token, expect = {}) => checkMockAttestation(token, expect),
     publish: async () => ({ pageId: '900', url: 'https://example.atlassian.net/wiki/spaces/PAY/pages/900', created: true }),
     explain: async (_r, threatId) => {
       const t = dto.threats.find((x) => x.id === threatId);
@@ -81,8 +76,14 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
   };
 }
 
-/** Local preview of the admin page: `?view=admin` (`&state=first` shows the first-run wizard). */
-export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (new URLSearchParams(window.location.search).get('state') ?? 'ready')): AdminApi {
+/**
+ * Local preview of the admin page: `?view=admin` (`&state=first` shows the first-run wizard, `&group=missing` a site
+ * without the champion group, where the checklist offers groups the admin is already in).
+ */
+export function mockAdminApi(
+  state = typeof window === 'undefined' ? 'ready' : (new URLSearchParams(window.location.search).get('state') ?? 'ready'),
+  group = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('group'),
+): AdminApi {
   const dto = structuredClone(ADMIN_POLICY_FIXTURE);
   if (state === 'first') Object.assign(dto, { saved: false, policy: { ...dto.policy, enabledProjects: [] } });
   const DAY = 86_400_000;
@@ -139,7 +140,10 @@ export function mockAdminApi(state = typeof window === 'undefined' ? 'ready' : (
     exportLedger: async (projectKey, from, to) => ({ csv: 'seq,created_at\n', json: JSON.stringify({ projectKey, from, to, entries: [] }) }),
     exportControls: async (projectKey, from, to) => ({ csv: 'framework,control_id\n', json: JSON.stringify({ kind: 'threatline.controls-summary.v1', projectKey, from, to, frameworks: [] }) }),
     ci: mockCiApi(),
-    championGroupStatus: async () => ({ group: 'threatline-security-champions', exists: true, member: true, groupsUrl: 'https://admin.atlassian.com/' }),
+    championGroupStatus: async () =>
+      group === 'missing' && dto.policy.championGroup === 'threatline-security-champions'
+        ? { group: dto.policy.championGroup, exists: false, member: false, groupsUrl: 'https://admin.atlassian.com/', candidates: ['appsec-team', 'jira-admins'] }
+        : { group: dto.policy.championGroup, exists: true, member: true, groupsUrl: 'https://admin.atlassian.com/' },
     setupStatus: async () => ({ keys: true, sqlVersion: 3, validatorSeenOn: ['PAY'], automationRuleSeen: true, mcpEnabledHint: 'Rovo MCP: allow the clients your team uses in Atlassian Administration.', bitbucketKeyCopied: false }),
   };
 }

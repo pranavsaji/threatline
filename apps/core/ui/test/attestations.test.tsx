@@ -168,7 +168,13 @@ describe('Check an attestation', () => {
     const out = await mock.attestation('acme/payments', SHA);
     if (!('token' in out)) throw new Error('expected a token');
     expect(await mock.checkAttestation(out.token)).toMatchObject({ valid: true });
-    expect(await mock.checkAttestation(out.token.replace('mock', 'mocK'))).toMatchObject({ valid: false, reason: 'bad_signature' });
+    expect(await mock.checkAttestation(out.prDescriptionSnippet)).toMatchObject({ valid: true, attestation: { repo: 'acme/payments', commitSha: SHA } });
+    // one character changed, in the signature or in the payload
+    const flip = (i: number) => out.token.slice(0, i) + (out.token[i] === 'A' ? 'B' : 'A') + out.token.slice(i + 1);
+    expect(await mock.checkAttestation(flip(out.token.length - 5))).toMatchObject({ valid: false, reason: 'bad_signature' });
+    expect(await mock.checkAttestation(flip(30))).toMatchObject({ valid: false, reason: 'bad_signature' });
+    expect(await mock.checkAttestation(out.token, { commitSha: 'b'.repeat(40) })).toMatchObject({ valid: false, reason: 'other_commit' });
+    expect(await mock.checkAttestation('threatline-att.v1.only-one-segment')).toMatchObject({ valid: false, reason: 'malformed' });
   });
 
   it('has no axe violations with a result shown', async () => {
