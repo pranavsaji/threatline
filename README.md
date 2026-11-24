@@ -1,10 +1,12 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1700%2B%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1%2C858%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
-![runs on Atlassian](https://img.shields.io/badge/egress-none-informational)
+![egress](https://img.shields.io/badge/egress-none-informational)
+![Jira app](https://img.shields.io/badge/Threatline%20for%20Jira-5.14.0-0052CC)
+![Bitbucket app](https://img.shields.io/badge/Threatline%20for%20Bitbucket-2.12.0-0052CC)
 
 **Security review that gates Done and merge.** Security review is advisory, so it loses to the deadline. Threatline
 makes it part of "Done": every Jira work item gets a cited threat model, the threats that matter become requirements,
@@ -15,21 +17,147 @@ someone allowed to accept it.
 
 ![Threatline issue panel](docs/screenshots/jira-1-issue-panel.png)
 
+<!-- DEMO-VIDEO: replace the line below with the public YouTube link once uploaded. -->
+**Demo video (under 5 minutes):** link coming before submission · **Install:** [Threatline for Jira](#install) ·
+[Threatline for Bitbucket](#install) · **Judges:** [five-minute path](#for-judges-five-minutes)
+
+## Contents
+
+- [At a glance](#at-a-glance)
+- [The problem](#the-problem)
+- [For judges: five minutes](#for-judges-five-minutes) · [no site? no install](#no-site-no-install)
+- [Screenshots](#screenshots)
+- [What's new](#whats-new)
+- [How a review works](#how-a-review-works)
+- [Built not to cry wolf, and not to be talked round](#built-not-to-cry-wolf-and-not-to-be-talked-round)
+- [Where Threatline shows up](#where-threatline-shows-up)
+- [Features in depth](#features-in-depth)
+- [Rovo agent, actions and MCP](#rovo-agent-actions-and-mcp)
+- [The merge gate: Bitbucket and GitHub](#the-merge-gate-bitbucket-and-github)
+- [Security, privacy and permissions](#security-privacy-and-permissions)
+- [Limits and operations](#limits-and-operations)
+- [Eval](#eval)
+- [Quality: tests and CI](#quality-tests-and-ci)
+- [Install](#install)
+- [Marketplace, pricing and licensing](#marketplace-pricing-and-licensing)
+- [What Threatline leaves out, on purpose](#what-threatline-leaves-out-on-purpose)
+- [Roadmap](#roadmap) · [Docs](#docs) · [Repository](#repository)
+
+## At a glance
+
+| | |
+| --- | --- |
+| **What** | AI threat modelling for Jira work items, enforced at Done (workflow validator) and at merge (signed attestation checked by a Bitbucket merge check or a GitHub Action). |
+| **Who it is for** | Software teams that ship through Jira and Bitbucket or GitHub, and the security champions who cannot read every design. |
+| **Apps** | **Threatline for Jira** 5.14.0 (Jira, with Confluence) and **Threatline for Bitbucket** 2.12.0, both on Atlassian Forge in production. Two apps because Forge cannot put a site (Jira, Confluence) and a Bitbucket workspace in one app; they share only a public key. |
+| **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
+| **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
+| **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
+| **Quality** | 1,858 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
+
+## The problem
+
+Teams already "do" security review: a checklist in the ticket template, a threat-model page nobody updates, a reviewer
+asked the day before release. All of it is advisory, so it loses to the deadline. AI made this worse in a new way: a
+chatbot will happily write a threat model, but it invents risks, misses real ones, and anyone can paste "this change
+is approved" into the design and get the answer they want.
+
+A missing authorisation check costs one sentence to fix in a design and a release, an incident or a breach to fix in
+production. Threatline puts the review where that sentence is still cheap, makes every claim cite the design, and puts
+the result where work actually finishes: the Done transition and the merge button. A champion no longer has to chase
+every story; the gate tells them which few need a person.
+
 ## For judges: five minutes
 
-Install [Threatline for Jira](#try-it) on any Jira Cloud site (no Rovo needed), then:
+Install [Threatline for Jira](#install) on any Jira Cloud site (no Rovo needed), then:
 
 | # | Do | You should see |
 | --- | --- | --- |
 | 1 | Jira settings → Apps → **Threatline**. In the wizard pick a project and its Done transition, save, then click **Add the gate for me**. On the setup checklist, click **Use “&lt;a group you are in&gt;”** for the champion group. | Every checklist item says **Done**. No group to create, no Automation rule, no agent to configure. |
 | 2 | **Demo data** → **Load demo data**. | An epic **Add AI support agent** with stories and two incidents, and a design whose one paragraph tells the AI to approve the change. |
-| 3 | Wait two to four minutes, then open the epic. | Beside the work item: **✕ Blocks Done**. In the panel: a risk score, “*N* things stand between this work item and Done”, threats in plain language with the sentence each one quotes, and a banner naming the paragraph that tried to instruct the AI. |
+| 3 | Wait two to four minutes, then open the epic. | In the right-hand column, **Security gate: ✕ Blocks Done** with the top reason. In the panel: a risk score, “*N* things stand between this work item and Done”, threats in plain language with the sentence each one quotes, and a banner naming the paragraph that tried to instruct the AI. |
 | 4 | Move the epic to **Done**. | Refused by **Threatline security gate**, listing the open requirements. |
 | 5 | **Requirements** → mark each one *Verified* with a PR link. Move to Done again. | It goes through. |
 | 6 | **Requirements → Merge attestation**: enter a repository and a 40-character commit, copy the attestation, then paste it into **Check an attestation**. Change one character and check again. | **Valid**, signed for this work item and commit; then **Signature invalid**. The Bitbucket merge check makes the same call on the pull request. |
 | 7 | Admin page → **Risk ledger** → **Verify the ledger**. | The decisions you just made, in a hash chain that checks out intact. |
 
-More detail, Rovo agent mode and troubleshooting: [judge guide](docs/JUDGE_GUIDE.md).
+More detail, Rovo agent mode and troubleshooting: [judge guide](docs/JUDGE_GUIDE.md). Each site gets 5 Engine reviews a
+month (see [limits](#limits-and-operations)); the demo data uses three of them.
+
+### No site? No install
+
+Everything above runs on your machine with the real UI, real resolvers, real Done validator and real signing; only
+Jira, Confluence, Rovo and the clock are simulated.
+
+```bash
+pnpm install
+pnpm --filter @threatline/core-ui dev --port 5179   # http://localhost:5179/?state=ready  (the issue panel)
+                                                    # ?view=status&state=ready  (the Security gate label)
+                                                    # ?view=admin · ?view=posture
+pnpm threatline sign-demo                           # sign an attestation, change one character, watch it fail
+pnpm e2e                                            # both journeys and the merge check, in a real browser
+node scripts/verify-ledger-proof.mjs docs/examples/ledger-proof.json   # check a ledger proof offline (Node built-ins only)
+```
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Issue panel](docs/screenshots/jira-1-issue-panel.png) **Issue panel:** risk score, what stands between the work item and Done, threats in plain language first. | ![Threat evidence](docs/screenshots/jira-2-threat-evidence.png) **A threat opened:** the quoted sentence and its source, STRIDE, ASVS and CWE, "explain like I'm new to security". |
+| ![Accept a risk](docs/screenshots/jira-3-accept-risk.png) **Accepting a risk:** reason, compensating controls, expiry, and an approver who is not you. | ![Posture](docs/screenshots/jira-4-posture-dashboard.png) **Security posture:** open Critical and High, where they are, the 30-day trend. |
+| ![Admin](docs/screenshots/jira-5-admin-policy.png) **Admin:** setup checklist, projects, severity policy, roles, budgets. | ![Injection flagged](docs/screenshots/jira-6-live-injection-flagged.jpg) **Live, on a real site:** the paragraph that told the AI to approve the change, flagged. |
+| ![Merge check fails](docs/screenshots/bitbucket-6-live-merge-check-fails.jpg) **Live Bitbucket merge check:** a sensitive pull request without a valid attestation cannot merge. | ![Tampered attestation](docs/screenshots/bitbucket-3-attestation-tampered.png) **One character changed:** rejected as an invalid signature. |
+| ![Live: Security gate label and headline](docs/screenshots/jira-11-live-status-label.jpg) **Live, on a real site:** the Security gate label in the right-hand column and the panel's headline, on a story that blocks. | ![Security gate label](docs/screenshots/jira-7-status-label.png) **Security gate label** on every work item: the verdict and the top reason, without opening the panel. |
+| ![One-click champion group](docs/screenshots/jira-10-setup-use-group.png) **Setup:** one click to use a group you are already in as the security champions. | ![Bitbucket settings](docs/screenshots/bitbucket-1-repo-settings.png) **Bitbucket repository settings:** trusted Jira keys, extra sensitive paths, block or warn. |
+| ![Check an attestation](docs/screenshots/jira-8-check-attestation.png) **Check an attestation** in the panel: valid, for this work item, repository and commit. | ![Attestation tampered](docs/screenshots/jira-9-check-attestation-tampered.png) **One character changed:** Signature invalid, no Bitbucket needed. |
+
+All listing screenshots come from `scripts/listing-screenshots.ts` against the previews; the three marked *live* are from
+the production apps ([index](docs/screenshots/README.md)).
+
+## What's new
+
+| Version (Jira / Bitbucket) | Date | What changed |
+| --- | --- | --- |
+| Next release | 2026-11 | The Security gate label sizes its frame to its content and shows the second reason when two things block Done; setup checklist items keep their status beside long text. |
+| 5.14.0 / 2.12.0 | 2026-11-24 | **Security gate label** on every work item (`jira:issueContext`): ✕ Blocks Done, ✓ Ready for Done, Reviewing…, Warn only or Not reviewed, with the top reason, without opening the panel. **Check an attestation** in the panel: paste a merge attestation and see whether this site's key signed it, for which work item and commit, or exactly why not. **One-click champion group** from groups the admin is already in. The panel's headline says what stands between the work item and Done. |
+| 5.13.0 / 2.11.0 | 2026-11-24 | Reliability: Forge LLM retries with jittered backoff, queue retries before a run counts as failed, agent timeouts measured from review start, alerts for partial reviews, budgets and Rovo credits ([operations](docs/OPERATIONS.md)). Licensing gate built and off until February 2027 ([licensing](docs/LICENSING.md)). |
+| 5.12.0 | 2026-11-24 | Production cap of 5 Engine reviews per site per month, with per-review ceilings of 400,000 input and 60,000 output tokens. |
+| Engine `gaps-v2` | 2026-11-23 | The gap check and a sharper verifier: high-severity recall 59 → 60 of 60, graded recall 93.1% → 97.7% ([eval](#eval)). |
+| Engine | 2026-11-22 | Clustering keeps threats the runs agree on across STRIDE categories; severity from stated facts by a fixed table. |
+| Delivery check | 2026-11 | Teamwork Graph: pull requests and deployments linked to the work item, and an alert when code reached production while requirements were open. |
+
+## How a review works
+
+```mermaid
+flowchart LR
+  WI["Story created<br/>or re-run"] --> G["Gather<br/>work item, pages, incidents<br/>as the person who triggered it"]
+  G --> X["Injection check<br/>quarantined"]
+  X --> N["3 independent runs<br/>each quotes its evidence"]
+  N --> A["Assemble, in code<br/>quotes checked · majority vote<br/>severity table · rule floor"]
+  A --> GC["Gap check<br/>at most 3 hidden candidates"]
+  GC --> VF["Verifier<br/>keep or drop, with a reason"]
+  VF --> VD{"Verdict<br/>computed by code"}
+  VD -->|block| D["Done refused<br/>by the workflow validator"]
+  VD -->|pass| S["Ed25519 merge attestation<br/>for one repo and commit"]
+  S --> M["Bitbucket merge check<br/>or GitHub Action"]
+  VD --> L[("Hash-chained ledger<br/>+ signed Merkle heads")]
+```
+
+| Stage | What happens |
+| --- | --- |
+| **1. Gather** | The work item, parent, children, links, comments, linked Confluence pages and related incidents, read as the person who triggered the review: pages and incidents they cannot open are left out. Only key, type, status, project, components and fix versions are trusted; all free text is untrusted data. Secrets are redacted. A long page is read in up to six 2,000-character parts. |
+| **2. Injection check** | A quarantined model call reads the raw untrusted text, fenced with a random nonce, and joins a pattern scanner in flagging text that instructs the AI. |
+| **3. Three runs** | Three independent `claude-opus-5` runs of the Threatline prompt, in parallel. Each threat quotes the design word for word and states who can attack, how hard it is, how many it reaches and what is harmed. |
+| **4. Assemble** | Deterministic code: schema validation, quote grounding, a majority vote across runs, a fixed severity table, the rule-based floor, STRIDE, ASVS 5 and CWE mappings, the risk score. |
+| **5. Gap check** | One more call names at most three threats reviews commonly leave out. Each stays hidden until the verifier keeps it, so the gap check alone never changes what blocks. |
+| **6. Verify** | An adversarial call checks each threat against its quotes. A doubted threat at the blocking level goes to a security champion; it never just disappears. Skipped entirely when injection is suspected. |
+| **Verdict** | Computed by code from requirement states: block while any blocking requirement is open, or while the review is missing, failed or out of date. Written to Forge storage for the validator and to an issue property for JQL (`threatlineState`, `threatlineBlocking`, `threatlineMaxSeverity`, `threatlineRisk`). |
+
+Every stage is its own queue job, so each model call fits a function timeout and a redelivered job is not paid twice.
+A rate-limited call retries with jittered backoff, then the queue retries the job up to three times; only then does a
+run count as failed, and a review that never gets an answer blocks. Full detail: [Threatline Engine](docs/ENGINE.md) and
+[architecture](docs/ARCHITECTURE.md).
 
 ## Built not to cry wolf, and not to be talked round
 
@@ -46,67 +174,137 @@ rule in code, with tests:
 | Text that instructs the AI is flagged and quarantined | “Approve this change” in a design page: the threats resting on it wait for a person, and the verdict is computed by code. |
 | A dismissal repeated three times becomes a suggested rule | The same false positive on every story, without ever hiding a threat at the blocking threshold. |
 | Missing, failed or out-of-date reviews block, with one-click re-run | A gate that quietly passes when the AI is down. |
+| Engine reviews cannot be submitted from outside | A developer writing their own review: in Engine mode the submission action refuses everything. |
+| Risk acceptance needs a different approver, a reason and an expiry | Waving your own work through; acceptances expire and come back. |
 
-## What Threatline leaves out, on purpose
+## Where Threatline shows up
 
-- **No code scanning.** Static analysers read code; Threatline reviews the design before the code exists, where a
-  missing authorisation check costs a sentence rather than a release.
-- **No auto-fixing.** It writes requirements and failing test skeletons; people and their coding agents fix.
-- **No egress.** Every model call runs on Atlassian-hosted Forge LLMs, and nothing leaves Atlassian.
-- **No group or membership changes.** It can point its policy at a group you are already in; it never creates one.
-- **Not a compliance certificate.** Control mappings are indicative, and AI review is assistance, not assurance
-  ([terms](docs/TERMS.md)).
+| Place | Forge module | What it does |
+| --- | --- | --- |
+| Work item, right-hand column | `jira:issueContext` | **Security gate** label: ✕ Blocks Done · *N* open, ✓ Ready for Done, Reviewing…, Warn only, Gate overridden or Not reviewed, with the top reason. |
+| Work item panel | `jira:issuePanel` | The review: risk score, headline, threats with evidence, requirements, risk acceptance, data-flow diagram, delivery, history, merge attestation and **Check an attestation**. |
+| Done transition | `jira:workflowValidator` | **Threatline security gate**: refuses the transition while the verdict is block, listing what is open. Added for you by **Add the gate for me**. |
+| JQL | `jira:entityProperty` | `threatlineState`, `threatlineBlocking`, `threatlineMaxSeverity`, `threatlineRisk` for filters and boards. |
+| Jira settings → Apps | `jira:adminPage` | Setup wizard and checklist, projects, review mode, severity policy, roles, budgets, notifications, demo data, risk ledger. |
+| Apps → Threatline security posture | `jira:globalPage` | Posture across projects, the champion inbox, compliance view and export. |
+| Dashboards | `jira:dashboardGadget` | Open requirements by severity, expiring acceptances, mean time to verify, reviews in flight. |
+| Confluence | page events, page write | Threat-model pages; a changed design page marks its reviews out of date; daily signed ledger tree heads. |
+| Rovo | `rovo:agent`, `action`, `rovo:skill`, `rovo:mcp` | The Threatline agent, 12 actions, a reusable skill, and an MCP server for coding agents. |
+| Bitbucket pull request | `bitbucket:mergeCheck` (second app) | Accepts a sensitive pull request only with a valid attestation for its head commit. |
+| GitHub pull request | GitHub Action (`apps/github-action`) | The same decision code as the Bitbucket check. |
+| CI | web trigger | Test results named after a requirement mark it Verified, with the run as evidence. |
 
-## The story in five steps
+## Features in depth
 
-1. **Create a story.** Within a few minutes Threatline Engine has reviewed it by itself on Atlassian-hosted Claude
-   models: three independent analyses that must agree and quote their evidence word for word, then a verifier that
-   checks each threat against its quotes. No setup, no Rovo agent, no Automation rule.
-2. **Read the threats in plain language.** "Anyone with the link can download another customer's orders", with the
-   sentence it rests on, its STRIDE category, ASVS 5 and CWE, and a Given/When/Then requirement.
-3. **Try to move it to Done.** Blocked, with the open requirements listed and a link back. Missing, failed or
-   out-of-date reviews block too, with a one-click re-run: the gate fails closed.
-4. **Fix or accept.** Verify a requirement with a PR link, or accept the risk with a reason, controls, an expiry and an
-   approver who is not you. Done passes.
-5. **Merge.** Paste the signed attestation into the pull request: the Bitbucket merge check (or the
-   [GitHub Action](docs/GITHUB.md)) passes for that exact commit. Change one character and it fails.
-
-**And the AI cannot be talked into approving.** Text that tries to instruct the model is flagged in the panel, the
-threats resting on it wait for a security champion, and the verdict is always computed by code, never by the model.
-Measured on `claude-opus-5`, the model Threatline Engine runs, through the Engine's full path (three runs, the gap
-check, then the verifier): all 15 of 15 poisoned cases held, and a separate model grader found all 60 high-severity
-must-find threats (97.7% of all) on the full 55-case set, and every must-find threat on 10 fresh cases written before
-the gap check existed ([eval](#eval), [how the engine works](docs/ENGINE.md)).
-
-## Beyond the core story
-
-- **CI closes the loop.** Tests named after a requirement pass in CI (GitHub Action or Bitbucket Pipelines), and
-  Threatline marks it Verified with the run as evidence: no clicking ([CI verification](docs/CI_VERIFICATION.md)).
+- **Plain-language threats with evidence.** "Anyone with the link can download another customer's orders", with the
+  sentence it rests on, its STRIDE category, ASVS 5 requirement and CWE, a Given/When/Then requirement, a fix-by date
+  (7, 30 or 90 days by severity) and a failing test skeleton to copy (TypeScript, Python or Java). "Explain like I'm
+  new to security" on any threat.
+- **The Done gate.** A Jira workflow validator, added to the project's Done transition in one click. It reads the
+  stored verdict, so it is fast and works when the AI is down; a missing, failed or out-of-date review blocks too, with
+  a one-click re-run. Warn-only mode exists and expires after 14 days.
+- **Fix or accept.** Mark a requirement Verified with a pull request or run as evidence, or accept its risk with a
+  reason, compensating controls, an expiry and an approver who is not you. Break-glass overrides need a written reason.
+  All of it is ledgered.
+- **Signed merge attestations.** When the verdict passes, the panel issues an Ed25519 attestation bound to the work
+  item, the repository, the exact head commit and the requirement states, valid for 24 hours. **Check an attestation**
+  verifies one in the panel against this site's keys and says exactly why one fails (malformed, signature invalid,
+  expired, another repository or another commit) without needing Bitbucket.
+- **CI closes the loop.** Tests named after a requirement pass in CI (the GitHub Action or Bitbucket Pipelines) and
+  Threatline marks it Verified with the run as evidence, no clicking. CI tokens are rate limited to 120 reports an hour
+  ([CI verification](docs/CI_VERIFICATION.md)).
+- **Delivery check (Teamwork Graph).** The panel lists the pull requests and deployments linked to the work item from
+  any connected provider, read as the viewer, never stored and never sent to a model. If code reached production while
+  security requirements were still open, the panel says so: the one alert neither gate can raise by itself.
 - **Incidents reopen reviews.** An incident on a component re-reviews the open work there, so the next story touching
   it cannot repeat the mistake; the panel names the incident ([incidents](docs/INCIDENTS.md)).
 - **One queue for champions.** Threats that need a person, across projects, grouped when the verifier thinks they
   repeat each other, decided in bulk ([champion inbox](docs/CHAMPION_INBOX.md)).
-- **See the architecture.** Each review's components, data stores, flows and trust boundaries drawn as a data-flow
-  diagram with its threats pinned to them, in the panel, on Confluence and for coding agents ([diagram](docs/DIAGRAM.md)).
+- **Data-flow diagrams.** Each review's components, data stores, flows and trust boundaries, with threats pinned to
+  them, in the panel, on Confluence and for coding agents ([diagram](docs/DIAGRAM.md)).
 - **Less noise, by team.** A false positive dismissed on three work items becomes a suggested project rule; a champion
   approves it for up to 90 days, and it can never hide a threat that would block ([suppressions](docs/SUPPRESSIONS.md)).
 - **Audit-ready.** Requirements and evidence mapped (indicatively) to SOC 2, ISO 27001:2022 and PCI DSS v4.0 controls,
   in the posture page and an exportable controls summary ([compliance](docs/COMPLIANCE.md)).
-- **A ledger you can audit.** Every acceptance, override and refusal goes into an append-only hash chain with daily
-  signed Merkle tree heads (posted to Confluence once a digest space is set under Notifications); download an inclusion proof and check it offline with
-  `node scripts/verify-ledger-proof.mjs` (Node built-ins only).
-- **For coding agents.** An MCP server and Rovo agent expose the same requirements, so Claude Code or Cursor fix what
-  the gate will check, then mark a requirement verified with their pull request as evidence ([walkthrough](docs/MCP.md),
-  [skill](mcp-skill/skill.md)). Each requirement also copies as a failing test skeleton
-  (TypeScript, Python or Java).
-- **Guardrails for the guardrail.** Review runs can be locked to one account, so developers cannot write their own
-  review; break-glass overrides need a written reason and are ledgered; warn-only mode expires after 14 days (on GitHub the date lives in the workflow file, so it binds only as far as edits to that file are reviewed: see [GitHub](docs/GITHUB.md)); a
-  budget pause needs a champion's confirmation; changes that touch no sensitive paths merge freely.
-- **Where people already work.** Issue panel, admin wizard, posture page and dashboard gadget, Confluence threat-model
-  pages, fix-by dates (7, 30, 90 days by severity), and a rule-based mode for sites without AI.
+- **A ledger you can audit.** Every acceptance, override, refusal and policy change goes into an append-only hash
+  chain with daily signed Merkle tree heads (posted to Confluence once a digest space is set). **Verify the ledger** in
+  the admin page; download an inclusion proof and check it offline with `node scripts/verify-ledger-proof.mjs`.
+- **Guardrails for the guardrail.** Review runs can be locked to one account; a budget pause needs a champion's
+  confirmation; changes that touch no sensitive paths merge freely; on GitHub the warn-only date lives in the workflow
+  file, so it binds only as far as edits to that file are reviewed ([GitHub](docs/GITHUB.md)).
+- **Three review modes.** Threatline Engine (default, Forge LLMs, no setup), Rovo agent mode (uses the site's Rovo
+  credits, driven by an Automation rule), and rules only (no AI, nothing counted against the cap).
 
-Built for Atlassian Codegeist 2026 on Forge: Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, MCP) and
-Forge SQL. No egress: nothing leaves Atlassian.
+## Rovo agent, actions and MCP
+
+The **Threatline** Rovo agent answers "What do I need to fix before PROJ-142 can merge?", "Is release 4.2 safe to
+ship?", "Which acceptances expire this month?" and "Explain threat T-7 like I'm new to security".
+
+| Surface | Tools |
+| --- | --- |
+| Rovo actions (12) | `get-review-context`, `submit-threat-model`, `get-review`, `get-security-requirements`, `check-change-risk`, `get-merge-attestation`, `request-risk-acceptance`, `verify-requirement`, `explain-threat`, `release-readiness`, `start-review`, `posture-summary` |
+| Rovo skill | `threat-model-review`, reusable by other agents: requirements, change risk, merge attestation |
+| MCP server (`rovo:mcp`) | `get-review`, `get-security-requirements`, `check-change-risk`, `get-merge-attestation`, `request-risk-acceptance`, `verify-requirement`, `explain-threat`, `posture-summary` |
+
+Claude Code, Cursor or any MCP client can read what the gate will check, fix it, and mark a requirement verified with
+its pull request as evidence ([walkthrough](docs/MCP.md), [skill](mcp-skill/skill.md)). Every action authorises the
+caller against the work item as that user.
+
+## The merge gate: Bitbucket and GitHub
+
+The Bitbucket app has one job: a pull request that touches security-sensitive paths merges only with a valid
+attestation for its head commit, signed by a Jira site the repository trusts.
+
+1. In **Repository settings → Threatline**, paste the Jira site's public key (shown on the Threatline admin page), and
+   optionally add sensitive paths, choose block or warn, and set a diff-score threshold. Repository policy in
+   `.threatline/policy.yml` is read from the destination branch, so the pull request being judged cannot change it.
+2. Paste the attestation from the Jira panel into the pull request description.
+3. The merge check verifies the Ed25519 signature, the expiry, the repository, the head commit and the verdict. A new
+   commit needs a new attestation; one changed character fails.
+
+The Bitbucket app holds only public keys and reads pull requests and repositories (`read:pullrequest`,
+`read:repository`, `read:user`, app storage). It never talks to Jira, so even a compromised workspace cannot mint a
+passing attestation. Making the check *required* needs Bitbucket Premium; on other plans it reports but cannot block.
+The [GitHub Action](docs/GITHUB.md) runs the same decision code and is exercised on a real pull request in CI.
+
+## Security, privacy and permissions
+
+- **No egress.** Every model call uses Atlassian-hosted Forge LLMs. Neither manifest declares an external fetch host.
+- **Least visibility.** A review reads only what the person who triggered it can see; restricted pages and incidents
+  under issue security are left out.
+- **Untrusted by default.** All free text is fenced as data with a random nonce; suspected injection removes the
+  verifier and the gap check from the path and sends dependent threats to a person.
+- **Secrets redacted** before any model call. Logs record ids, timings and counts only.
+- **Threatline threat-modelled itself:** each control with the test that proves it ([security review](docs/SECURITY_REVIEW.md)).
+  Vulnerabilities: report privately through GitHub's **Report a vulnerability** ([support](docs/SUPPORT.md)).
+
+| Jira app scope | Why |
+| --- | --- |
+| `read:jira-work`, `read:jira-user` (as the user) | Read the work item, links and comments, and who may see them. |
+| `write:jira-work` | Comments, the verdict issue property, demo data. |
+| `manage:jira-project`, `manage:jira-configuration` (as the admin) | Add the Done gate to a workflow when the admin clicks **Add the gate for me**. |
+| `read:page:confluence`, `read:space:confluence`, `read:confluence-content.summary`, `read:confluence-content.permission` | Read linked design pages, as the user's permissions allow. |
+| `write:page:confluence` | Threat-model pages and ledger tree heads. |
+| `read:graph:issue:jira`, `read:graph:pull-request:external`, `read:graph:deployment:external` | Delivery check, read as the viewer, never stored. |
+| `storage:app` | Reviews, verdicts, keys and the ledger (Forge storage and Forge SQL). |
+
+Data handling: [privacy](docs/PRIVACY.md) · [terms](docs/TERMS.md).
+
+## Limits and operations
+
+- **Monthly review cap.** 5 Threatline Engine reviews per site per month, set by the publisher; a site admin can lower
+  it but not raise it. Every new revision counts (first review, re-run, incident- or create-driven). At the cap new
+  reviews pause and affected work items block until a champion confirms. Resets on the 1st (UTC). Rules-only reviews
+  do not count.
+- **Per-review ceilings.** 400,000 input and 60,000 output tokens.
+- **Review time.** Two to four minutes: three runs in parallel, then the gap check and the verifier. The panel shows
+  each stage as it runs.
+- **Reading limits.** About 12,000 characters per linked page or work item; about 200 KB of context per review.
+- **Preview platform features.** Rovo MCP and Teamwork Graph are marked Preview by Atlassian and may change.
+- **Cloud only.** Forge apps run on Atlassian Cloud; there is no Data Center version.
+
+Logs to watch, what each alert means, re-running reviews and budgets: [operations runbook](docs/OPERATIONS.md). What a
+review costs on Forge LLMs: [pricing](docs/PRICING.md).
 
 ## Eval
 
@@ -221,51 +419,111 @@ pnpm threatline eval --llm recorded --subset 30 --judge claude-code   # re-grade
 pnpm threatline eval --llm fake                             # deterministic baseline rules only, no model
 ```
 
-## Try it
+## Quality: tests and CI
 
-- **On a Jira site**: [install Threatline for Jira](https://developer.atlassian.com/console/install/13898a7c-6897-48d3-a512-079d9f9f5f00?signature=AYABeCcfIQJqGrR0SUgfCmoTNmEAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB1BD8mEv4t3Ljf3OukSd5eQAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEh%2BKItDcqUwro%2BHrQIBEIA7MA0KHRf%2BF3YuTEAMovFxVALBMAXOWvXwcePSrlXd8eWbO0Gu4PlzXePH9QGutTzgsBB7obWKVcKw55kAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgHlW5ynSsuhZ7zbqiK2sh%2B2AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMkPcTbpchY2MsayhfAgEQgDuWokoIpYBa88xi5ggk1L1JkcZBleXY2Fhu75VlWDzfTq%2FPjQu2HTJqqUvWAGr3gQmwdhbGrdneGDgHcgAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAbLrick3%2FS2k9TO8wl7jjBMAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwPyU3UXZLk3LyqQEcCARCAO56x65zN0k8TKW9hcCjB8AjClKyO30ptqnOAj2gX5CQsUchhHNyCLeBw5CSlVzbE5lnPkVzoFWWWPI9DAgAAAAAMAAAQAAAAAAAAAAAAAAAAAE5uz5LjAh1FnegGXQysekL%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJlU7brRNHeEAgdUVuQgPgaQWe2H582mtCI1iAJ%2FP3ZS3ti2WQm0S86s3LQVssf56LpbJ8u0XxBB32s7u970Pyt6So%3D&product=jira&product=confluence) (and [Threatline for Bitbucket](https://developer.atlassian.com/console/install/53a2efe5-9150-4e9a-b869-8bd2605d64e0?signature=AYABeMU6Rt2jeek7C5UOdWnYVhcAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB9X7SgA05cnObTkvhYN1xbQAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDNEhzAe7TPWDBVqk6wIBEIA7keQSd6CapbYmtUGdkeKKsGD9awYJ3ooCpMpwMF2EDUNbpBp%2F9PeiHpLYzLpKRCnH1ToDtNvaJyOei0kAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgEaeJ%2BkdCobmSDv47DLtIySAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMGEExVBpjK5bbUYmTAgEQgDvy5cWJv19sweBbrSFr5C3xdwywv%2BBv20pRtihL1aMr7o8uQnVvR9vasue1xGfDidyWyh8RzUzmiGXFBQAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAWqyfoA4bYp55SbOGUdCdOkAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwmXimEV%2FsYgm0GihwCARCAO2yT52i7N%2B%2BDNBN%2F2F87pJutoitrvTBVazhVeMuRbv%2BmP8xV9sDbTccsGcHKl%2BfdohjSFjjtL%2BQGx983AgAAAAAMAAAQAAAAAAAAAAAAAAAAANo1IMueG73KsfmrDTjuUgD%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJ0ZrDuRm0Q%2Biua58qqR3NYv5pw6Y4tZl2HqZtAX21FXdWDPb0BBfCK40FDFpZmG9vKBDYJl3oHZ3or2flppy5yAWs%3D&product=bitbucket)), then follow the
-  [judge guide](docs/JUDGE_GUIDE.md): run the admin wizard, load the demo data,
-  open the epic, try to move it to Done.
-- **Locally, no site needed**:
+- **1,858 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
+  under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
+  are tested but not part of that figure.
+- **End-to-end** (`pnpm e2e`): Playwright drives the real UI against Threatline's real resolvers, agent actions, Done
+  validator and signing, with only Jira, Confluence, Rovo and the clock simulated (`e2e/local/server.ts`), plus a
+  layout audit of every surface at 320 px and 1280 px, light and dark.
+- **Eval gate:** CI replays the recorded production-model eval on every change (`evals/runner/gate.test.ts`), so a
+  change that loses a must-find threat or lets a poisoned case through fails the build.
 
-  ```bash
-  pnpm install
-  pnpm test                                   # unit, contract, pipeline, UI and accessibility tests
-  pnpm --filter @threatline/core-ui dev --port 5179   # http://localhost:5179/?state=ready · ?view=admin · ?view=posture
-  pnpm threatline sign-demo                      # sign an attestation and watch a one-character change fail
-  pnpm e2e                                    # Journeys A and B and the merge check in a real browser
-  ```
+| CI job (every pull request) | What it checks |
+| --- | --- |
+| Lint, types, tests, eval gate | eslint, `tsc -b`, all tests, the eval replay, the generated agent prompt matches its source, the GitHub Action bundle is up to date |
+| End-to-end journeys and layout audit | both journeys and the merge check in a real browser |
+| GitHub Action runs on a real pull request | the merge gate on GitHub, end to end |
+| Security scans (zero high findings) | semgrep (Threatline's own rules in `.semgrep.yml` plus registry rulesets), `pnpm audit`, gitleaks over the whole history, knip |
 
-  `pnpm e2e` drives the real UI against Threatline's real resolvers, agent actions, Done validator and signing, with
-  only Jira, Confluence, Rovo and the clock simulated (`e2e/local/server.ts`). CI also runs semgrep (Threatline's own
-  rules in `.semgrep.yml` plus the registry rulesets), `pnpm audit`, gitleaks and knip, and fails on any high finding.
+A nightly run repeats the security scans against that day's advisories, the end-to-end journeys, and a smoke test on
+the demo Jira site.
 
-  The line-coverage badge comes from `pnpm test:cov` (92.85% of lines on 2026-11-21, when the suite had 1,084 tests; 1,732 on 2026-11-22). It counts only the
-  TypeScript under `packages/*/src` and `apps/*/src` (`vitest.config.ts`). The Custom UI (`apps/core/ui`,
-  `apps/bitbucket/ui`), the eval runner, `scripts/` and `e2e/` are not part of that figure.
+## Install
+
+- **Threatline for Jira** (with Confluence): [install link](https://developer.atlassian.com/console/install/13898a7c-6897-48d3-a512-079d9f9f5f00?signature=AYABeCcfIQJqGrR0SUgfCmoTNmEAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB1BD8mEv4t3Ljf3OukSd5eQAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEh%2BKItDcqUwro%2BHrQIBEIA7MA0KHRf%2BF3YuTEAMovFxVALBMAXOWvXwcePSrlXd8eWbO0Gu4PlzXePH9QGutTzgsBB7obWKVcKw55kAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgHlW5ynSsuhZ7zbqiK2sh%2B2AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMkPcTbpchY2MsayhfAgEQgDuWokoIpYBa88xi5ggk1L1JkcZBleXY2Fhu75VlWDzfTq%2FPjQu2HTJqqUvWAGr3gQmwdhbGrdneGDgHcgAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAbLrick3%2FS2k9TO8wl7jjBMAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwPyU3UXZLk3LyqQEcCARCAO56x65zN0k8TKW9hcCjB8AjClKyO30ptqnOAj2gX5CQsUchhHNyCLeBw5CSlVzbE5lnPkVzoFWWWPI9DAgAAAAAMAAAQAAAAAAAAAAAAAAAAAE5uz5LjAh1FnegGXQysekL%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJlU7brRNHeEAgdUVuQgPgaQWe2H582mtCI1iAJ%2FP3ZS3ti2WQm0S86s3LQVssf56LpbJ8u0XxBB32s7u970Pyt6So%3D&product=jira&product=confluence). Then run the admin wizard (Jira settings →
+  Apps → Threatline), load the demo data and follow the [judge path](#for-judges-five-minutes).
+- **Threatline for Bitbucket**: [install link](https://developer.atlassian.com/console/install/53a2efe5-9150-4e9a-b869-8bd2605d64e0?signature=AYABeMU6Rt2jeek7C5UOdWnYVhcAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB9X7SgA05cnObTkvhYN1xbQAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDNEhzAe7TPWDBVqk6wIBEIA7keQSd6CapbYmtUGdkeKKsGD9awYJ3ooCpMpwMF2EDUNbpBp%2F9PeiHpLYzLpKRCnH1ToDtNvaJyOei0kAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgEaeJ%2BkdCobmSDv47DLtIySAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMGEExVBpjK5bbUYmTAgEQgDvy5cWJv19sweBbrSFr5C3xdwywv%2BBv20pRtihL1aMr7o8uQnVvR9vasue1xGfDidyWyh8RzUzmiGXFBQAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAWqyfoA4bYp55SbOGUdCdOkAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwmXimEV%2FsYgm0GihwCARCAO2yT52i7N%2B%2BDNBN%2F2F87pJutoitrvTBVazhVeMuRbv%2BmP8xV9sDbTccsGcHKl%2BfdohjSFjjtL%2BQGx983AgAAAAAMAAAQAAAAAAAAAAAAAAAAANo1IMueG73KsfmrDTjuUgD%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJ0ZrDuRm0Q%2Biua58qqR3NYv5pw6Y4tZl2HqZtAX21FXdWDPb0BBfCK40FDFpZmG9vKBDYJl3oHZ3or2flppy5yAWs%3D&product=bitbucket) on a workspace, then add the Jira site's public key in
+  the repository's **Threatline** settings ([merge gate](#the-merge-gate-bitbucket-and-github)).
+- **GitHub**: the [Threatline GitHub Action](docs/GITHUB.md).
+- **Locally, no site needed:** see [no site? no install](#no-site-no-install).
+
+Both links install the production apps. Rovo is optional; Threatline Engine needs no setup beyond the wizard.
+
+## Marketplace, pricing and licensing
+
+- **Developer Space:** "Threatline", public on the Atlassian Marketplace.
+- **Threatline for Bitbucket:** submitted for listing as a free app on 2026-11-24 and in Atlassian's review
+  ([listing notes](docs/MARKETPLACE.md), screenshot `docs/screenshots/marketplace-bitbucket-submitted.jpg`).
+- **Threatline for Jira:** stays free through the install link during Codegeist judging. Marketplace accepts apps that
+  require Jira and use Confluence only as *Paid via Atlassian*, so it will be listed as a paid app in February 2027.
+- **Licensing** is built and switched off until then: with an inactive licence Threatline starts no AI work, and never
+  traps a work item behind a gate it can no longer evaluate ([licensing](docs/LICENSING.md)).
+- **Cost:** what a review costs on Forge LLMs, measured from production logs, and the recommended price
+  ([pricing](docs/PRICING.md)).
+
+## What Threatline leaves out, on purpose
+
+- **No code scanning.** Static analysers read code; Threatline reviews the design before the code exists, where a
+  missing authorisation check costs a sentence rather than a release.
+- **No auto-fixing.** It writes requirements and failing test skeletons; people and their coding agents fix.
+- **No egress.** Every model call runs on Atlassian-hosted Forge LLMs, and nothing leaves Atlassian.
+- **No group or membership changes.** It can point its policy at a group you are already in; it never creates one.
+- **Not a compliance certificate.** Control mappings are indicative, and AI review is assistance, not assurance
+  ([terms](docs/TERMS.md)).
+
+## Roadmap
+
+Shipped: CI verification, the champion inbox, incidents reopening reviews, data-flow diagrams, team-level learning,
+compliance evidence, the Delivery check, the Security gate label and the in-panel attestation check. Next:
+
+1. **Does the pull request actually fix it?** The merge check reads the diff: did it touch the files the requirement
+   points to and add the tests its criteria imply?
+2. **Teamwork Graph memory.** "This pattern was exploited in INC-42 in another project": similar past threats,
+   incidents and accepted risks across the organisation, as context for every review.
+3. **Fix suggestions.** A suggested patch and test per requirement from the repository's own code, proposed as a pull
+   request, never merged by Threatline.
+4. **Marketplace listing of the Jira app**, with per-site model and budget controls.
+
+Detail: [roadmap](docs/ROADMAP.md).
 
 ## Docs
 
-- [Roadmap](docs/ROADMAP.md): what comes next.
-- [Architecture](docs/ARCHITECTURE.md): the review flow, the risk formula, the verdict rules, packages and ports.
-- [Security review](docs/SECURITY_REVIEW.md): Threatline threat-modelled, each control with the test that proves it.
-- [Licensing](docs/LICENSING.md): what Threatline does when a site's Paid via Atlassian license is inactive, and the runbook for turning licensing on.
-- [Operations](docs/OPERATIONS.md): the runbook: logs to watch, what each alert means, re-running reviews, budgets.
-- [Judge guide](docs/JUDGE_GUIDE.md), [screenshots](docs/screenshots/README.md), [privacy](docs/PRIVACY.md),
-  [terms](docs/TERMS.md), [support](docs/SUPPORT.md).
-- [Pricing](docs/PRICING.md): what a Threatline Engine review costs on Forge LLMs, and the recommended Marketplace price.
+| Doc | What it covers |
+| --- | --- |
+| [Judge guide](docs/JUDGE_GUIDE.md) | Install, the two-minute path, more to try, Rovo agent mode, troubleshooting |
+| [Architecture](docs/ARCHITECTURE.md) | The review flow, the risk formula, the verdict rules, packages and ports, the ledger |
+| [Threatline Engine](docs/ENGINE.md) | Each pipeline stage, models and fallbacks, retries, cost, how it was measured |
+| [Security review](docs/SECURITY_REVIEW.md) | Threatline threat-modelled, each control with the test that proves it |
+| [MCP](docs/MCP.md) · [skill](mcp-skill/skill.md) | Coding agents reading and closing requirements |
+| [GitHub](docs/GITHUB.md) · [CI verification](docs/CI_VERIFICATION.md) | The merge gate on GitHub; tests that verify requirements |
+| [Incidents](docs/INCIDENTS.md) · [Champion inbox](docs/CHAMPION_INBOX.md) · [Diagram](docs/DIAGRAM.md) · [Suppressions](docs/SUPPRESSIONS.md) · [Compliance](docs/COMPLIANCE.md) | Each feature in depth |
+| [Operations](docs/OPERATIONS.md) | Logs to watch, alerts, re-running reviews, budgets |
+| [Pricing](docs/PRICING.md) · [Licensing](docs/LICENSING.md) · [Marketplace](docs/MARKETPLACE.md) | Cost per review, price, Paid via Atlassian, listing |
+| [Privacy](docs/PRIVACY.md) · [Terms](docs/TERMS.md) · [Support](docs/SUPPORT.md) | Data handling, terms, help and vulnerability reporting |
+| [Screenshots](docs/screenshots/README.md) · [Devpost](docs/DEVPOST.md) | Listing images; submission text and demo script |
 
 ## Repository
 
 ```
-apps/core        Threatline for Jira: Forge functions, Rovo actions and agent, Custom UI (apps/core/ui)
-apps/bitbucket   Threatline for Bitbucket: merge check and repository settings
+apps/core           Threatline for Jira: Forge functions, Rovo actions and agent, MCP, Custom UI (apps/core/ui)
+apps/bitbucket      Threatline for Bitbucket: merge check and repository settings
 apps/github-action  Threatline merge gate for GitHub (same decision code; see docs/GITHUB.md)
-apps/local       pnpm threatline: offline reviews, evals, demo signing
-packages/        core (domain), crypto, db, frameworks (ASVS 5, CWE, OWASP LLM/Agentic), prompts, shared, llm-dev
-evals/           cases, runner, metrics, recorded model outputs, results
-e2e/             Playwright journeys (local harness in CI; optional smoke test on a real site)
-scripts/         ledger proof verifier, layout audit, listing screenshots, review token measurement
+apps/local          pnpm threatline: offline reviews, evals, demo signing
+packages/           core (domain), crypto, db, frameworks (ASVS 5, CWE, OWASP LLM/Agentic), prompts, shared, llm-dev
+evals/              cases, runner, metrics, recorded model outputs, results
+e2e/                Playwright journeys (local harness in CI; optional smoke test on a real site)
+mcp-skill/          the skill file for coding agents
+scripts/            ledger proof verifier, layout audit, listing screenshots, review token measurement
+docs/               everything linked above
 ```
 
-Deploy (development): `pnpm --filter @threatline/core-ui build && cd apps/core && node build.mjs && forge deploy -e development`.
+Develop and deploy:
+
+```bash
+pnpm install && pnpm test                       # everything, from the repository root
+pnpm build                                      # UI bundles and the Forge function bundle
+cd apps/core && forge deploy -e development     # or apps/bitbucket
+```

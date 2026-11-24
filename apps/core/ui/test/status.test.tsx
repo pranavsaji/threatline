@@ -66,6 +66,22 @@ describe('the context column (jira:issueContext)', () => {
     expect(await screen.findByText(/Threatline is unavailable right now/)).toBeTruthy();
   });
 
+  it('lets the frame shrink to the label: html and body take their content height, and get it back on unmount', async () => {
+    // @atlaskit/css-reset gives html and body height: 100%, which pins a Custom UI frame at the height Jira first gave it.
+    const { unmount } = render(<Router moduleKey="threatline-status" api={mockApi('ready')} admin={mockAdminApi()} posture={mockPostureApi()} inbox={mockInboxApi()} />);
+    await status();
+    for (const el of [document.documentElement, document.body]) expect([el.style.height, el.style.minHeight]).toEqual(['auto', '0']);
+    unmount();
+    for (const el of [document.documentElement, document.body]) expect([el.style.height, el.style.minHeight]).toEqual(['', '']);
+  });
+
+  it('the panel keeps the full-height document', async () => {
+    render(<Router moduleKey="threatline-panel" api={mockApi('ready')} admin={mockAdminApi()} posture={mockPostureApi()} inbox={mockInboxApi()} />);
+    await screen.findAllByRole('tab');
+    expect(document.documentElement.style.height).toBe('');
+    expect(document.body.style.height).toBe('');
+  });
+
   it.each(['light', 'dark'])('has no axe violations (%s)', async (mode) => {
     document.documentElement.setAttribute('data-color-mode', mode);
     const { container } = render(<IssueStatus api={mockApi('ready')} />);

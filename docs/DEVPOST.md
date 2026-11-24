@@ -40,6 +40,11 @@ written before the gap check existed. Severity comes from facts each threat stat
 Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
 replays offline.
 
+**Where you look:** a Security gate label on every work item (✕ Blocks Done · 3 open, with the top reason), so nobody
+has to open the panel to know; and **Check an attestation** in the panel, so anyone can paste an attestation, change one
+character and watch the signature fail without Bitbucket. Setup is a wizard, one click to add the Done gate, and one
+click to use a group you are already in as the security champions.
+
 **Also:** CI verification (tests named after a requirement pass in CI and close it, with the run as evidence);
 incidents that reopen the reviews of open work on the same component; a champion inbox across projects; a data-flow
 diagram of each review with its threats pinned to it; team suppression rules that can never hide a blocking threat;
@@ -55,7 +60,7 @@ Two Forge apps (Jira + Confluence, and Bitbucket) and a GitHub Action, in TypeSc
 a chain of queue jobs with checkpoints; Forge SQL stores reviews, requirements and the ledger; Forge KVS and secret
 storage hold policy and signing keys; Custom UI with Atlaskit for every surface. The design rule: the model proposes,
 code decides. Consensus, quote grounding, scoring, the verdict and the gates are deterministic and unit-tested
-(over 1,600 tests, browser journeys, and a 55-case eval set with poisoned twins).
+(1,858 tests, browser journeys, and a 55-case eval set with poisoned twins).
 
 ## Challenges
 
@@ -83,12 +88,12 @@ verbatim quotes, coverage, the verifier) mattered more than adding threat types.
 Marketplace listing, a check that a pull request really touches the code a requirement points to, Teamwork Graph
 memory of past incidents across the organisation, and fix suggestions proposed as pull requests.
 
-## Demo video (3:08)
+## Demo video (3:22)
 
 A rough cut with synthetic narration is built from real screenshots of a fresh site (outside the repo, in
 `threatline-video/`: `python3 build.py` renders the frames, narration and captions into `threatline-demo.mp4` and
 `threatline-demo.srt`). Record your own voice over the same script for the final upload; put "Threatline" in the YouTube
-title, and upload it as public or unlisted.
+title, and upload it as **public** (the Codegeist rules require a public YouTube video under 5 minutes).
 
 | # | On screen | Narration |
 | --- | --- | --- |
@@ -96,6 +101,7 @@ title, and upload it as public or unlisted.
 | 2 | The problem | Every team says it does security review. A checklist in the ticket. A threat model page nobody updates. A reviewer pinged the night before release. It's advisory, so it loses to the deadline. And A.I. made it worse: a chatbot will write you a threat model, but it invents risks, misses real ones, and can be talked into saying the change is fine. |
 | 3 | A new story on a brand-new Jira site | Here is a story on a brand-new Jira site. Customers want to export their order history as a CSV, through a shareable link to a public bucket, chosen by a customer I.D. parameter. And the link never expires. |
 | 4 | Reviewed by itself on Atlassian-hosted Claude models | Nobody set anything up. Within minutes, Threatline Engine reviewed it on Atlassian-hosted Claude models: three independent analyses that must agree, and quote their evidence word for word, then a verifier that checks each threat against those quotes. Risk, one hundred. It blocks Done, and merge. |
+| 4b | The gate's answer where you already look, live on the site | And nobody has to open anything to know. Beside the work item, the Security gate label says it blocks Done, with sixteen items open and the top reason, and the panel's first line names exactly what stands between this story and Done. |
 | 5 | Plain language, quoted, verified, mapped to ASVS and CWE | The threats read like a colleague wrote them. Anyone who can guess the address can download other people's order history. Critical, quoted, verified, and mapped to A.S.V.S. and C.W.E. When the verifier doubts a high-severity threat, here a duplicate, it can't quietly drop it. A security champion decides. |
 | 6 | Move it to Done: blocked, with the reason | Now try to ship it. Done is blocked, and Jira says exactly why: open security requirements at High or above, with a link back to the review. Missing, failed, or out of date reviews block too. The gate fails closed. |
 | 7 | Prompt injection is flagged, never obeyed | Here's the attack that breaks most A.I. reviewers. This epic's design page hides an instruction telling the A.I. to approve the change. Threatline flags the page, treats the text as data, and the threats resting on it wait for a security champion. The model never decides the verdict. Code does. |
@@ -108,7 +114,7 @@ title, and upload it as public or unlisted.
 | 14 | Without a valid attestation the required check blocks the merge | Without a valid attestation, the required check stays red, and the merge is blocked. It checks again at merge time, and the same gate runs as a GitHub Action. |
 | 15 | An audit trail anyone can verify | Every acceptance, override and refusal lands in a hash-chained ledger, with signed Merkle tree heads. An auditor can download an inclusion proof, and check it offline. |
 | 16 | Coding agent over MCP | And coding agents see the same requirements. Through Threatline's M.C.P. server, Claude Code or Cursor fetch exactly what the gate will check, write the fix, and mark the requirement verified with their pull request. |
-| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: fifty-nine of sixty high-severity threats found, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
+| 17 | Results and tagline | Threatline. On fifty-five eval cases, on the model it runs: all sixty high-severity threats found, and all fifteen poisoned design docs held. Build with context. Ship with confidence. |
 
 ## Additional info (judges only): ready-to-paste answers
 
@@ -123,14 +129,19 @@ Fields not listed here (submitter type, country, age, eligibility, employment, s
   setup is needed; Threatline Engine runs the reviews on Forge LLMs."
 - **App ID:** `13898a7c-6897-48d3-a512-079d9f9f5f00` (Threatline for Jira). Threatline for Bitbucket:
   `53a2efe5-9150-4e9a-b869-8bd2605d64e0`.
-- **How it meets the technology requirement:** Built entirely on Forge. Jira: issue panel, workflow validator (the
-  Done gate), admin and global pages, dashboard gadget, entity properties for JQL, issue events. Confluence: design
+- **How it meets the technology requirement:** Built entirely on Forge. Jira: issue panel, issue context (the Security
+  gate label), workflow validator (the Done gate), admin and global pages, dashboard gadget, entity properties for JQL,
+  issue events. Teamwork Graph: pull requests and deployments linked to the work item (the Delivery check). Confluence: design
   pages read as review context, threat-model pages and signed ledger heads published. Bitbucket: a merge check that
   verifies signed attestations. Forge LLMs: Threatline Engine (Claude models hosted by Atlassian). Rovo: an agent with
-  actions and an MCP server for coding agents. Forge SQL, KVS, secret storage and queues hold state; nothing egresses.
+  12 actions, a reusable skill and an MCP server for coding agents. Forge SQL, KVS, secret storage and queues hold state; nothing egresses.
 - **Category:** Apps for Software Teams. **Why:** it changes how software teams ship: security requirements become part
   of Done and of the merge, in Jira and Bitbucket, where developers already work.
-- **Bonus prize:** Best app with Atlassian MCP. Threatline's MCP tools close the loop for coding agents: Claude Code or
+- **Bonus prize (the form allows one):** recommended **Best Marketplace published app**: Threatline for Bitbucket was
+  submitted for listing on 2026-11-24 (give the Marketplace review ticket link); Threatline for Jira will be listed as
+  Paid via Atlassian after judging, because Marketplace accepts apps that require Jira and use Confluence only as paid
+  apps. The MCP bonus is the most crowded (over a hundred public entries declare `rovo:mcp`). Alternative text for
+  **Best app with Atlassian MCP**: Threatline's MCP tools close the loop for coding agents: Claude Code or
   Cursor read the requirements the gate checks, write the fix and its tests, mark each requirement verified with the
   pull request as evidence (ledgered), and fetch the signed merge attestation. Walkthrough: `docs/MCP.md`. The Rovo agent
   also qualifies it for Best Agents.

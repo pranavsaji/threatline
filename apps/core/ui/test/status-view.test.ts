@@ -63,4 +63,13 @@ describe('statusOf: the context column', () => {
     for (const f of Object.keys(FIXTURES)) expect(statusOf(FIXTURES[f]!).label, f).toBeTruthy();
     expect(statusOf(ready)).toEqual(statusOf(block));
   });
+  it('a second reason shows under the first while the gate blocks or warns, never otherwise', () => {
+    const reasons = [
+      { code: 'open_requirements', message: '10 open security requirements at High or above.' },
+      { code: 'needs_human', message: '1 threat needs a security champion to confirm it.' },
+    ];
+    expect(statusOf(withVerdict({ reasons } as never))).toMatchObject({ kind: 'block', line: reasons[0]!.message, next: reasons[1]!.message });
+    expect(statusOf(withVerdict({ state: 'warn', reasons } as never)).next).toBe(reasons[1]!.message);
+    expect(statusOf(withVerdict({ state: 'pass', reasons } as never)).next).toBeUndefined();
+  });
 });

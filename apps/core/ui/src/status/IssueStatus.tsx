@@ -5,6 +5,7 @@ import { token } from '@atlaskit/tokens';
 import { isError, type PanelApi } from '../bridge.js';
 import type { ApiError, StatusDto } from '../types.js';
 import { statusOf, statusPollMs } from './status-view.js';
+import { useFitFrameToContent } from './fit-frame.js';
 
 const small = { color: token('color.text.subtle'), font: token('font.body.small') } as const;
 
@@ -13,6 +14,7 @@ const small = { color: token('color.text.subtle'), font: token('font.body.small'
  * Done, and the top reason. Everything else lives in the Threatline panel.
  */
 export function IssueStatus({ api }: { api: PanelApi }) {
+  useFitFrameToContent();
   const [dto, setDto] = useState<StatusDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,11 @@ export function IssueStatus({ api }: { api: PanelApi }) {
       {view.line && (
         <p title={view.line} style={{ margin: 0, ...small, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {view.line}
+        </p>
+      )}
+      {view.next && (
+        <p title={view.next} style={{ margin: 0, ...small, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {view.next}
         </p>
       )}
     </section>
