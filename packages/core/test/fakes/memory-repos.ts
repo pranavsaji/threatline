@@ -41,9 +41,11 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
     async history(issueId) {
       return ok([...reviews.values()].filter((r) => r.issueId === issueId).sort((a, b) => a.revision - b.revision).map(clone));
     },
-    async byStatus(status, olderThan) {
-      // Like SQL: oldest first, at most 200.
-      const list = [...reviews.values()].filter((r) => r.status === status && (!olderThan || r.updatedAt < olderThan)).sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+    async byStatus(status, createdBefore) {
+      // Like SQL: oldest first (by creation when filtered by it), at most 200.
+      const list = createdBefore
+        ? [...reviews.values()].filter((r) => r.status === status && r.createdAt < createdBefore).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        : [...reviews.values()].filter((r) => r.status === status).sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
       return ok(list.slice(0, 200).map(clone));
     },
     async create(r) {

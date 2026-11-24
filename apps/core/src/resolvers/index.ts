@@ -9,7 +9,7 @@ import { systemClock } from '../adapters/clock.js';
 import { resolverTable, type ResolverViewer } from './table.js';
 import { gateExtensionKey } from '../adapters/workflow-gate.js';
 
-type Ctx = { accountId?: unknown; cloudId?: unknown; extension?: { issue?: { id?: unknown } } };
+type Ctx = { accountId?: unknown; cloudId?: unknown; license?: unknown; extension?: { issue?: { id?: unknown } } };
 
 /** Identity and work item come from the Forge context (the panel's own issue), never from the payload. */
 const viewerOf = (context: Ctx): ResolverViewer => ({
@@ -40,7 +40,7 @@ const resolver = new Resolver();
 for (const [key, fn] of Object.entries(table)) {
   resolver.define(key, async ({ payload, context }) => {
     const v = viewerOf(context as Ctx);
-    return fn(composeCore({ cloudId: v.cloudId }), v, (payload ?? {}) as Record<string, unknown>);
+    return fn(composeCore({ cloudId: v.cloudId, license: (context as Ctx).license }, { licenseAuthoritative: true }), v, (payload ?? {}) as Record<string, unknown>);
   });
 }
 

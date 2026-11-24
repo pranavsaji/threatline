@@ -23,6 +23,7 @@ import type { ReviewJob } from '../../src/jobs/types.js';
 import { memoryKvs } from './memory-kvs.js';
 import { kvsSigningKeys } from '../../src/adapters/signing-keys.js';
 import { contextHash } from '@threatline/core';
+import type { LicenseState } from '../../src/services/license.js';
 
 export const POLICY: SitePolicy = { ...DEFAULT_SITE_POLICY, enabledProjects: ['PAY'], reviewIssueTypes: ['Story', 'Epic'], agentSamples: 3, agentTimeoutMinutes: 15, reviewMode: 'agent' };
 
@@ -113,7 +114,7 @@ export function fakeGatherer(texts: Record<string, string>) {
   };
 }
 
-export function coreDeps(o: { issues?: JiraIssue[]; policy?: SitePolicy; now?: string; llm?: LlmPort } = {}) {
+export function coreDeps(o: { issues?: JiraIssue[]; policy?: SitePolicy; now?: string; llm?: LlmPort; license?: LicenseState } = {}) {
   const clock = fixedClock(o.now ?? '2026-11-15T12:00:00Z');
   const kv = memoryKvs();
   const pushed: ReviewJob[] = [];
@@ -124,6 +125,8 @@ export function coreDeps(o: { issues?: JiraIssue[]; policy?: SitePolicy; now?: s
   const purgedProjects: string[] = [];
   let policy = o.policy ?? POLICY;
   let migrations = 0;
+  // Paid via Atlassian: not applicable (a free or development install) unless a test says otherwise.
+  let license: LicenseState = o.license ?? 'not_applicable';
   const deps: CoreDeps = {
     reviews: memoryReviewRepo(),
     requirements: memoryRequirementRepo(),
@@ -155,8 +158,10 @@ export function coreDeps(o: { issues?: JiraIssue[]; policy?: SitePolicy; now?: s
     clock,
     migrate: async () => (migrations++, ok({ to: 1 })),
     siteUrl: async () => 'https://one-atlas-mefc.atlassian.net',
+    license: { state: async () => license },
   };
-  return { deps, clock, kv, pushed, jira, gatherer, verdicts, purged, purgedProjects, migrations: () => migrations };
+  const setLicense = (s: LicenseState) => void (license = s);
+  return { deps, clock, kv, pushed, jira, gatherer, verdicts, purged, purgedProjects, migrations: () => migrations, setLicense };
 }
 
 /** Runs queued jobs (and the jobs they push) until the queue is empty. */

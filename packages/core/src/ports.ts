@@ -63,7 +63,11 @@ export interface ReviewRepo {
   latest(issueId: string): Promise<Result<Review | null>>;
   get(id: string): Promise<Result<Review | null>>;
   history(issueId: string): Promise<Result<Review[]>>;
-  byStatus(status: ReviewStatus, olderThan?: string): Promise<Result<Review[]>>;
+  /**
+   * Reviews in this status, at most 200: with `createdBefore`, those created before it, oldest first (the sweeper's
+   * deadline counts from when a review started, not from its last run); without it, least recently updated first.
+   */
+  byStatus(status: ReviewStatus, createdBefore?: string): Promise<Result<Review[]>>;
   create(r: Review): Promise<Result<Review>>;
   update(id: string, patch: Partial<Review>): Promise<Result<void>>;
   /**

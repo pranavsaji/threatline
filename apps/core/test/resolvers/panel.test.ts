@@ -265,11 +265,15 @@ describe('panel.rerun', () => {
     const { t } = await reviewed();
     const latest = await t.deps.reviews.latest(ISSUE);
     if (!latest.ok || !latest.value) throw new Error('review');
-    await t.deps.reviews.update(latest.value.id, { status: 'awaiting_agent', samplesReceived: 1, updatedAt: t.clock.now().toISOString() });
+    await t.deps.reviews.update(latest.value.id, { status: 'awaiting_agent', samplesReceived: 1, createdAt: t.clock.now().toISOString(), updatedAt: t.clock.now().toISOString() });
     expect(await panelRerun(t.deps, viewer())).toEqual({ error: 'conflict', message: STILL_RUNNING_MESSAGE });
     expect(t.pushed).toEqual([]);
     expect(t.jira.labels).toEqual([]);
-    t.clock.advance(POLICY.agentTimeoutMinutes * 60_000);
+    // A run arriving later does not extend the deadline: it counts from when the review started.
+    t.clock.advance(POLICY.agentTimeoutMinutes * 30_000);
+    await t.deps.reviews.update(latest.value.id, { samplesReceived: 2, updatedAt: t.clock.now().toISOString() });
+    expect(await panelRerun(t.deps, viewer())).toEqual({ error: 'conflict', message: STILL_RUNNING_MESSAGE });
+    t.clock.advance(POLICY.agentTimeoutMinutes * 30_000);
     expect(await panelRerun(t.deps, viewer())).toEqual({ ok: true });
     expect(t.pushed).toHaveLength(1);
   });

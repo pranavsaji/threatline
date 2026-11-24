@@ -5,6 +5,7 @@ import { appError, err, ok, type ContextBundle, type ContextFact, type Result, t
 import type { Sample } from '@threatline/core';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
+import { MAX_JOB_RETRIES } from './retry.js';
 import { ReviewJobSchema, type ReviewJob } from '../jobs/types.js';
 import { monthOf, pauseReasons } from '../services/budget.js';
 import { contextKey, inReviewScope, refreshVerdict } from '../services/verdict-service.js';
@@ -13,6 +14,7 @@ import { REOPENED_STAGE, reopenForIncident } from '../services/incident-reopen.j
 import { opsAlert } from '../services/ops-alert.js';
 import type { IncidentCause } from '../jobs/types.js';
 import { recordHidden, suppressionsFor } from '../services/suppression-service.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -151,6 +153,13 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
     const v = await refreshVerdict(deps, job.issueId);
     if (!v.ok) return v;
     return deps.queue.push([{ kind: 'propagate', issueId: job.issueId }]);
+  }
+  // Paid via Atlassian: an inactive license starts no new review, whatever queued it (docs/LICENSING.md). The latest
+  // review stays as it is, and the Done gate does not block meanwhile.
+  if (!isLicensed(await deps.license.state())) {
+    licenseRefusal('consumer.gather', { issueId: job.issueId, reason: job.reason });
+    const v = await refreshVerdict(deps, job.issueId);
+    return v.ok ? voidOk() : v;
   }
 
   const now = deps.clock.now();
@@ -401,7 +410,15 @@ async function propagate(deps: CoreDeps, issueId: string): Promise<Result<void>>
   return grandchildren.length > 0 ? deps.queue.push(grandchildren) : voidOk();
 }
 
-export async function handleJob(deps: CoreDeps, job: ReviewJob): Promise<Result<void>> {
+/**
+ * `retriesLeft`: how many more times the queue will run this job if it fails transiently. Jobs run directly (not from
+ * the queue) have none, so a failure there is final at once.
+ */
+export interface JobRun {
+  retriesLeft?: number;
+}
+
+export async function handleJob(deps: CoreDeps, job: ReviewJob, run: JobRun = {}): Promise<Result<void>> {
   switch (job.kind) {
     case 'gather':
       return gather(deps, job);
@@ -424,7 +441,7 @@ export async function handleJob(deps: CoreDeps, job: ReviewJob): Promise<Result<
       return p;
     }
     case 'engine':
-      return engineJob(deps, job);
+      return engineJob(deps, job, run.retriesLeft ?? 0);
     case 'incident':
       return reopenForIncident(deps, job);
     case 'migrate': {
@@ -445,13 +462,21 @@ export async function handleJob(deps: CoreDeps, job: ReviewJob): Promise<Result<
 }
 
 /** Queue consumer: validates the job body (never trust a queue payload's shape), runs it, logs failures. */
-export async function reviewConsumer(event: { body?: unknown }, deps: CoreDeps): Promise<Result<void>> {
+export async function reviewConsumer(event: { body?: unknown; retryContext?: { retryCount?: number } }, deps: CoreDeps): Promise<Result<void>> {
   const parsed = ReviewJobSchema.safeParse(event.body);
   if (!parsed.success) {
     log('job.invalid', { issues: parsed.error.issues.length });
     return err(appError('validation', 'invalid job'));
   }
-  const r = await handleJob(deps, parsed.data);
-  if (!r.ok) log('job.failed', { kind: parsed.data.kind, code: r.error.code });
+  const retryCount = event.retryContext?.retryCount ?? 0;
+  const r = await handleJob(deps, parsed.data, { retriesLeft: Math.max(0, MAX_JOB_RETRIES - retryCount) });
+  if (!r.ok) {
+    const j = parsed.data;
+    const fields: Record<string, string | number> = { kind: j.kind, code: r.error.code, attempt: retryCount + 1 };
+    if ('reviewId' in j) fields.reviewId = j.reviewId;
+    else if ('issueId' in j) fields.issueId = j.issueId;
+    if (j.kind === 'engine') fields.stage = j.stage;
+    log('job.failed', fields);
+  }
   return r;
 }

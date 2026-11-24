@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MIGRATIONS } from '@threatline/db';
 import { migrate } from '@threatline/db';
 import { sqliteExecutor } from '../../../packages/db/test/sqlite-executor.js';
@@ -9,7 +9,7 @@ import { hourly } from '../src/jobs/hourly.js';
 import { daily } from '../src/jobs/daily.js';
 import { appendLedger } from '@threatline/core';
 import { checkRerunLimit } from '../src/services/rate-limit.js';
-import { coreDeps, drain } from './support/core-deps.js';
+import { coreDeps, drain, POLICY } from './support/core-deps.js';
 
 describe('sweeper', () => {
   it('turns a 20-minute-old awaiting_agent review into agent_timeout and the verdict reason agent_missing', async () => {
@@ -39,6 +39,41 @@ describe('sweeper', () => {
     expect(l.value.status).not.toBe('awaiting_agent');
     const threats = (await t.deps.reviews.threats(rev.value.id)) as { ok: true; value: Array<{ title: string; origin: string }> };
     expect(threats.value.some((x) => x.origin === 'agent' && /Forged refund/.test(x.title))).toBe(true);
+  });
+
+  it('the timeout counts from when the review started, not from its last run (live: 2 of 3 runs, settled 23 minutes in)', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z' });
+    await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'created' });
+    const rev = (await t.deps.reviews.latest('10042')) as { ok: true; value: { id: string } };
+    const model = { schema: 'threatline.threatmodel.v1' as const, issueKey: 'PAY-7', threats: [{ stride: 'Spoofing' as const, title: 'Forged refund webhooks', scenario: 'An attacker posts a fake refund event.', component: 'webhook endpoint', likelihood: 4, impact: 4, evidence: [{ quote: 'Public webhook that receives refund events' }] }] };
+    // Two runs arrive 10 minutes in and are assembled (the review's updatedAt moves to 12:10); the third never comes.
+    t.clock.set('2026-11-15T12:10:00Z');
+    for (const n of [1, 2]) await t.deps.reviews.saveSample(rev.value.id, n, model);
+    await handleJob(t.deps, { kind: 'assemble', reviewId: rev.value.id });
+    t.clock.set('2026-11-15T12:16:00Z');
+    t.pushed.length = 0;
+    await sweep(t.deps);
+    expect(t.pushed).toContainEqual({ kind: 'assemble', reviewId: rev.value.id });
+    await drain((job) => handleJob(t.deps, job), t.pushed);
+    const l = (await t.deps.reviews.latest('10042')) as { ok: true; value: { status: string; samplesReceived: number } };
+    expect(l.value).toMatchObject({ status: 'ready', samplesReceived: 2 });
+  });
+
+  it('a timed-out review whose assembly could not be queued is put back, so the next sweep queues it again', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z' });
+    await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'created' });
+    const rev = (await t.deps.reviews.latest('10042')) as { ok: true; value: { id: string } };
+    const model = { schema: 'threatline.threatmodel.v1' as const, issueKey: 'PAY-7', threats: [{ stride: 'Spoofing' as const, title: 'Forged refund webhooks', scenario: 'An attacker posts a fake refund event.', component: 'webhook endpoint', likelihood: 4, impact: 4, evidence: [{ quote: 'Public webhook that receives refund events' }] }] };
+    for (const n of [1, 2]) await t.deps.reviews.saveSample(rev.value.id, n, model);
+    t.clock.set('2026-11-15T12:20:00Z');
+    const push = t.deps.queue.push;
+    t.deps.queue.push = async () => ({ ok: false, error: { code: 'upstream', message: 'queue down' } });
+    await sweep(t.deps);
+    expect(((await t.deps.reviews.latest('10042')) as { ok: true; value: { status: string } }).value.status).toBe('awaiting_agent');
+    t.deps.queue.push = push;
+    t.pushed.length = 0;
+    await sweep(t.deps);
+    expect(t.pushed).toContainEqual({ kind: 'assemble', reviewId: rev.value.id });
   });
 
   it('leaves a 10-minute-old review alone', async () => {
@@ -117,6 +152,64 @@ describe('hourly', () => {
     await hourly(t.deps);
     const rows = await t.deps.ledger.all();
     expect(rows.ok && rows.value.map((r) => r.eventType)).toEqual(['acceptance.requested', 'acceptance.expired']);
+  });
+
+  it('counts reviews settled on only some of their runs (the rest timed out) toward the alert, and says so', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z' });
+    t.kv.data.set('config:ops', { issueKey: 'OPS-1', accountIds: ['acc-admin'] });
+    for (const id of ['1', '2', '3', '4']) {
+      await t.deps.reviews.create({
+        id: `rev_${id}`, issueId: id, issueKey: `PAY-${id}`, revision: 1, status: 'ready', contextHash: 'h', riskScore: 0, partial: false,
+        promptVersion: 'v', modelIds: [], samplesExpected: 3, samplesReceived: id === '1' ? 2 : 3, tokensIn: 0, tokensOut: 0, createdAt: '2026-11-15T11:30:00.000Z', updatedAt: '2026-11-15T11:50:00.000Z',
+      });
+    }
+    await hourly(t.deps);
+    const text = JSON.stringify(t.jira.commented[0]!.adf);
+    expect(text).toContain('0 of 4 security reviews in the last hour failed or timed out, and 1 more was settled on only some of its runs after the 15-minute agent timeout');
+  });
+
+  it('logs the fail-rate alert even when no ops work item is configured (forge logs is the developer\'s only view)', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z' });
+    await t.deps.reviews.create({
+      id: 'rev_1', issueId: '1', issueKey: 'PAY-1', revision: 1, status: 'agent_timeout', contextHash: 'h', riskScore: 0, partial: false,
+      promptVersion: 'v', modelIds: [], samplesExpected: 3, samplesReceived: 0, tokensIn: 0, tokensOut: 0, createdAt: '2026-11-15T11:30:00.000Z', updatedAt: '2026-11-15T11:50:00.000Z',
+    });
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      await hourly(t.deps);
+      const events = spy.mock.calls.map((c) => JSON.parse(String(c[0])) as Record<string, unknown>);
+      expect(events).toContainEqual(expect.objectContaining({ event: 'alert.failrate', bad: 1, total: 1, silent: 1, notified: false }));
+    } finally {
+      spy.mockRestore();
+    }
+    expect(t.jira.commented).toHaveLength(0);
+  });
+
+  it('warns once at 80% of the month\'s review budget, and once more when it is used up and reviews pause', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z', policy: { ...POLICY, budget: { ...POLICY.budget, reviewsPerMonth: 10 } } });
+    t.kv.data.set('config:ops', { issueKey: 'OPS-1', accountIds: ['acc-admin'] });
+    await t.deps.usage.add('2026-11', { tokensIn: 0, tokensOut: 0, reviews: 7 });
+    await hourly(t.deps);
+    expect(t.jira.commented).toHaveLength(0);
+    await t.deps.usage.add('2026-11', { tokensIn: 0, tokensOut: 0, reviews: 1 });
+    await hourly(t.deps);
+    await hourly(t.deps);
+    expect(t.jira.commented).toHaveLength(1);
+    expect(JSON.stringify(t.jira.commented[0]!.adf)).toContain('used 8 of its 10 AI security reviews for 2026-11');
+    await t.deps.usage.add('2026-11', { tokensIn: 0, tokensOut: 0, reviews: 2 });
+    await hourly(t.deps);
+    await hourly(t.deps);
+    expect(t.jira.commented).toHaveLength(2);
+    expect(JSON.stringify(t.jira.commented[1]!.adf)).toMatch(/used its 10 AI security reviews for 2026-11\. New reviews are paused/);
+  });
+
+  it('alerts when Rovo agent reviews are paused because the site looks out of Rovo credits', async () => {
+    const t = coreDeps({ now: '2026-11-15T12:00:00Z' });
+    t.kv.data.set('config:ops', { issueKey: 'OPS-1', accountIds: ['acc-admin'] });
+    t.kv.data.set('ingest:recent', [false, false, false]);
+    t.kv.data.set('ingest:recent:at', '2026-11-15T11:00:00.000Z');
+    await hourly(t.deps);
+    expect(JSON.stringify(t.jira.commented[0]!.adf)).toMatch(/looks out of Rovo credits/);
   });
 
   it('stays quiet at or below 20%, and without an ops issue', async () => {

@@ -7,6 +7,7 @@ import Spinner from '@atlaskit/spinner';
 import Tabs, { Tab, TabList, TabPanel } from '@atlaskit/tabs';
 import { token } from '@atlaskit/tokens';
 import { errorText, isError, type PanelApi } from '../bridge.js';
+import { LicenseBanner } from '../components/LicenseBanner.js';
 import type { PanelDto, Threat } from '../types.js';
 import { EmptyState } from './EmptyState.js';
 import { Header } from './Header.js';
@@ -203,6 +204,7 @@ export function IssuePanel({ api }: { api: PanelApi }) {
       }}
     >
       <div aria-live="polite">{notice && <SectionMessage appearance="information">{notice}</SectionMessage>}</div>
+      {dto.licenseInactive && <LicenseBanner />}
       {view.state === 'not_reviewed' && dto.inScope === false ? (
         <SectionMessage appearance="information" title="Threatline is not on for this project or work type">
           {dto.scopeMessage ?? 'Threatline does not review this work item.'} A parent work item's review, if it has one, still applies at the gate.

@@ -20,3 +20,8 @@ while both preview servers run (see the script header). Re-run it after UI chang
 5. `bitbucket-5-repo-settings-dark.png` — repository settings in the dark theme.
 
 Not here yet: the merge check on a real pull request (Bitbucket's own UI), which needs a capture on the live workspace.
+
+## Marketplace
+
+- `marketplace-bitbucket-submitted.jpg` — Threatline for Bitbucket 2.10.0 submitted as a free informational listing,
+  pending approval (2026-11-24). See `docs/MARKETPLACE.md`.

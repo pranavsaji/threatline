@@ -1,5 +1,5 @@
 import { storeSample } from '../services/samples.js';
-import { appendLedger, extractAgentJson, type Sample } from '@threatline/core';
+import { appendLedger, extractFittedAgentJson, type Sample } from '@threatline/core';
 import { appError, err, ok, type Result } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
@@ -9,6 +9,7 @@ import { INGEST_LAST_AT_KEY } from '../resolvers/admin.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
 import { consumeSubmissionToken } from '../services/submission-token.js';
 import { callerOf, ISSUE_KEY, type ActionPayload } from './common.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 export interface IngestResult {
   reviewId: string;
@@ -67,27 +68,31 @@ export async function ingestSample(
   // The submission token names the revision it was issued for; a run never files into another one.
   if (opts.revision !== undefined && review.revision !== opts.revision) return err(appError('conflict', 'wrong_revision'));
 
-  const extracted = extractAgentJson(raw, issue.value.key);
-  const sample: Sample = extracted.ok ? extracted.value : { failed: extracted.error.code };
+  // A schema miss gets the Engine's deterministic repair (fitted to the contract, quotes only shortened) before it counts
+  // as a failed run; anything still invalid is stored failed, so it counts as received and the review cannot hang.
+  const extracted = extractFittedAgentJson(raw, issue.value.key);
+  const sample: Sample = extracted.ok ? extracted.value.model : { failed: extracted.error.code };
   // Race fix: two runs arriving together get consecutive numbers (insert-only), never overwrite each other.
   const stored = await storeSample(deps, review, sample);
   if (!stored.ok) return stored;
   const n = stored.value;
   // Final review C2: who wrote each agent run is on the record, so a review its own developer steered is visible.
   if (actor) {
-    const row = await appendLedger(deps.ledger, deps.clock, 'review.sample', { issueId: issue.value.id, reviewId: review.id, n, valid: extracted.ok, threats: extracted.ok ? extracted.value.threats.length : 0 }, actor);
+    const row = await appendLedger(deps.ledger, deps.clock, 'review.sample', { issueId: issue.value.id, reviewId: review.id, n, valid: extracted.ok, threats: extracted.ok ? extracted.value.model.threats.length : 0 }, actor);
     if (!row.ok) log('sample.ledger_failed', { reviewId: review.id, code: row.error.code });
   }
   await recordIngest(deps, raw.trim().length > 0, opts.creditsSignal !== false);
   const pushed = await deps.queue.push([{ kind: 'assemble', reviewId: review.id }]);
   if (!pushed.ok) return pushed;
-  log('sample.ingested', { reviewId: review.id, n, valid: extracted.ok, via, ...(extracted.ok ? {} : { code: extracted.error.code }) });
+  log('sample.ingested', { reviewId: review.id, n, valid: extracted.ok, via, ...(extracted.ok ? { fitted: extracted.value.fitted } : { code: extracted.error.code }) });
   return ok({ reviewId: review.id, received: n, expected: review.samplesExpected, valid: extracted.ok });
 }
 
 export type SubmitResult =
   | { saved: true; valid: boolean; received: number; expected: number; message: string }
-  | { saved: false; error: 'invalid_input' | 'invalid_token' | 'not_found' | 'not_review_author' | 'engine_mode' | 'project_not_enabled' | 'complete' | 'budget' | 'rate_limited' | 'unavailable' };
+  | { saved: false; error: 'invalid_input' | 'invalid_token' | 'not_found' | 'not_review_author' | 'engine_mode' | 'project_not_enabled' | 'complete' | 'budget' | 'rate_limited' | 'unavailable' }
+  /** Paid via Atlassian: the site's license is inactive, so no agent run is saved (docs/LICENSING.md). */
+  | { saved: false; error: 'license_inactive'; message: string };
 
 /**
  * CREATE action the agent calls to save its threat model (Automation "take actions" runs it unattended; chat and
@@ -101,6 +106,7 @@ export async function submitThreatModel(payload: ActionPayload & { issueKey?: un
     return { saved: false as const, error };
   };
   if (!ISSUE_KEY.test(issueKey) || typeof payload.threatModelJson !== 'string') return deny('invalid_input', 'invalid_input');
+  if (!isLicensed(await deps.license.state())) return { saved: false, error: 'license_inactive', message: licenseRefusal('action.submit') };
   const caller = callerOf(payload);
   if (!caller) return deny('no_caller', 'not_found');
   const issue = await deps.jira.issue(issueKey);

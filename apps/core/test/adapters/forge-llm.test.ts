@@ -47,9 +47,73 @@ describe('forgeLlm (Threatline Engine on Forge LLMs)', () => {
     const llm = forgeLlm({ fast: [], balanced: [], deep: ['a', 'b'] }, async (p) => (tried.push(p.model), Promise.reject(bad)));
     const r = await llm.complete(req);
     expect(tried).toEqual(['a']);
-    expect(!r.ok && r.error.code).toBe('upstream');
-    const all = forgeLlm({ fast: [], balanced: [], deep: ['a'] }, async () => Promise.reject(apiError(504)));
+    // Not worth a queue retry: the same request fails the same way.
+    expect(!r.ok && r.error.code).toBe('validation');
+    const all = forgeLlm({ fast: [], balanced: [], deep: ['a'] }, async () => Promise.reject(apiError(504)), { sleep: async () => {} });
     expect(await all.complete(req)).toMatchObject({ ok: false, error: { code: 'timeout' } });
+  });
+
+  it('retries a rate-limited or overloaded model with exponential backoff and full jitter before falling through', async () => {
+    const tried: string[] = [];
+    const slept: number[] = [];
+    let n = 0;
+    const llm = forgeLlm(
+      { fast: [], balanced: [], deep: ['opus', 'older'] },
+      async (p) => {
+        tried.push(p.model);
+        if (n++ < 2) throw apiError(n === 1 ? 429 : 503);
+        return reply('ok');
+      },
+      { sleep: async (ms) => void slept.push(ms), random: () => 0.5, baseDelayMs: 1000, maxDelayMs: 10_000 },
+    );
+    const r = await llm.complete(req);
+    // The same (best) model answered on its third try: the rate limit did not push the review onto an older model.
+    expect(tried).toEqual(['opus', 'opus', 'opus']);
+    expect(r.ok && r.value.modelId).toBe('opus');
+    expect(slept).toEqual([500, 1000]);
+  });
+
+  it('a network error (no HTTP status) is transient too; after the retries the next model is tried', async () => {
+    const tried: string[] = [];
+    const llm = forgeLlm(
+      { fast: [], balanced: [], deep: ['a', 'b'] },
+      async (p) => {
+        tried.push(p.model);
+        if (p.model === 'a') throw Object.assign(new Error('socket hang up'), { name: 'FetchError' });
+        return reply('ok');
+      },
+      { sleep: async () => {}, retries: 1 },
+    );
+    const r = await llm.complete(req);
+    expect(tried).toEqual(['a', 'a', 'b']);
+    expect(r.ok && r.value.modelId).toBe('b');
+  });
+
+  it('never retries past the deadline (the queue function has 300 s), and reports a transient failure as upstream for a later job retry', async () => {
+    let clock = 0;
+    const tried: string[] = [];
+    const llm = forgeLlm(
+      { fast: [], balanced: [], deep: ['a', 'b'] },
+      async (p) => {
+        tried.push(p.model);
+        clock += 100_000; // each call takes 100 s, then the platform says it is overloaded
+        throw apiError(529);
+      },
+      { sleep: async (ms) => void (clock += ms), now: () => clock, random: () => 1, deadlineMs: 120_000 },
+    );
+    const r = await llm.complete(req);
+    // 100 s in, a retry that may take another 100 s would end past 120 s: no retry. The next model is still tried once
+    // (as before retries existed); 200 s in, nothing more is.
+    expect(tried).toEqual(['a', 'b']);
+    expect(!r.ok && r.error.code).toBe('upstream');
+  });
+
+  it('a tier whose every model the platform refused is reported as forbidden (no queue retry), not as an outage', async () => {
+    const slept: number[] = [];
+    const llm = forgeLlm({ fast: [], balanced: [], deep: ['a', 'b'] }, async () => Promise.reject(apiError(404)), { sleep: async (ms) => void slept.push(ms) });
+    const r = await llm.complete(req);
+    expect(!r.ok && r.error.code).toBe('forbidden');
+    expect(slept).toEqual([]);
   });
 
   it('joins text parts, and an empty reply is an error', async () => {

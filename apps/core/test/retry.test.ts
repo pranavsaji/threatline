@@ -11,6 +11,12 @@ describe('queue retry decision', () => {
     expect(Buffer.byteLength(JSON.stringify(r.retryOptions.retryData))).toBeLessThan(4096);
     expect(retryDecision(failed('timeout'), 2)).toBeDefined();
   });
+  it('backs off: a longer delay each attempt, with jitter so jobs that failed together do not retry together', () => {
+    const after = (count: number, rand: number) => (retryDecision(failed('upstream'), count, () => rand) as unknown as { retryOptions: { retryAfter: number } }).retryOptions.retryAfter;
+    expect([after(0, 0), after(1, 0), after(2, 0)]).toEqual([60, 120, 180]);
+    expect(after(0, 0.999)).toBe(89);
+    expect(after(2, 0.999)).toBeLessThan(900); // Forge's maximum delay
+  });
   it('does not retry success, permanent failures, or after three attempts', () => {
     expect(retryDecision({ ok: true }, 0)).toBeUndefined();
     expect(retryDecision(failed('validation'), 0)).toBeUndefined();

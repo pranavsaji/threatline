@@ -204,8 +204,11 @@ pnpm threatline eval --llm fake                             # deterministic base
 - [Roadmap](docs/ROADMAP.md): what comes next.
 - [Architecture](docs/ARCHITECTURE.md): the review flow, the risk formula, the verdict rules, packages and ports.
 - [Security review](docs/SECURITY_REVIEW.md): Threatline threat-modelled, each control with the test that proves it.
+- [Licensing](docs/LICENSING.md): what Threatline does when a site's Paid via Atlassian license is inactive, and the runbook for turning licensing on.
+- [Operations](docs/OPERATIONS.md): the runbook: logs to watch, what each alert means, re-running reviews, budgets.
 - [Judge guide](docs/JUDGE_GUIDE.md), [screenshots](docs/screenshots/README.md), [privacy](docs/PRIVACY.md),
-  [terms](docs/TERMS.md).
+  [terms](docs/TERMS.md), [support](docs/SUPPORT.md).
+- [Pricing](docs/PRICING.md): what a Threatline Engine review costs on Forge LLMs, and the recommended Marketplace price.
 
 ## Repository
 
@@ -217,7 +220,7 @@ apps/local       pnpm threatline: offline reviews, evals, demo signing
 packages/        core (domain), crypto, db, frameworks (ASVS 5, CWE, OWASP LLM/Agentic), prompts, shared, llm-dev
 evals/           cases, runner, metrics, recorded model outputs, results
 e2e/             Playwright journeys (local harness in CI; optional smoke test on a real site)
-scripts/         ledger proof verifier, layout audit, listing screenshots
+scripts/         ledger proof verifier, layout audit, listing screenshots, review token measurement
 ```
 
 Deploy (development): `pnpm --filter @threatline/core-ui build && cd apps/core && node build.mjs && forge deploy -e development`.

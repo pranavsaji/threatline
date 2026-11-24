@@ -6,6 +6,9 @@ import type { ReviewJob } from '../jobs/types.js';
 import { monthOf } from './budget.js';
 import { refreshVerdict } from './verdict-service.js';
 import { storeSample } from './samples.js';
+import { isLicensed, licenseRefusal } from './license.js';
+import { opsAlert } from './ops-alert.js';
+import { isTransientCode } from '../consumers/retry.js';
 
 type EngineJob = Extract<ReviewJob, { kind: 'engine' }>;
 const voidOk = (): Result<void> => ok(undefined);
@@ -35,16 +38,36 @@ const trace = (deps: CoreDeps, reviewId: string, stage: string, status: 'done' |
   deps.reviews.saveStage(reviewId, `engine_${stage}`, status, undefined, error, deps.clock.now().toISOString()).catch(() => null);
 
 /**
+ * A stage refused a model call because the review's token budget (Budgets → tokens per review, capped by the developer's
+ * THREATLINE_MAX_TOKENS_*_PER_REVIEW) would be exceeded. Logged every time; the ops work item hears once a day.
+ */
+async function tokenBudgetReached(deps: CoreDeps, review: Review, stage: string, cap: { tokensIn: number; tokensOut: number }): Promise<void> {
+  log('engine.token_budget_reached', { reviewId: review.id, stage, capIn: cap.tokensIn, capOut: cap.tokensOut });
+  await opsAlert(
+    deps,
+    `alert:token-cap:${deps.clock.now().toISOString().slice(0, 10)}`,
+    `Threatline: the ${stage} step of ${review.issueKey}'s security review was not run because the review reached its token budget (${cap.tokensIn} input / ${cap.tokensOut} output tokens per review). Its other runs still count; a review short of runs fails closed and blocks until it is re-run. Raise the per-review token caps on the Threatline admin page (Budgets), then re-run it from the work item's panel.`,
+  ).catch(() => false);
+}
+
+/**
  * Threatline Engine, one stage per queue job: a quarantined injection check, then N independent runs in parallel on the deep tier, each the Threatline agent
  * prompt over the nonce-fenced review context (each becomes a run exactly like a Rovo agent run, so consensus, quote
  * checks, injection flags and the rule-based floor apply unchanged) → assembly → the adversarial verifier. Model errors become failed runs: the review
  * then fails closed, as AI errors count as missing.
  */
-export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<void>> {
+export async function engineJob(deps: CoreDeps, job: EngineJob, retriesLeft = 0): Promise<Result<void>> {
   const got = await deps.reviews.get(job.reviewId);
   if (!got.ok) return got;
   const review = got.value;
   if (!review) return err(appError('not_found', `review ${job.reviewId}`));
+  // Paid via Atlassian: an inactive license makes no model call (docs/LICENSING.md). A review left waiting is timed out
+  // by the sweeper, like any review whose runs never arrive.
+  if (!isLicensed(await deps.license.state())) {
+    licenseRefusal('consumer.engine', { reviewId: review.id, stage: job.stage });
+    await trace(deps, review.id, job.stage, 'failed', 'license_inactive');
+    return voidOk();
+  }
   // A job of a superseded revision does nothing (it would re-point or remove the newer revision's requirement rows).
   const current = await deps.reviews.latest(review.issueId);
   if (!current.ok) return current;
@@ -70,7 +93,7 @@ export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<
   };
   const stageDeps = { llm: deps.llm, reviews: deps.reviews, policy: policy.value, budget };
 
-  if (job.stage === 'verify') return verify(deps, review, stageDeps, usage, before);
+  if (job.stage === 'verify') return verify(deps, review, stageDeps, usage, before, cap);
   // A stale job (the review settled or timed out meanwhile) does nothing.
   if (review.status !== 'awaiting_agent') return voidOk();
   const bundle = await bundleOf(deps, review);
@@ -81,6 +104,13 @@ export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<
   if (job.stage === 'extract') {
     const x = await engineExtract(stageDeps, review, bundle.value, usage);
     await record(deps, review, before, usage);
+    // A rate limit or brief Forge LLM outage: the queue runs this job again later (no runs are queued yet, and the
+    // check's recorded failure is replaced when it runs again).
+    if (!x.ok && isTransientCode(x.error.code) && retriesLeft > 0) {
+      log('engine.retry_later', { reviewId: review.id, stage: 'extract', code: x.error.code, retriesLeft });
+      return x;
+    }
+    if (!x.ok && x.error.code === 'budget') await tokenBudgetReached(deps, review, 'injection check', cap);
     await trace(deps, review.id, 'injection_check', x.ok ? 'done' : 'failed', x.ok ? (x.value.sketch.injectionSuspected ? 'injection suspected' : undefined) : x.error.code);
     if (!x.ok) log('engine.extract_failed', { reviewId: review.id, code: x.error.code });
     return deps.queue.push(Array.from({ length: review.samplesExpected }, (_, n) => ({ kind: 'engine' as const, reviewId: review.id, stage: 'propose' as const, n })));
@@ -99,6 +129,14 @@ export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<
     if (!sample) {
       const r = await engineAgentRun(stageDeps, review, bundle.value, usage);
       await record(deps, review, before, usage);
+      // A rate limit or brief Forge LLM outage (after the adapter's own retries): rather than a failed run now, the
+      // queue runs this job again later. Nothing is stored before, so the retry starts clean; the last try stores it.
+      const transient = r.ok && 'failed' in r.value && isTransientCode(r.value.failed) ? r.value.failed : undefined;
+      if (transient && retriesLeft > 0) {
+        log('engine.retry_later', { reviewId: review.id, stage: 'propose', n, code: transient, retriesLeft });
+        return err(appError(transient === 'timeout' ? 'timeout' : 'upstream', `run ${n}: Forge LLMs ${transient}`));
+      }
+      if (!r.ok && r.error.code === 'budget') await tokenBudgetReached(deps, review, `run ${slot}`, cap);
       sample = r.ok ? r.value : { failed: r.error.code };
       const c = await deps.reviews.saveStage(review.id, `run:${n}`, 'running', { sample });
       if (!c.ok) log('engine.checkpoint_failed', { reviewId: review.id, n, code: c.error.code });
@@ -120,7 +158,7 @@ export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<
     const m = await deps.reviews.saveStage(review.id, `run:${n}`, failed ? 'failed' : 'done', undefined, failed);
     if (!m.ok) return m;
     await trace(deps, review.id, `run_${slot}`, failed ? 'failed' : 'done', failed);
-    log('engine.run', { reviewId: review.id, n, valid: !failed });
+    log('engine.run', { reviewId: review.id, n, valid: !failed, ...(failed ? { code: failed } : {}) });
   }
   return deps.queue.push([{ kind: 'assemble', reviewId: review.id }]);
 }
@@ -211,7 +249,9 @@ async function applyAndStore(deps: CoreDeps, review: Review, verdicts: Verdicts)
   return voidOk();
 }
 
-async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<typeof engineVerify>[0], usage: Usage, before: { tokensIn: number; tokensOut: number }): Promise<Result<void>> {
+type Cap = { tokensIn: number; tokensOut: number };
+
+async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<typeof engineVerify>[0], usage: Usage, before: { tokensIn: number; tokensOut: number }, cap: Cap): Promise<Result<void>> {
   const done = await deps.reviews.stage(review.id, 'verify');
   if (done.ok && done.value?.status === 'done') return voidOk();
   if (review.status !== 'ready') return voidOk();
@@ -230,13 +270,14 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
   // has the function's whole time limit). Its threats are stored hidden; only the verifier's keep makes one active.
   const gaps = await deps.reviews.stage(review.id, 'gaps');
   if (!gaps.ok) return gaps;
-  if (gaps.value?.status !== 'done' && gaps.value?.status !== 'failed') return gapCheck(deps, review, stageDeps, usage, before);
+  if (gaps.value?.status !== 'done' && gaps.value?.status !== 'failed') return gapCheck(deps, review, stageDeps, usage, before, cap);
   const nonce = globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 12);
   const v = await engineVerify(stageDeps, threats.value, usage, nonce);
   await record(deps, review, before, usage);
   if (!v.ok) {
     // Verification only ever removes noise; without it the review stands as assembled (stricter, never looser).
     log('engine.verify_failed', { reviewId: review.id, code: v.error.code });
+    if (v.error.code === 'budget') await tokenBudgetReached(deps, review, 'verifier', cap);
     await deps.reviews.saveStage(review.id, 'verify', 'failed', undefined, v.error.code);
     await trace(deps, review.id, 'verify', 'failed', v.error.code);
     return voidOk();
@@ -256,7 +297,7 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
  * the review hidden (dismissed, `unconfirmed`); then the verifier's job is queued. A failed check is recorded and the
  * verifier runs anyway: without the gap check the review stands as the runs agreed, as before it existed.
  */
-async function gapCheck(deps: CoreDeps, review: Review, stageDeps: Parameters<typeof engineGapCheck>[0], usage: Usage, before: { tokensIn: number; tokensOut: number }): Promise<Result<void>> {
+async function gapCheck(deps: CoreDeps, review: Review, stageDeps: Parameters<typeof engineGapCheck>[0], usage: Usage, before: { tokensIn: number; tokensOut: number }, cap: Cap): Promise<Result<void>> {
   await deps.reviews.saveStage(review.id, 'gaps', 'running');
   const [threats, samples, bundle] = await Promise.all([deps.reviews.threats(review.id), deps.reviews.samples(review.id), bundleOf(deps, review)]);
   if (!threats.ok) return threats;
@@ -273,8 +314,10 @@ async function gapCheck(deps: CoreDeps, review: Review, stageDeps: Parameters<ty
     const s = await deps.reviews.saveThreats(review.id, [...current.value, ...g.value.filter((t) => !ids.has(t.id))], discarded.value);
     if (!s.ok) return s;
   }
-  if (!g.ok) log('engine.gaps_failed', { reviewId: review.id, code: g.error.code });
-  else log('engine.gaps', { reviewId: review.id, candidates: g.value.length });
+  if (!g.ok) {
+    log('engine.gaps_failed', { reviewId: review.id, code: g.error.code });
+    if (g.error.code === 'budget') await tokenBudgetReached(deps, review, 'gap check', cap);
+  } else log('engine.gaps', { reviewId: review.id, candidates: g.value.length });
   await deps.reviews.saveStage(review.id, 'gaps', g.ok ? 'done' : 'failed', g.ok ? { candidates: g.value.map((t) => t.id) } : undefined, g.ok ? undefined : g.error.code);
   await trace(deps, review.id, 'gap_check', g.ok ? 'done' : 'failed', g.ok ? `${g.value.length} candidate(s)` : g.error.code);
   return deps.queue.push([{ kind: 'engine', reviewId: review.id, stage: 'verify' }]);

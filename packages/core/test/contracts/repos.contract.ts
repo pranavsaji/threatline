@@ -49,6 +49,11 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect(hist.ok && hist.value.map((x) => x.revision)).toEqual([1, 2]);
       const stale = await r.byStatus('agent_timeout', '2026-11-16T00:00:00.000Z');
       expect(stale.ok && stale.value.map((x) => x.id)).toEqual(['rev_1']);
+      // Created before the cutoff counts, however recently a run updated it (the sweeper's deadline is from the start).
+      await r.update('rev_1', { updatedAt: '2026-11-17T00:00:00.000Z' });
+      const late = await r.byStatus('agent_timeout', '2026-11-16T00:00:00.000Z');
+      expect(late.ok && late.value.map((x) => x.id)).toEqual(['rev_1']);
+      expect((await r.byStatus('agent_timeout', '2026-11-14T00:00:00.000Z')).ok && (await r.byStatus('agent_timeout', '2026-11-14T00:00:00.000Z'))).toEqual({ ok: true, value: [] });
     });
 
     it('reviews: facts, threats, discarded, samples and stages round-trip', async () => {

@@ -16,6 +16,7 @@ import { PAGE_KEY } from '../services/confluence-page.js';
 import { reopenedBy, type ReopenedBy } from '../services/incident-reopen.js';
 import { buildDiagram, type DiagramDto } from '../services/diagram-service.js';
 import type { ApiError } from './errors.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 import type { DeliveryLinks, LinkedDeployment, LinkedPullRequest } from '../adapters/graph-delivery.js';
 
 export const PAGE_SIZE = 50;
@@ -82,6 +83,8 @@ export interface PanelDto {
   scopeMessage?: string;
   /** The site's review mode, so the panel can say how long a review takes (Threatline Engine takes a few minutes). */
   reviewMode?: SitePolicy['reviewMode'];
+  /** Paid via Atlassian: the site's license is inactive, so no new reviews start (docs/LICENSING.md). */
+  licenseInactive?: true;
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited'; message?: string };
@@ -183,7 +186,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     deps.config.site(),
     readVerdict(deps, v.issueId).then((r) => (r.ok ? r.value : undefined)),
   ]);
-  const page = await deps.state.get<{ url?: unknown }>(PAGE_KEY(v.issueId)).catch(() => undefined);
+  const [page, license] = await Promise.all([deps.state.get<{ url?: unknown }>(PAGE_KEY(v.issueId)).catch(() => undefined), deps.license.state()]);
   if (!latest.ok || !history.ok || !requirements.ok || !ledger.ok || !policy.ok) return { error: 'unavailable' };
   const review = latest.value;
   let verdict = stored ?? null;
@@ -277,6 +280,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     ...(outOfScope ? { scopeMessage: outOfScope } : {}),
     reviewMode: p.reviewMode,
     ...(verifying ? { verifying: true } : {}),
+    ...(isLicensed(license) ? {} : { licenseInactive: true as const }),
   };
 }
 
@@ -306,6 +310,8 @@ export const STILL_RUNNING_MESSAGE = 'A review of this work item is still runnin
 export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true } | Denied | Refused> {
   const auth = await authorise(deps, v, 'edit');
   if ('error' in auth) return auth;
+  // Paid via Atlassian: an inactive license starts no new reviews (docs/LICENSING.md); nothing is counted or labelled.
+  if (!isLicensed(await deps.license.state())) return { error: 'validation', message: licenseRefusal('panel.rerun', { issueId: v.issueId }) };
   const [policy, latest] = await Promise.all([deps.config.site(), deps.reviews.latest(v.issueId)]);
   if (!latest.ok) return { error: 'unavailable' };
   if (policy.ok) {
@@ -316,7 +322,8 @@ export async function panelRerun(deps: CoreDeps, v: Viewer): Promise<{ ok: true 
     // Only while something is actually running: Engine runs, or a Rovo run that has already reported. A Rovo review no
     // run has answered may mean the Automation rule never fired, and re-running (which re-adds the label) is the fix.
     const running = l && l.status === 'awaiting_agent' && (policy.value.reviewMode === 'engine' || l.samplesReceived > 0);
-    if (running && deps.clock.now().getTime() - Date.parse(l.updatedAt) < timeoutMs) return { error: 'conflict', message: STILL_RUNNING_MESSAGE };
+    // Counted from when the review started, like the sweeper's deadline (not from its last run).
+    if (running && deps.clock.now().getTime() - Date.parse(l.createdAt) < timeoutMs) return { error: 'conflict', message: STILL_RUNNING_MESSAGE };
   }
   const limit = await checkRerunLimit(deps, v.accountId);
   if (!limit.ok) return { error: limit.error.code === 'budget' ? 'rate_limited' : 'unavailable' };
