@@ -1,6 +1,8 @@
 # Marketplace listing kit
 
-Everything needed to submit **Threatline** (the Jira + Confluence app) for a free Marketplace listing. The Codegeist
+Everything needed to list **Threatline** (the Jira + Confluence app) on the Marketplace. A Free listing of this app is
+not possible (see [Paid listing (February 2027)](#paid-listing-february-2027)); it is planned as Paid via Atlassian,
+priced as in [PRICING.md](PRICING.md). The Codegeist
 bonus "Best Marketplace published app" counts an app that is *submitted for listing*: keep the review ticket link (or a
 screenshot of the "Submitted" status) for the Devpost form.
 
@@ -19,11 +21,68 @@ screenshot of the "Submitted" status) for the Devpost form.
 1. `forge deploy -e production` (already done for the current version) and confirm the production version is the one to list.
 2. developer.atlassian.com → Developer Space "Threatline" → **Make public on Marketplace** → accept the partner agreement.
 3. marketplace.atlassian.com/manage/apps/create → choose the Forge app `13898a7c-6897-48d3-a512-079d9f9f5f00` →
-   paste the listing below → **Free** → submit.
+   paste the listing below → **Paid via Atlassian** (Free is refused for this manifest) → set the price → submit.
 4. Complete Partner Verification from the ticket within 14 days.
 5. Save the ECOHELP ticket link (or screenshot "Submitted") for Devpost.
 
-The Bitbucket app (`53a2efe5-…`) is optional: Bitbucket Forge apps use "informational listings".
+The Bitbucket app (`53a2efe5-…`) was submitted on 2026-11-24 as a free informational listing (see below).
+
+## Paid listing (February 2027)
+
+The plan is to list Threatline for Jira as **Paid via Atlassian** after Codegeist judging, in February 2027. Until then,
+the install links in `docs/JUDGE_GUIDE.md` stay free. The cost per review, the cap mechanics and the recommended price
+are in [PRICING.md](PRICING.md).
+
+**Why not Free: the multi-product finding.** The manifest declares `compatibility.jira.required: true` and
+`compatibility.confluence.required: false`, so this is a multi-product app. Marketplace refused a Free listing of it
+with:
+
+> Required products can only be specified for PAID_VIA_ATLASSIAN apps
+
+To list it Free, the app would have to drop the Confluence compatibility entry. That would also drop the Confluence
+features: design-page reading and published threat-model pages. Paid via Atlassian keeps the manifest as it is. The
+payment model is hard to change after listing, so choose it once.
+
+**Threatline for Bitbucket: submitted.** It went in on 2026-11-24 as a **free informational listing**:
+
+- Bitbucket Forge apps are not installed from the Marketplace. The listing says the app isn't directly installable and
+  links to the install link.
+- Version 2.10.0, build 201000000, Cloud, "First Marketplace release of the Threatline security merge check".
+- Status: **pending approval** (screenshot `docs/screenshots/marketplace-bitbucket-submitted.jpg`).
+- Terms: the **Bonterms Standard End User Agreement**, with `docs/TERMS.md` as additional terms.
+- License type: "Commercial - no charge". Personal data: no.
+- Keep the ECOHELP ticket link, or this screenshot, for the Devpost form.
+
+**Before the paid listing goes live (repo work):**
+
+- **Licensing.** Add `app.licensing.enabled: true` to `apps/core/manifest.yml`. Engine reviews should run only for
+  licensed or evaluation installs. See the Forge licensing overview.
+- **Token ceilings.** Set the per-review token ceilings in production, alongside the review cap.
+  - Production today sets only `THREATLINE_MAX_REVIEWS_PER_MONTH=10`.
+  - Run `forge variables set -e production THREATLINE_MAX_TOKENS_IN_PER_REVIEW 400000` and the same for
+    `THREATLINE_MAX_TOKENS_OUT_PER_REVIEW 60000`.
+  - Without them, a site admin can raise the per-review token caps, and the $3.50 per-review ceiling in `PRICING.md`
+    no longer holds.
+- **Real token use.** Measure it from production `llm.call` logs (10 to 20 reviews) and update the numbers in
+  `PRICING.md`. The repo's recordings have no usage fields, so its cost per review is an estimate.
+
+**Owner-only steps (nobody else can do these):**
+
+1. **Payment method.** Add a payment method on the Developer Space. Forge usage, including every Forge LLM call made
+   by any install, is billed to it monthly.
+2. **Partner Verification.** Complete it from the ticket within **14 days**, or the submission is auto-rejected. You
+   need business or individual details, government ID for the primary contact, a Stripe Identity selfie, a tax ID or
+   registration number, and the Partner Security Questionnaire.
+   - Before starting, ask Atlassian (ECOHELP) to confirm that an individual without a company can be verified.
+   - Set up tax and payout details too. Payouts go by EFT in USD to an account in your name, once at least $500 is
+     owed.
+3. **Price.** Choose it in the Marketplace pricing tool when you create the paid version. `PRICING.md` recommends $20 a
+   month flat for 1-10 users, then $2.50, $2.00, $1.50 and $1.00 per user for the tiers above. That is a
+   recommendation, not a decision.
+4. **Legal documents.** Attach an end-user agreement (EULA) and, because Threatline stores personal data (Atlassian
+   account IDs), a Data Processing Agreement. Missing legal documents block a paid listing in review.
+5. **Vulnerability reporting.** Turn on GitHub private vulnerability reporting for the repository (Settings → Code
+   security). It was off on 2026-11-23, and `docs/SUPPORT.md` points security reports there.
 
 ## Listing content
 
@@ -46,8 +105,8 @@ on, turns them into testable requirements, and blocks Done and merge until each 
 
 **Categories:** Security; Workflow; Project management. **Hosting:** Cloud (Forge, Runs on Atlassian eligible).
 
-**Links:** privacy `docs/PRIVACY.md`, terms `docs/TERMS.md` (GitHub), support = the publisher email already used for
-the developer console, source <https://github.com/pranavsaji/threatline>.
+**Links:** privacy `docs/PRIVACY.md`, terms `docs/TERMS.md` (GitHub), support `docs/SUPPORT.md` (GitHub issues at
+<https://github.com/pranavsaji/threatline/issues>), source <https://github.com/pranavsaji/threatline>.
 
 **Screenshots:** `docs/screenshots/jira-1-issue-panel.png`, `jira-2-threat-evidence.png`, `jira-3-accept-risk.png`,
 `jira-4-posture-dashboard.png`, `bitbucket-6-live-merge-check-fails.jpg`. Still to take: a Delivery check capture,
