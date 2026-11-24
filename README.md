@@ -204,6 +204,7 @@ pnpm threatline eval --llm fake                             # deterministic base
 - [Roadmap](docs/ROADMAP.md): what comes next.
 - [Architecture](docs/ARCHITECTURE.md): the review flow, the risk formula, the verdict rules, packages and ports.
 - [Security review](docs/SECURITY_REVIEW.md): Threatline threat-modelled, each control with the test that proves it.
+- [Licensing](docs/LICENSING.md): what Threatline does when a site's Paid via Atlassian license is inactive, and the runbook for turning licensing on.
 - [Judge guide](docs/JUDGE_GUIDE.md), [screenshots](docs/screenshots/README.md), [privacy](docs/PRIVACY.md),
   [terms](docs/TERMS.md).
 

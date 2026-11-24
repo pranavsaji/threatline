@@ -13,6 +13,7 @@ import { REOPENED_STAGE, reopenForIncident } from '../services/incident-reopen.j
 import { opsAlert } from '../services/ops-alert.js';
 import type { IncidentCause } from '../jobs/types.js';
 import { recordHidden, suppressionsFor } from '../services/suppression-service.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -151,6 +152,13 @@ async function gather(deps: CoreDeps, job: Extract<ReviewJob, { kind: 'gather' }
     const v = await refreshVerdict(deps, job.issueId);
     if (!v.ok) return v;
     return deps.queue.push([{ kind: 'propagate', issueId: job.issueId }]);
+  }
+  // Paid via Atlassian: an inactive license starts no new review, whatever queued it (docs/LICENSING.md). The latest
+  // review stays as it is, and the Done gate does not block meanwhile.
+  if (!isLicensed(await deps.license.state())) {
+    licenseRefusal('consumer.gather', { issueId: job.issueId, reason: job.reason });
+    const v = await refreshVerdict(deps, job.issueId);
+    return v.ok ? voidOk() : v;
   }
 
   const now = deps.clock.now();

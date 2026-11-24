@@ -15,10 +15,13 @@ import { restGatherer } from './adapters/rest-gatherer.js';
 import { sqlRetention, sqlSuppressionRepo } from '@threatline/db';
 import { kvsSigningKeys } from './adapters/signing-keys.js';
 import { jiraVerdictSink } from './adapters/verdict-sink.js';
+import { invocationLicense, LICENSE_OVERRIDE_VAR } from './services/license.js';
 
 export interface ForgeContext {
   cloudId?: string;
   installContext?: string;
+  /** Paid via Atlassian: `{ active: boolean }` for a paid app in production, undefined otherwise (docs/LICENSING.md). */
+  license?: unknown;
 }
 
 /** `ari:cloud:jira::site/<cloudId>` → cloudId. */
@@ -46,8 +49,11 @@ function siteUrl(state: KvsPort): () => Promise<string> {
   };
 }
 
-/** The single composition root: every Forge handler builds its dependencies here (app identity; no user). */
-export function composeCore(ctx?: ForgeContext): CoreDeps {
+/**
+ * The single composition root: every Forge handler builds its dependencies here (app identity; no user).
+ * `licenseAuthoritative`: the caller is a resolver, which Forge always gives the license when the app has one.
+ */
+export function composeCore(ctx?: ForgeContext, opts: { licenseAuthoritative?: boolean } = {}): CoreDeps {
   const x = forgeSqlExecutor();
   const reviews = sqlReviewRepo(x);
   const issues = sqlIssueRepo(x);
@@ -83,5 +89,6 @@ export function composeCore(ctx?: ForgeContext): CoreDeps {
     clock: systemClock,
     migrate: forgeMigrate(),
     siteUrl: siteUrl(state),
+    license: invocationLicense(state, systemClock, { context: ctx?.license, override: process.env[LICENSE_OVERRIDE_VAR], authoritative: opts.licenseAuthoritative === true }),
   };
 }

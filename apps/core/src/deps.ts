@@ -19,6 +19,7 @@ import type { JiraClient } from './adapters/jira.js';
 import type { ConfigStore, KvsPort } from './adapters/kvs-config.js';
 import type { RetentionStore } from '@threatline/db';
 import type { ReviewJob } from './jobs/types.js';
+import type { LicensePort } from './services/license.js';
 
 export interface JobQueue {
   push(jobs: ReviewJob[]): Promise<Result<void>>;
@@ -56,4 +57,6 @@ export interface CoreDeps {
   migrate(): Promise<Result<{ to: number }>>;
   /** Site base URL, e.g. https://example.atlassian.net (for panel links). */
   siteUrl(): Promise<string>;
+  /** Paid via Atlassian license of this invocation (docs/LICENSING.md): unlicensed starts no new AI work. */
+  license: LicensePort;
 }

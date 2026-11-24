@@ -10,6 +10,7 @@ import { bumpPolicyVersion, POLICY_VERSION_KEY, policyVersion } from '../service
 import { seedDemo, type SeedResult } from '../seeder/seed.js';
 import { SCHEMA_VERSION_KEY } from '../consumers/review-consumer.js';
 import { apiError, type ApiError } from './errors.js';
+import { isLicensed, licenseRefusal } from '../services/license.js';
 
 export interface Admin {
   accountId: string;
@@ -34,6 +35,8 @@ export async function requireAdmin(deps: CoreDeps, a: Admin): Promise<ApiError |
 export async function adminSeed(deps: CoreDeps, a: Admin, payload: unknown): Promise<SeedResult | ApiError> {
   const denied = await requireAdmin(deps, a);
   if (denied) return denied;
+  // The demo queues reviews: with an inactive license none would start (docs/LICENSING.md).
+  if (!isLicensed(await deps.license.state())) return { error: 'validation', message: licenseRefusal('admin.seed') };
   const p = SeedSchema.safeParse(payload);
   if (!p.success) return { error: 'validation', message: 'Give a Jira project key (like PAY), and a Confluence space key if the site has Confluence.' };
   const r = await seedDemo(deps, { projectKey: p.data.projectKey, ...(p.data.spaceKey ? { spaceKey: p.data.spaceKey } : {}) }, a.accountId);
@@ -104,6 +107,8 @@ export interface AdminPolicyDto {
   digest: DigestConfig | null;
   /** Who submitted the most recent agent runs (newest first, at most 5), from the risk ledger: normally the Automation rule owner. */
   recentReviewAuthors: Array<{ accountId: string; runs: number; lastAt: string }>;
+  /** Paid via Atlassian: the site's license is inactive, so no new reviews start (docs/LICENSING.md). */
+  licenseInactive?: true;
 }
 
 const name = z.string().trim().min(1).max(255);
@@ -151,7 +156,13 @@ export async function adminGetPolicy(deps: CoreDeps, a: Admin): Promise<AdminPol
   if (denied) return denied;
   const policy = await deps.config.site();
   if (!policy.ok) return apiError(policy.error);
-  const [version, ops, digest, samples] = await Promise.all([policyVersion(deps), readJson(deps, OPS_CONFIG_KEY, OpsSchema), readJson(deps, DIGEST_CONFIG_KEY, DigestSchema), deps.ledger.latestOfTypes(['review.sample'], 500)]);
+  const [version, ops, digest, samples, license] = await Promise.all([
+    policyVersion(deps),
+    readJson(deps, OPS_CONFIG_KEY, OpsSchema),
+    readJson(deps, DIGEST_CONFIG_KEY, DigestSchema),
+    deps.ledger.latestOfTypes(['review.sample'], 500),
+    deps.license.state(),
+  ]);
   const authors = new Map<string, { runs: number; lastAt: string }>();
   for (const r of samples.ok ? [...samples.value].reverse() : []) {
     if (!r.actor) continue;
@@ -160,7 +171,7 @@ export async function adminGetPolicy(deps: CoreDeps, a: Admin): Promise<AdminPol
     else if (authors.size < 5) authors.set(r.actor, { runs: 1, lastAt: r.createdAt });
   }
   const recentReviewAuthors = [...authors].map(([accountId, v]) => ({ accountId, ...v }));
-  return { policy: policy.value, saved: (version ?? 0) > 0, ops, digest, recentReviewAuthors };
+  return { policy: policy.value, saved: (version ?? 0) > 0, ops, digest, recentReviewAuthors, ...(isLicensed(license) ? {} : { licenseInactive: true as const }) };
 }
 
 /**

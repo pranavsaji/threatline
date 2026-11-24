@@ -6,6 +6,7 @@ import type { ReviewJob } from '../jobs/types.js';
 import { monthOf } from './budget.js';
 import { refreshVerdict } from './verdict-service.js';
 import { storeSample } from './samples.js';
+import { isLicensed, licenseRefusal } from './license.js';
 
 type EngineJob = Extract<ReviewJob, { kind: 'engine' }>;
 const voidOk = (): Result<void> => ok(undefined);
@@ -45,6 +46,13 @@ export async function engineJob(deps: CoreDeps, job: EngineJob): Promise<Result<
   if (!got.ok) return got;
   const review = got.value;
   if (!review) return err(appError('not_found', `review ${job.reviewId}`));
+  // Paid via Atlassian: an inactive license makes no model call (docs/LICENSING.md). A review left waiting is timed out
+  // by the sweeper, like any review whose runs never arrive.
+  if (!isLicensed(await deps.license.state())) {
+    licenseRefusal('consumer.engine', { reviewId: review.id, stage: job.stage });
+    await trace(deps, review.id, job.stage, 'failed', 'license_inactive');
+    return voidOk();
+  }
   // A job of a superseded revision does nothing (it would re-point or remove the newer revision's requirement rows).
   const current = await deps.reviews.latest(review.issueId);
   if (!current.ok) return current;
