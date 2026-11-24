@@ -13,7 +13,8 @@ export async function opsAlert(deps: Pick<CoreDeps, 'state' | 'jira'>, dedupeKey
   try {
     ops = await deps.state.get(OPS_CONFIG_KEY);
     if (await deps.state.get(dedupeKey)) return false;
-  } catch {
+  } catch (e) {
+    log('alert.state_unreadable', { key: dedupeKey.split(':').slice(0, 2).join(':'), message: e instanceof Error ? e.message.slice(0, 120) : 'unknown' });
     return false;
   }
   if (!ops || typeof ops.issueKey !== 'string') return false;

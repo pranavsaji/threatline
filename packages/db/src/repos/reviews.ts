@@ -66,9 +66,9 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
     latest: (issueId) => one(`SELECT ${COLS} FROM reviews WHERE issue_id = ? ORDER BY revision DESC LIMIT 1`, [issueId]),
     get: (id) => one(`SELECT ${COLS} FROM reviews WHERE id = ?`, [id]),
     history: (issueId) => many(`SELECT ${COLS} FROM reviews WHERE issue_id = ? ORDER BY revision ASC`, [issueId]),
-    byStatus: (status, olderThan) =>
-      olderThan
-        ? many(`SELECT ${COLS} FROM reviews WHERE status = ? AND updated_at < ? ORDER BY updated_at ASC LIMIT 200`, [status, olderThan])
+    byStatus: (status, createdBefore) =>
+      createdBefore
+        ? many(`SELECT ${COLS} FROM reviews WHERE status = ? AND created_at < ? ORDER BY created_at ASC LIMIT 200`, [status, createdBefore])
         : many(`SELECT ${COLS} FROM reviews WHERE status = ? ORDER BY updated_at ASC LIMIT 200`, [status]),
     async create(v) {
       const r = await x.exec(`INSERT INTO reviews (${COLS}) VALUES (${COLS.split(',').map(() => '?').join(', ')})`, values(v));

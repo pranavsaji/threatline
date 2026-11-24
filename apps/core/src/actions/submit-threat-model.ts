@@ -1,5 +1,5 @@
 import { storeSample } from '../services/samples.js';
-import { appendLedger, extractAgentJson, type Sample } from '@threatline/core';
+import { appendLedger, extractFittedAgentJson, type Sample } from '@threatline/core';
 import { appError, err, ok, type Result } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
@@ -67,21 +67,23 @@ export async function ingestSample(
   // The submission token names the revision it was issued for; a run never files into another one.
   if (opts.revision !== undefined && review.revision !== opts.revision) return err(appError('conflict', 'wrong_revision'));
 
-  const extracted = extractAgentJson(raw, issue.value.key);
-  const sample: Sample = extracted.ok ? extracted.value : { failed: extracted.error.code };
+  // A schema miss gets the Engine's deterministic repair (fitted to the contract, quotes only shortened) before it counts
+  // as a failed run; anything still invalid is stored failed, so it counts as received and the review cannot hang.
+  const extracted = extractFittedAgentJson(raw, issue.value.key);
+  const sample: Sample = extracted.ok ? extracted.value.model : { failed: extracted.error.code };
   // Race fix: two runs arriving together get consecutive numbers (insert-only), never overwrite each other.
   const stored = await storeSample(deps, review, sample);
   if (!stored.ok) return stored;
   const n = stored.value;
   // Final review C2: who wrote each agent run is on the record, so a review its own developer steered is visible.
   if (actor) {
-    const row = await appendLedger(deps.ledger, deps.clock, 'review.sample', { issueId: issue.value.id, reviewId: review.id, n, valid: extracted.ok, threats: extracted.ok ? extracted.value.threats.length : 0 }, actor);
+    const row = await appendLedger(deps.ledger, deps.clock, 'review.sample', { issueId: issue.value.id, reviewId: review.id, n, valid: extracted.ok, threats: extracted.ok ? extracted.value.model.threats.length : 0 }, actor);
     if (!row.ok) log('sample.ledger_failed', { reviewId: review.id, code: row.error.code });
   }
   await recordIngest(deps, raw.trim().length > 0, opts.creditsSignal !== false);
   const pushed = await deps.queue.push([{ kind: 'assemble', reviewId: review.id }]);
   if (!pushed.ok) return pushed;
-  log('sample.ingested', { reviewId: review.id, n, valid: extracted.ok, via, ...(extracted.ok ? {} : { code: extracted.error.code }) });
+  log('sample.ingested', { reviewId: review.id, n, valid: extracted.ok, via, ...(extracted.ok ? { fitted: extracted.value.fitted } : { code: extracted.error.code }) });
   return ok({ reviewId: review.id, received: n, expected: review.samplesExpected, valid: extracted.ok });
 }
 

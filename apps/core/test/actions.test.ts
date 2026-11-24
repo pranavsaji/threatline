@@ -154,6 +154,18 @@ describe('submit-threat-model (CREATE action) and ingestSample', () => {
     expect(t.kv.data.get('ingest:recent')).toEqual([true]);
   });
 
+  it('a run that writes past the contract (long title, extra keys) is fitted and stored valid, not as "Agent output was not valid"', async () => {
+    const t = setup();
+    await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'created' });
+    const long = { ...MODEL, threats: [{ ...MODEL.threats[0]!, title: `Forged refund webhooks ${'accepted without a signature '.repeat(8)}`, confidence: 'high' }] };
+    const r = await submit(t.deps, KEY, JSON.stringify(long));
+    expect(r).toMatchObject({ saved: true, valid: true, received: 1 });
+    const rev = (await t.deps.reviews.latest('10042')) as { ok: true; value: { id: string } };
+    const samples = (await t.deps.reviews.samples(rev.value.id)) as { ok: true; value: Array<{ threats: Array<{ title: string; evidence: unknown }> }> };
+    expect(samples.value[0]!.threats[0]!.title.length).toBeLessThanOrEqual(120);
+    expect(samples.value[0]!.threats[0]!.evidence).toEqual(MODEL.threats[0]!.evidence);
+  });
+
   it('garbage is stored as a failed sample and still pushes assemble', async () => {
     const t = setup();
     await handleJob(t.deps, { kind: 'gather', issueId: '10042', reason: 'created' });
