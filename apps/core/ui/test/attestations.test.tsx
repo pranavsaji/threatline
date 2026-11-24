@@ -106,3 +106,76 @@ describe('Admin: signing keys (AT-3)', () => {
     expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   });
 });
+
+describe('Check an attestation', () => {
+  const valid = {
+    valid: true as const,
+    message: 'Valid — signed by Threatline key 0123456789abcdef for PAY-6 at acme/payments@aaaaaaaaaaaa, verdict pass, expires 2026-11-17 12:00 UTC.',
+    attestation: { kid: '0123456789abcdef', issueKey: 'PAY-6', repo: 'acme/payments', commitSha: SHA, verdict: 'pass' as const, issuedAt: '2026-11-16T12:00:00.000Z', expiresAt: '2026-11-17T12:00:00.000Z', requirements: { verified: 3, total: 3 } },
+  };
+  async function openChecker(a: PanelApi) {
+    await openRequirements(a);
+    await userEvent.click(screen.getByText('Check an attestation', { selector: 'summary' }));
+    return screen.getByRole('form', { name: 'Check an attestation' });
+  }
+  async function check(form: HTMLElement, text: string, sha = '') {
+    await userEvent.click(within(form).getByRole('textbox', { name: 'Attestation' }));
+    await userEvent.paste(text);
+    if (sha) {
+      await userEvent.click(within(form).getByRole('textbox', { name: 'Commit hash (optional)' }));
+      await userEvent.paste(sha);
+    }
+    await userEvent.click(within(form).getByRole('button', { name: 'Check' }));
+  }
+
+  it('is open to viewers who cannot edit, collapsed under the Requirements tab', async () => {
+    const checkAttestation = vi.fn(async () => valid);
+    await openRequirements(api(['viewer'], { checkAttestation }));
+    const details = screen.getByText('Check an attestation', { selector: 'summary' }).closest('details') as HTMLDetailsElement;
+    expect(details.open).toBe(false);
+    expect(screen.queryByRole('form', { name: 'Merge attestation' })).toBeNull();
+    await userEvent.click(screen.getByText('Check an attestation', { selector: 'summary' }));
+    const form = screen.getByRole('form', { name: 'Check an attestation' });
+    await check(form, 'threatline-att.v1.x.y', SHA);
+    expect(checkAttestation).toHaveBeenCalledWith('threatline-att.v1.x.y', { repo: undefined, commitSha: SHA });
+    const status = within(form).getByRole('status');
+    await within(status).findByText('Valid');
+    expect(status.textContent).toContain(valid.message);
+    expect(status.textContent).toContain('3 of 3 requirements verified');
+  });
+
+  it('says exactly why a changed token fails', async () => {
+    const checkAttestation = vi.fn(async () => ({ valid: false as const, reason: 'bad_signature' as const, message: 'Signature invalid — the token was changed after signing.' }));
+    const form = await openChecker(api(['viewer'], { checkAttestation }));
+    await check(form, 'threatline-att.v1.x.z');
+    const status = within(form).getByRole('status');
+    await within(status).findByText('Not valid');
+    expect(status.textContent).toContain('Signature invalid — the token was changed after signing.');
+  });
+
+  it('checks the inputs before asking the server', async () => {
+    const checkAttestation = vi.fn();
+    const form = await openChecker(api(['viewer'], { checkAttestation }));
+    await userEvent.click(within(form).getByRole('button', { name: 'Check' }));
+    expect(within(form).getByRole('alert').textContent).toMatch(/Paste an attestation/);
+    await check(form, 'threatline-att.v1.x.y', 'abc');
+    expect(within(form).getByRole('alert').textContent).toMatch(/40-character/);
+    expect(checkAttestation).not.toHaveBeenCalled();
+  });
+
+  it('the fixture bridge verifies its own tokens and fails a changed one', async () => {
+    const mock = mockApi('ready');
+    const out = await mock.attestation('acme/payments', SHA);
+    if (!('token' in out)) throw new Error('expected a token');
+    expect(await mock.checkAttestation(out.token)).toMatchObject({ valid: true });
+    expect(await mock.checkAttestation(out.token.replace('mock', 'mocK'))).toMatchObject({ valid: false, reason: 'bad_signature' });
+  });
+
+  it('has no axe violations with a result shown', async () => {
+    const form = await openChecker(api(['viewer'], { checkAttestation: async () => valid }));
+    await check(form, 'threatline-att.v1.x.y');
+    await within(form).findByText('Valid');
+    const results = await axe.run(form.closest('details')!, { rules: { 'color-contrast': { enabled: false } } });
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  });
+});

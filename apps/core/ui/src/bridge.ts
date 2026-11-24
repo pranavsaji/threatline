@@ -30,6 +30,27 @@ export interface AcceptanceInput {
   expiryDays: number;
 }
 export type AttestationOutcome = { token: string; expiresAt: string; prDescriptionSnippet: string } | { blocking: Array<{ code: string; message: string }> };
+/** `attestation.check`: a pasted attestation verified against this site's public keys (attestation-check.ts). */
+export interface CheckedAttestation {
+  kid: string;
+  issueKey: string;
+  repo: string;
+  commitSha: string;
+  verdict: 'pass';
+  issuedAt: string;
+  expiresAt: string;
+  requirements: { verified: number; total: number };
+  override?: 'warn_only' | 'break_glass';
+  partial?: true;
+}
+export type AttestationCheck =
+  | { valid: true; message: string; attestation: CheckedAttestation }
+  | {
+      valid: false;
+      reason: 'malformed' | 'bad_signature' | 'no_keys' | 'schema' | 'expired' | 'not_yet_valid' | 'lifetime' | 'other_repo' | 'other_commit';
+      message: string;
+      attestation?: CheckedAttestation;
+    };
 export interface PublicKeyInfo {
   active: { kid: string; publicKey: string };
   previous?: { kid: string; publicKey: string; retireAt: string };
@@ -72,6 +93,8 @@ export interface PanelApi {
   revokeAcceptance(acceptanceId: string, reason: string): Promise<{ entryHash: string } | ApiError>;
   breakGlass(reason: string, hours: number): Promise<{ entryHash: string; until: string } | ApiError>;
   attestation(repo: string, commitSha: string): Promise<AttestationOutcome | ApiError>;
+  /** Verifies a pasted attestation (optionally for a repository and commit). Any viewer of the work item; records nothing. */
+  checkAttestation(token: string, expect?: { repo?: string; commitSha?: string }): Promise<AttestationCheck | ApiError>;
   /** R7: threats added, removed and changed between two revisions (default: the last two). */
   diff(from?: number, to?: number): Promise<ThreatDiffDto | ApiError>;
   /** R12: the score with a different exposure or data classes. Nothing is saved. */
@@ -108,6 +131,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     revokeAcceptance: (acceptanceId, reason) => invoke('acceptance.revoke', { acceptanceId, reason }),
     breakGlass: (reason, hours) => invoke('override.breakglass', { reason, hours }),
     attestation: (repo, commitSha) => invoke('attestation.copy', { repo, commitSha }),
+    checkAttestation: (token, expect = {}) => invoke('attestation.check', { token, ...(expect.repo ? { repo: expect.repo } : {}), ...(expect.commitSha ? { commitSha: expect.commitSha } : {}) }),
     diff: (from, to) => invoke('panel.diff', { ...(from ? { from } : {}), ...(to ? { to } : {}) }),
     whatIf: (change) => invoke('panel.whatIf', { ...change }),
   };
