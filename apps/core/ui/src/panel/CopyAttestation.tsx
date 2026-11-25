@@ -48,26 +48,31 @@ export function CopyAttestation({ api }: { api: PanelApi }) {
     <form aria-label="Merge attestation" onSubmit={submit} style={box}>
       <strong>Merge attestation</strong>
       <span style={{ font: token('font.body.small'), color: token('color.text.subtle') }}>
-        Threatline's merge gate (Threatline for Bitbucket, or the Threatline GitHub Action) lets a pull request that touches security-sensitive files merge only with a signed attestation for its head commit.
+        A pull request that touches security-sensitive files merges only with a signed attestation for its head commit (Threatline for Bitbucket or the GitHub Action checks it).
       </span>
-      <label style={label} htmlFor={`${id}-repo`}>
-        Repository
-      </label>
-      <input id={`${id}-repo`} value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="acme/payments" style={field} />
-      <label style={label} htmlFor={`${id}-sha`}>
-        Commit hash
-      </label>
-      <input id={`${id}-sha`} value={sha} onChange={(e) => setSha(e.target.value)} placeholder="40-character head commit hash" maxLength={40} style={{ ...field, fontFamily: token('font.family.code') }} />
+      {/* Repository and commit side by side (they wrap on a narrow panel), so the form stays a few lines tall. */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ display: 'grid', gap: 4, flex: '1 1 160px', minWidth: 0 }}>
+          <label style={label} htmlFor={`${id}-repo`}>
+            Repository
+          </label>
+          <input id={`${id}-repo`} value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="acme/payments" style={field} />
+        </div>
+        <div style={{ display: 'grid', gap: 4, flex: '3 1 260px', minWidth: 0 }}>
+          <label style={label} htmlFor={`${id}-sha`}>
+            Commit hash
+          </label>
+          <input id={`${id}-sha`} value={sha} onChange={(e) => setSha(e.target.value)} placeholder="40-character head commit hash" maxLength={40} style={{ ...field, fontFamily: token('font.family.code') }} />
+        </div>
+        <Button type="submit" isDisabled={busy}>
+          Get attestation
+        </Button>
+      </div>
       {error && (
         <p role="alert" style={errorText}>
           {error}
         </p>
       )}
-      <div>
-        <Button type="submit" isDisabled={busy}>
-          Get attestation
-        </Button>
-      </div>
       <div role="status" style={{ display: 'grid', gap: 6 }}>
         {result && 'blocking' in result && (
           <>

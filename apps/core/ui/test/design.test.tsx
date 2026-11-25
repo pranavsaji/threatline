@@ -72,7 +72,11 @@ describe('plain language (Task 32)', () => {
 describe('standards chips name their framework (Task 32)', () => {
   it('"ASVS V2.1.1" rather than a bare "V2.1.1"; CWE ids are left as they are', async () => {
     await panel(mockApi('ready'));
-    const chips = within(screen.getAllByRole('article')[0]!).getByRole('list', { name: 'Standards' });
+    const card = screen.getAllByRole('article')[0]!;
+    // Standards sit inside Details: the card itself stays readable.
+    expect(within(card).queryByRole('list', { name: 'Standards' })).toBeNull();
+    await userEvent.click(within(card).getByRole('button', { name: 'Details' }));
+    const chips = within(card).getByRole('list', { name: 'Standards' });
     expect(within(chips).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['ASVS V2.1.1', 'CWE-640']);
   });
 });
@@ -96,7 +100,7 @@ describe('colour is never the only signal (Task 32)', () => {
 });
 
 describe('keyboard path (Task 32)', () => {
-  it('panel: Tab reaches the tasks action, the past incident, What if, the tabs and each threat’s Details; Enter opens details; arrow keys move between tabs', async () => {
+  it('panel: Tab reaches the past incident, the tasks action, the tabs and each threat’s Details; Enter opens details; arrow keys move between tabs', async () => {
     await panel(mockApi('ready'));
     await screen.findByTestId('threatline-happened-before');
     // Under the headline's list: the incident it repeats, then the one positive action.
@@ -104,8 +108,6 @@ describe('keyboard path (Task 32)', () => {
     expect(document.activeElement!.textContent).toBe('INC-7');
     await userEvent.tab();
     expect(document.activeElement!.textContent).toBe('Turn 2 requirements into tasks');
-    await userEvent.tab();
-    expect(document.activeElement!.textContent).toMatch(/What if/);
     // The delivery alert (shipped while open) links its deployment before the tab row.
     await userEvent.tab();
     expect(document.activeElement!.textContent).toBe('payments-service #128');

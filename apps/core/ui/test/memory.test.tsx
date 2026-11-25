@@ -91,15 +91,19 @@ describe('Turn requirements into tasks (the header’s one positive action)', ()
 });
 
 describe('Seen before', () => {
-  it('each threat card lists its history: the key opens the work item, the PR opens the evidence, and the reason is given', async () => {
+  it('each threat card lists its history: the key opens the work item, the PR opens the evidence, and Details gives the reason', async () => {
     await open(mockApi('ready'));
     const card = await waitFor(() => {
       const c = cardOf('Someone could reuse an old sign-in link to take over an account.');
       expect(within(c).getByRole('list', { name: 'Seen before' })).toBeTruthy();
       return c;
     });
+    const rowsOf = () => within(within(card).getByRole('list', { name: 'Seen before' })).getAllByRole('listitem').map((li) => li.textContent);
+    // Closed card: one line per match; the reason waits for Details.
+    expect(rowsOf()[0]).toBe('INC-7 · Incident · Old sign-in links reused to take over accounts (Sev-2, accounts)');
+    await userEvent.click(within(card).getByRole('button', { name: 'Details' }));
     const list = within(card).getByRole('list', { name: 'Seen before' });
-    const rows = within(list).getAllByRole('listitem').map((li) => li.textContent);
+    const rows = rowsOf();
     expect(rows[0]).toBe('INC-7 · Incident · Old sign-in links reused to take over accounts (Sev-2, accounts)Why: same component accounts; shared words: account, link, sign, takeover');
     expect(rows[1]).toMatch(/^PAY-3 · same threat · Verified with PR #41Why: same CWE-640/);
     const key = within(list).getByRole('link', { name: 'INC-7' });

@@ -86,9 +86,11 @@ describe('feature: Threatline Engine reviews', () => {
       ...rest,
     ];
     await renderState('ready', { ...api, get: async () => ({ ...dto, threats, review: { ...dto.review!, modelIds: ['claude-sonnet-5', 'claude-opus-5'], samplesReceived: 3 } }) });
-    expect(screen.getByText('Threatline Engine review')).toBeTruthy();
+    // The method waits behind one quiet button at the foot of the panel, not a banner on every work item.
+    expect(screen.queryByText(/claude-sonnet-5, claude-opus-5/)).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'How this review works' }));
     expect(screen.getByText(/claude-sonnet-5, claude-opus-5/)).toBeTruthy();
-    expect(screen.getAllByText('Verified').length).toBe(1);
+    expect(screen.getAllByText('Evidence verified').length).toBe(1);
     expect(screen.getByText(/The verifier doubted this: the quote does not mention an admin console/)).toBeTruthy();
   });
 });
@@ -133,6 +135,18 @@ describe('feature: fix-by dates and test skeletons on requirements', () => {
     expect(copied[0]).toMatch(/^# Threatline requirement req_1/);
     expect(copied[0]).toMatch(/^def test_/m);
     expect(within(item).getByText('Copied a Python test skeleton.')).toBeTruthy();
+  });
+});
+
+describe('risk ring', () => {
+  it('keeps the score once nothing blocks, without the alarm colour, and says so', async () => {
+    await renderState('pass');
+    expect(screen.getByRole('img', { name: /^Risk score \d+ of 100, nothing blocking$/ })).toBeTruthy();
+  });
+
+  it('a blocking verdict keeps the plain label', async () => {
+    await renderState('ready');
+    expect(screen.getByRole('img', { name: 'Risk score 72 of 100' })).toBeTruthy();
   });
 });
 

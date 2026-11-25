@@ -56,7 +56,7 @@ function ItemText({ item }: { item: SeenItem }) {
 }
 
 /** Under a threat: what happened before on this site — incidents, and the same threat verified, accepted or dismissed elsewhere. */
-export function SeenBeforeList({ items, onOpen }: { items: readonly SeenItem[]; onOpen?: OpenIssue | undefined }) {
+export function SeenBeforeList({ items, onOpen, why = true }: { items: readonly SeenItem[]; onOpen?: OpenIssue | undefined; /** Each match's reason (the card shows it with its details). */ why?: boolean }) {
   const id = useId();
   if (items.length === 0) return null;
   return (
@@ -68,7 +68,7 @@ export function SeenBeforeList({ items, onOpen }: { items: readonly SeenItem[]; 
         {items.map((s) => (
           <li key={`${s.kind}-${s.key}`} style={{ font: token('font.body.small') }}>
             <IssueLink issueKey={s.key} onOpen={onOpen} /> · <ItemText item={s} />
-            <span style={{ display: 'block', color: token('color.text.subtlest') }}>Why: {s.reason}</span>
+            {why && <span style={{ display: 'block', color: token('color.text.subtlest') }}>Why: {s.reason}</span>}
           </li>
         ))}
       </ul>

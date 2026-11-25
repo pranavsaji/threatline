@@ -122,7 +122,8 @@ export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: Pa
       </p>
       {canEdit && missing.length > 0 && (
         <div>
-          <Button appearance="primary" onClick={create} isDisabled={busy}>
+          {/* Not primary: the header's "Turn N requirements into tasks" is the panel's one primary action. */}
+          <Button onClick={create} isDisabled={busy}>
             {`Create sub-tasks (${missing.length})`}
           </Button>
         </div>
@@ -152,25 +153,26 @@ export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: Pa
             ))}
             <ControlLozenges controls={dto.requirementControls?.[r.id]} />
             <EvidenceLine r={r} />
-            {(r.status === 'Open' || r.status === 'InProgress') && <TestSkeletonCopy requirement={r} />}
-            {canEdit && r.status !== 'AcceptedRisk' && (
-              <label style={{ display: 'flex', gap: 6, alignItems: 'center', font: token('font.body.small') }}>
-                Status
-                <select aria-label="Status" data-status={r.id} value={verifying === r.id ? 'Verified' : r.status} onChange={(e) => void change(r, e.target.value as RequirementStatus)} disabled={saving.busy} style={field}>
-                  <option value="Open">Open</option>
-                  <option value="InProgress">In progress</option>
-                  <option value="Verified">Verified</option>
-                  {(champion || r.status === 'NotApplicable') && <option value="NotApplicable">Not applicable</option>}
-                </select>
-              </label>
-            )}
-            {canEdit && (r.status === 'Open' || r.status === 'InProgress') && !openAcceptance.has(r.id) && accepting !== r.id && (
-              <div>
+            {/* One row of controls: what to do with the requirement first, then the test skeleton that helps verify it. */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              {canEdit && r.status !== 'AcceptedRisk' && (
+                <label style={{ display: 'flex', gap: 6, alignItems: 'center', font: token('font.body.small') }}>
+                  Status
+                  <select aria-label="Status" data-status={r.id} value={verifying === r.id ? 'Verified' : r.status} onChange={(e) => void change(r, e.target.value as RequirementStatus)} disabled={saving.busy} style={field}>
+                    <option value="Open">Open</option>
+                    <option value="InProgress">In progress</option>
+                    <option value="Verified">Verified</option>
+                    {(champion || r.status === 'NotApplicable') && <option value="NotApplicable">Not applicable</option>}
+                  </select>
+                </label>
+              )}
+              {canEdit && (r.status === 'Open' || r.status === 'InProgress') && !openAcceptance.has(r.id) && accepting !== r.id && (
                 <Button spacing="compact" testId={`accept-${r.id}`} onClick={() => (returnTo(`[data-testid="accept-${r.id}"]`), setVerifying(null), setAccepting(r.id))}>
                   Accept risk
                 </Button>
-              </div>
-            )}
+              )}
+              {(r.status === 'Open' || r.status === 'InProgress') && <TestSkeletonCopy requirement={r} />}
+            </div>
             {accepting === r.id && <AcceptRiskModal requirement={r} dto={dto} api={api} onDone={onChanged} onCancel={() => setAccepting(null)} />}
             {verifying === r.id && (
               <EvidenceForm

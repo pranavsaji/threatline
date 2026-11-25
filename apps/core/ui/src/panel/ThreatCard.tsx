@@ -23,6 +23,8 @@ export function standardLabel(m: { framework: string; refId: string }): string {
   return prefix && !m.refId.startsWith(prefix) ? `${prefix} ${m.refId}` : m.refId;
 }
 
+const meta = { color: token('color.text.subtlest'), font: token('font.body.small') } as const;
+
 export function ThreatCard({
   threat,
   facts,
@@ -49,6 +51,8 @@ export function ThreatCard({
   const [explainError, setExplainError] = useState<string | null>(null);
   const bodyId = useId();
   const g = GROUNDING[threat.grounding];
+  // "Evidence verified": the quote is in the source and the verifier kept the threat; "Quote verified" when no verifier ran.
+  const checked = threat.grounding !== 'supported' ? null : threat.verification?.keep ? 'Evidence verified' : threat.verification ? null : 'Quote verified';
   const runs = threat.origin === 'baseline' ? 'Rule-based' : threat.foundBy === 'gap_check' ? 'Found by the gap check' : `${threat.votes} of ${threat.samples} runs`;
   return (
     <article
@@ -62,16 +66,26 @@ export function ThreatCard({
             {threat.plainLanguage || threat.title}
           </h3>
           {threat.plainLanguage && <span style={{ color: token('color.text.subtle'), font: token('font.body.small') }}>{threat.title}</span>}
+          {/* Colour only for what needs attention: severity and the exceptions. A threat that checked out says so in quiet text. */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <SeverityLozenge severity={threat.severity} />
-            <Lozenge>{STRIDE_LABEL[threat.stride]}</Lozenge>
-            <Lozenge appearance={g.appearance}>{g.label}</Lozenge>
+            {g.appearance !== 'success' && <Lozenge appearance={g.appearance}>{g.label}</Lozenge>}
             {threat.state === 'needs_human' && <Lozenge appearance="new">Needs a champion</Lozenge>}
-            {threat.verification?.keep && <Lozenge appearance="success">Verified</Lozenge>}
             {threat.state === 'dismissed' && threat.verification?.keep === false && <Lozenge appearance="removed">Dropped by the verifier</Lozenge>}
             {threat.state === 'dismissed' && threat.dismissReason === 'unconfirmed' && !threat.verification && <Lozenge appearance="moved">Waiting for the verifier</Lozenge>}
             {threat.state === 'suppressed' && <Lozenge appearance="removed">Hidden by team rule</Lozenge>}
-            <span style={{ color: token('color.text.subtlest'), font: token('font.body.small') }}>{runs}</span>
+            <span style={meta}>{STRIDE_LABEL[threat.stride]}</span>
+            <span aria-hidden="true" style={meta}>·</span>
+            <span style={meta}>{runs}</span>
+            {checked && (
+              <>
+                <span aria-hidden="true" style={meta}>·</span>
+                <span style={{ ...meta, color: token('color.text.success') }}>
+                  <span aria-hidden="true">✓ </span>
+                  {checked}
+                </span>
+              </>
+            )}
           </div>
           {threat.verification?.keep === false && (
             <span style={{ color: token('color.text.subtle'), font: token('font.body.small') }}>
@@ -85,18 +99,7 @@ export function ThreatCard({
               Also covers Threatline's rule-based {covers.length === 1 ? 'check' : 'checks'}: {covers.join('; ')}.
             </span>
           )}
-          {threat.mappings.length > 0 && (
-            <ul aria-label="Standards" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {threat.mappings.map((m) => (
-                <li key={`${m.framework}-${m.refId}`}>
-                  <code style={{ font: token('font.code'), fontSize: 12, lineHeight: '18px', padding: '0 4px', borderRadius: 3, background: token('color.background.neutral'), color: token('color.text.subtle') }}>
-                    {standardLabel(m)}
-                  </code>
-                </li>
-              ))}
-            </ul>
-          )}
-          <SeenBeforeList items={seenBefore} onOpen={onOpen} />
+          <SeenBeforeList items={seenBefore} onOpen={onOpen} why={open} />
         </div>
         <Button appearance="subtle" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={bodyId}>
           {open ? 'Less' : 'Details'}
@@ -115,6 +118,20 @@ export function ThreatCard({
               ))}
             </ul>
           </div>
+          {threat.mappings.length > 0 && (
+            <div>
+              <strong style={{ font: token('font.body.small') }}>Standards</strong>
+              <ul aria-label="Standards" style={{ listStyle: 'none', margin: '4px 0 0', padding: 0, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {threat.mappings.map((m) => (
+                  <li key={`${m.framework}-${m.refId}`}>
+                    <code style={{ font: token('font.code'), fontSize: 12, lineHeight: '18px', padding: '0 4px', borderRadius: 3, background: token('color.background.neutral'), color: token('color.text.subtle') }}>
+                      {standardLabel(m)}
+                    </code>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {!explained ? (
             <div style={{ display: 'grid', gap: 4, justifyItems: 'start' }}>
               <Button
