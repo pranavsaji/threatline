@@ -12,6 +12,7 @@ import type {
   LedgerRow,
   RequirementRepo,
   ReviewRepo,
+  ReviewThreatRow,
   TreeHead,
   TreeHeadRepo,
   Sample,
@@ -157,6 +158,16 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
       const rows = [...latest.values()].flatMap((r) => (threats.get(r.id) ?? []).filter((t) => t.state === 'needs_human').map((t) => ({ threat: clone(t), review: clone(r) })));
       rows.sort((a, b) => severityRank(b.threat.severity) - severityRank(a.threat.severity) || a.review.createdAt.localeCompare(b.review.createdAt) || a.threat.id.localeCompare(b.threat.id));
       return ok(rows.slice(0, n));
+    },
+    async latestThreats(issueIds) {
+      // Like SQL: the latest revision of each work item, grouped by work item (in the order asked), threats in order.
+      const out: ReviewThreatRow[] = [];
+      for (const id of new Set(issueIds)) {
+        let latest: Review | undefined;
+        for (const r of reviews.values()) if (r.issueId === id && (latest?.revision ?? -1) < r.revision) latest = r;
+        if (latest) for (const t of threats.get(latest.id) ?? []) out.push({ threat: clone(t), review: clone(latest) });
+      }
+      return ok(out);
     },
   };
 }

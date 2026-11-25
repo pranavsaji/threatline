@@ -110,13 +110,21 @@ export interface ReviewRepo {
    * oldest review first, at most `limit` (capped at 500). Indexed on the threat state.
    */
   needsHuman(limit: number): Promise<Result<NeedsHumanRow[]>>;
+  /**
+   * Scale (accuracy, docs/ACCURACY.md): every threat of each of these work items' latest review, with the review,
+   * grouped by work item in threat order. Reads a few work items per query on the (issue_id, revision) and threats
+   * (review_id) indexes, so a posture page's 200 work items take a handful of queries, not one per work item.
+   */
+  latestThreats(issueIds: readonly string[]): Promise<Result<ReviewThreatRow[]>>;
 }
 
-/** A threat waiting for a security champion, with the (latest) review it belongs to. */
-export interface NeedsHumanRow {
+/** A threat with the review it belongs to. */
+export interface ReviewThreatRow {
   threat: Threat;
   review: Review;
 }
+/** A threat waiting for a security champion, with the (latest) review it belongs to. */
+export type NeedsHumanRow = ReviewThreatRow;
 
 export interface StageTrace {
   stage: string;

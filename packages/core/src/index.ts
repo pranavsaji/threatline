@@ -15,6 +15,7 @@ export * from './attestation-issuer.js';
 export * from './release.js';
 export * from './incremental.js';
 export * from './posture.js';
+export * from './accuracy.js';
 export * from './pipeline.js';
 export * from './review-context.js';
 export * from './render/threat-model-storage.js';

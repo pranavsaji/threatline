@@ -137,6 +137,33 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect(after.ok && after.value.map((x) => x.threat.id)).toEqual(['thr_2h', 'thr_1h', 'thr_3m']);
     });
 
+    it('reviews (scale): latestThreats gives every threat of each work item’s latest review, grouped by work item', async () => {
+      const r = await f.reviews();
+      await r.create(review({ id: 'rev_1a', issueId: '1', issueKey: 'A-1', revision: 1, status: 'ready' }));
+      await r.create(review({ id: 'rev_1b', issueId: '1', issueKey: 'A-1', revision: 2, status: 'ready' }));
+      await r.create(review({ id: 'rev_2', issueId: '2', issueKey: 'A-2', revision: 1, status: 'ready' }));
+      await r.create(review({ id: 'rev_3', issueId: '3', issueKey: 'A-3', revision: 1, status: 'ready' }));
+      await r.saveThreats('rev_1a', [threat({ id: 'thr_old', reviewId: 'rev_1a' })], []);
+      await r.saveThreats('rev_1b', [threat({ id: 'thr_1x', reviewId: 'rev_1b', state: 'dismissed', dismissReason: 'false_positive' }), threat({ id: 'thr_1y', reviewId: 'rev_1b', verification: { keep: true, reason: 'ok' } })], []);
+      await r.saveThreats('rev_2', [threat({ id: 'thr_2', reviewId: 'rev_2', state: 'needs_human' })], []);
+      await r.saveThreats('rev_3', [threat({ id: 'thr_3', reviewId: 'rev_3' })], []);
+      const got = await r.latestThreats(['2', '1', 'none']);
+      expect(got.ok && got.value.map((x) => [x.review.id, x.threat.id])).toEqual([
+        ['rev_2', 'thr_2'],
+        ['rev_1b', 'thr_1x'],
+        ['rev_1b', 'thr_1y'],
+      ]);
+      expect(got.ok && got.value[2]!.threat.verification).toEqual({ keep: true, reason: 'ok' });
+      expect(await r.latestThreats([])).toEqual({ ok: true, value: [] });
+      // More work items than one query reads.
+      for (let n = 10; n < 70; n++) {
+        await r.create(review({ id: `rev_m${n}`, issueId: `m${n}`, issueKey: `M-${n}`, revision: 1, status: 'ready' }));
+        await r.saveThreats(`rev_m${n}`, [threat({ id: `thr_m${n}`, reviewId: `rev_m${n}` })], []);
+      }
+      const many = await r.latestThreats(Array.from({ length: 60 }, (_, i) => `m${i + 10}`));
+      expect(many.ok && many.value.map((x) => x.threat.id)).toEqual(Array.from({ length: 60 }, (_, i) => `thr_m${i + 10}`));
+    });
+
     it('reviews: updateWhere writes only while the stored review still matches (compare-and-set)', async () => {
       const r = await f.reviews();
       await r.create(review({ samplesReceived: 2 }));
