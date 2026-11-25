@@ -9,6 +9,12 @@ import { day, utc } from '../text.js';
 import { headlineOf } from '@threatline/shared/verdict-words';
 import { OVERRIDDEN, VERDICT } from './verdict-labels.js';
 
+/** Reasons a security champion clears by confirming the threats (the panel's `confirm('review')`). */
+export const CONFIRMABLE = new Set(['needs_human', 'injection_unconfirmed']);
+
+const linkButton = (busy: boolean) =>
+  ({ background: 'none', border: 0, padding: 0, font: 'inherit', color: token('color.link'), textDecoration: 'underline', cursor: busy ? 'default' : 'pointer' }) as const;
+
 function relative(iso: string, now = Date.now()): string {
   const m = Math.round((now - Date.parse(iso)) / 60_000);
   if (!Number.isFinite(m)) return '';
@@ -36,9 +42,12 @@ export function Header({
   tasks,
   memory = null,
   onOpen,
+  onConfirm,
 }: {
   dto: PanelDto;
   onRerun?: () => void;
+  /** A security champion confirms the threats that wait for one, from the reason that says so (no separate banner). */
+  onConfirm?: () => void;
   busy?: boolean;
   /** Turn the open requirements into tasks (absent: no action, e.g. in a read-only preview). */
   tasks?: { api: PanelApi; onChanged: () => void };
@@ -53,7 +62,7 @@ export function Header({
   return (
     <header style={{ display: 'grid', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <RiskRing score={dto.review?.riskScore ?? 0} />
+        <RiskRing score={dto.review?.riskScore ?? 0} handled={v?.state === 'pass' && !overridden} />
         <div style={{ display: 'grid', gap: 4 }}>
           {meta ? (
             <span>
@@ -82,12 +91,20 @@ export function Header({
           {actions.map((a, i) => (
             <li key={`${a.code}-${i}`}>
               {a.message}
+              {onConfirm && CONFIRMABLE.has(a.code) && (
+                <>
+                  {' '}
+                  <button type="button" onClick={onConfirm} disabled={busy} style={linkButton(busy)}>
+                    Confirm threats
+                  </button>
+                </>
+              )}
               {a.action && (
                 <>
                   {' '}
                   {/* Final review I4: a re-run action runs the review here; the `?rerun=1` link would only reload Jira. */}
                   {onRerun && /[?&]rerun=1\b/.test(a.action.href) ? (
-                    <button type="button" onClick={onRerun} disabled={busy} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: token('color.link'), textDecoration: 'underline', cursor: busy ? 'default' : 'pointer' }}>
+                    <button type="button" onClick={onRerun} disabled={busy} style={linkButton(busy)}>
                       {a.action.label}
                     </button>
                   ) : (

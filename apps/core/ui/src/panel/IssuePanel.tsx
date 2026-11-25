@@ -10,7 +10,8 @@ import { errorText, isError, type PanelApi } from '../bridge.js';
 import { LicenseBanner } from '../components/LicenseBanner.js';
 import type { PanelDto, Threat } from '../types.js';
 import { EmptyState } from './EmptyState.js';
-import { Header } from './Header.js';
+import { CONFIRMABLE, Header } from './Header.js';
+import { HowReviewed } from './HowReviewed.js';
 import { count } from '../text.js';
 import { ThreatDiff } from './ThreatDiff.js';
 import { WhatIf } from './WhatIf.js';
@@ -34,6 +35,12 @@ const STILL_STARTING = 'The review is still starting. Refresh the panel in a min
 const startedText = (mode: PanelDto['reviewMode']) =>
   mode === 'engine' ? 'Review started. Threatline Engine reviews take a few minutes.' : 'Review started. This usually takes about a minute.';
 const NEEDS_EDIT = 'Someone with edit permission on this work item can re-run the review.';
+
+/** Whether the header's "what to do next" list (first three reasons, shown unless the verdict passes) already carries this reason. */
+function headerShows(v: PanelDto['verdict'], reason: NonNullable<PanelDto['verdict']>['reasons'][number]): boolean {
+  if (!v || (v.state === 'pass' && v.overridden !== true)) return false;
+  return CONFIRMABLE.has(reason.code) && v.reasons.slice(0, 3).includes(reason);
+}
 
 const DISCARD_REASON: Record<string, string> = {
   low_votes: 'Too few agent runs agreed',
@@ -231,19 +238,13 @@ export function IssuePanel({ api }: { api: PanelApi }) {
             tasks={{ api, onChanged: () => void load() }}
             memory={memory}
             {...(openIssue ? { onOpen: openIssue } : {})}
+            {...(champion ? { onConfirm: () => void confirm('review') } : {})}
           />
-          {dto.review && dto.review.modelIds.some((m) => m.startsWith('claude')) && (
-            <SectionMessage appearance="discovery" title="Threatline Engine review">
-              Threatline ran this review itself: independent analyses of the work item and its pages that must agree and quote their evidence word for word,
-              and a verifier that checks each threat against those quotes. Models: {dto.review.modelIds.join(', ')}.
-            </SectionMessage>
-          )}
           {dto.review?.modelIds.some((m) => m === 'threatline-rules' || m === 'redline-rules') && (
             <SectionMessage appearance="information" title="Rule-based review">
               AI review is off on this site, so these threats come from Threatline's built-in checks only. An admin can turn on AI review under Threatline admin → Review mode: Threatline Engine needs no Rovo.
             </SectionMessage>
           )}
-          {dto.review && <WhatIf api={api} />}
           {view.state === 'in_progress' && (
             <SectionMessage appearance="information" title="Review in progress">
               <StatusSteps steps={view.steps} />
@@ -285,7 +286,8 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               item; the confirmation is recorded in the ledger.
             </SectionMessage>
           )}
-          {humanReason && (
+          {/* The header lists this reason (with Confirm threats for a champion); a banner only when it is not among those shown. */}
+          {humanReason && !headerShows(dto.verdict, humanReason) && (
             <SectionMessage
               appearance="warning"
               title="Threats need a security champion"
@@ -489,6 +491,12 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               </TabPanel>
             )}
           </Tabs>
+          {dto.review && (
+            <footer style={{ display: 'grid', gap: 8, paddingTop: 8, borderTop: `1px solid ${token('color.border')}` }}>
+              <WhatIf api={api} />
+              {dto.review.modelIds.some((m) => m.startsWith('claude')) && <HowReviewed modelIds={dto.review.modelIds} />}
+            </footer>
+          )}
         </>
       )}
     </main>

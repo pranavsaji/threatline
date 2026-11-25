@@ -154,6 +154,22 @@ describe('Threat triage (champions)', () => {
     expect(confirm).toHaveBeenCalledWith('rev_66405_1', 'review');
   });
 
+  it('the header reason carries Confirm threats; no banner repeats it, and a viewer sees the reason without the button', async () => {
+    const confirm = vi.fn(async () => ({ seq: 1 }));
+    const dto = { ...structuredClone(FIXTURES.ready!), roles: ['viewer', 'champion'] as PanelDto['roles'] };
+    dto.verdict!.reasons.unshift({ code: 'needs_human', message: '1 threat needs a security champion to confirm it.' });
+    await open({ ...mockApi('ready'), get: async () => dto, confirm });
+    const next = screen.getByRole('list', { name: 'What to do next' });
+    await userEvent.click(within(next).getByRole('button', { name: 'Confirm threats' }));
+    expect(confirm).toHaveBeenCalledWith('rev_66405_1', 'review');
+    expect(screen.queryByText('Threats need a security champion')).toBeNull();
+    cleanup();
+    await open({ ...mockApi('ready'), get: async () => ({ ...dto, roles: ['viewer'] as PanelDto['roles'] }) });
+    expect(within(screen.getByRole('list', { name: 'What to do next' })).getByText('1 threat needs a security champion to confirm it.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Confirm threats' })).toBeNull();
+    expect(screen.queryByText('Threats need a security champion')).toBeNull();
+  });
+
   it.each(['light', 'dark'])('has no axe violations with the editor open (%s)', async (mode) => {
     document.documentElement.setAttribute('data-color-mode', mode);
     const { container } = await open(withRoles('ready', ['viewer', 'champion']));

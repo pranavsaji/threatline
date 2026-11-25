@@ -40,6 +40,10 @@ export function championGroupItem(g: ChampionGroupStatus): Item {
   };
 }
 
+/** What still needs the admin first, then information, then what is done (stable within each). */
+const NEED = (done: boolean | null) => (done === false ? 0 : done === null ? 1 : 2);
+export const byNeed = <T extends { done: boolean | null }>(items: T[]): T[] => items.map((it, i) => ({ it, i })).sort((a, b) => NEED(a.it.done) - NEED(b.it.done) || a.i - b.i).map((x) => x.it);
+
 const itemsOf = (s: SetupStatus, mode: 'engine' | 'agent' | 'rules_only', authors: number): Item[] => {
   const rulesOnly = mode === 'rules_only';
   const engine = mode === 'engine';
@@ -144,7 +148,7 @@ export function SetupChecklist({
       {error && <p style={{ margin: 0 }}>{error}</p>}
       {status && (
         <ul aria-label="Setup checklist" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
-          {[...itemsOf(status, reviewMode, reviewAuthors), ...(group ? [championGroupItem(group)] : [])].map((item) => (
+          {byNeed([...itemsOf(status, reviewMode, reviewAuthors), ...(group ? [championGroupItem(group)] : [])]).map((item) => (
             // The label stays beside the text however long it runs; links and buttons go on their own row under it.
             <li key={item.text} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
               <span style={{ flexShrink: 0 }}>

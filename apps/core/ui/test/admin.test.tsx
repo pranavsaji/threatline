@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import userEventLib from '@testing-library/user-event';
 import axe from 'axe-core';
 import { AdminPage } from '../src/admin/AdminPage.js';
+import { byNeed } from '../src/admin/SetupChecklist.js';
 import { mockAdminApi } from '../src/mock-bridge.js';
 import type { AdminApi } from '../src/bridge.js';
 
@@ -308,13 +309,34 @@ describe('Admin: recent runs (Task 30)', () => {
   });
 });
 
+describe('Setup checklist order', () => {
+  it('lists what still needs the admin first, then information, then what is done, keeping their order within each', () => {
+    const items = [
+      { done: true, text: 'keys' },
+      { done: false, text: 'gate' },
+      { done: null, text: 'mcp' },
+      { done: true, text: 'db' },
+      { done: false, text: 'bitbucket key' },
+    ];
+    expect(byNeed(items).map((i) => i.text)).toEqual(['gate', 'bitbucket key', 'mcp', 'keys', 'db']);
+  });
+
+  it('the rendered checklist starts with a To do item', async () => {
+    render(<AdminPage api={mockAdminApi()} />);
+    const list = await screen.findByRole('list', { name: 'Setup checklist' });
+    expect(within(list).getAllByRole('listitem')[0]!.textContent).toMatch(/^To do/);
+  });
+});
+
 describe('Admin page layout (Task 30)', () => {
-  it('has a section index linking to every section', async () => {
+  it('has a section index linking to every section, grouped into getting started, rules, and records', async () => {
     render(<AdminPage api={mockAdminApi()} />);
     const nav = await screen.findByRole('navigation', { name: 'Admin sections' });
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual([
-      'Setup checklist', 'Projects and transitions', 'Severity policy', 'Roles', 'Review mode', 'Budgets', 'Incidents', 'Warn-only mode', 'Notifications', 'Suppressions', 'Recent runs', 'Signing keys', 'CI verification', 'Risk ledger', 'Data retention', 'Demo data',
-    ]);
+    const group = (name: string) => within(within(nav).getByRole('list', { name })).getAllByRole('link').map((a) => a.textContent);
+    expect(group('Get started')).toEqual(['Setup checklist', 'Projects and transitions', 'Demo data']);
+    expect(group('Rules')).toEqual(['Severity policy', 'Roles', 'Review mode', 'Budgets', 'Incidents', 'Warn-only mode', 'Notifications', 'Suppressions']);
+    expect(group('Records and keys')).toEqual(['Recent runs', 'Signing keys', 'CI verification', 'Risk ledger', 'Data retention']);
+    expect(within(nav).getAllByRole('link')).toHaveLength(16);
   });
 
   it.each(['light', 'dark'])('the full page has no axe violations (%s)', async (mode) => {

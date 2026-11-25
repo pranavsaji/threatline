@@ -23,7 +23,11 @@ test('Journey A: review lands, requirements verified with evidence, Done allowed
   await expect(page.getByTestId('threatline-happened-before')).toHaveText('This happened before: PAY-3 — Forged refund webhook paid out to an attacker.');
   const forged = page.getByRole('article').filter({ hasText: 'Forged refund webhooks' });
   await expect(forged.getByRole('list', { name: 'Seen before' })).toContainText('PAY-3 · Incident · Forged refund webhook paid out to an attacker (payments)');
+  // Why it matched waits behind the card's Details.
+  await expect(forged.getByRole('list', { name: 'Seen before' })).not.toContainText('Why:');
+  await forged.getByRole('button', { name: 'Details' }).click();
   await expect(forged.getByRole('list', { name: 'Seen before' })).toContainText('Why: same component payments; shared words:');
+  await forged.getByRole('button', { name: 'Less' }).click();
 
   // The one positive action, under the headline: every open requirement becomes a sub-task, and the keys are links.
   await page.getByRole('button', { name: 'Turn 5 requirements into tasks' }).click();

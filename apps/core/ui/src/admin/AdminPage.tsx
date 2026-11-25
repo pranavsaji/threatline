@@ -21,23 +21,29 @@ import { DataRetention } from './DataRetention.js';
 import { Suppressions } from './Suppressions.js';
 import { LicenseBanner } from '../components/LicenseBanner.js';
 
+/** Section order on the page; `group` sorts the index into what an admin looks for: setting up, the rules, the records. */
 const SECTIONS = [
-  { id: 'setup', title: 'Setup checklist', needsPolicy: false },
-  { id: 'projects', title: 'Projects and transitions', needsPolicy: true },
-  { id: 'severity', title: 'Severity policy', needsPolicy: true },
-  { id: 'roles', title: 'Roles', needsPolicy: true },
-  { id: 'review-mode', title: 'Review mode', needsPolicy: true },
-  { id: 'budgets', title: 'Budgets', needsPolicy: true },
-  { id: 'incidents', title: 'Incidents', needsPolicy: true },
-  { id: 'warn-only', title: 'Warn-only mode', needsPolicy: true },
-  { id: 'notifications', title: 'Notifications', needsPolicy: true },
-  { id: 'suppressions', title: 'Suppressions', needsPolicy: false },
-  { id: 'runs', title: 'Recent runs', needsPolicy: false },
-  { id: 'keys', title: 'Signing keys', needsPolicy: false },
-  { id: 'ci', title: 'CI verification', needsPolicy: false },
-  { id: 'ledger', title: 'Risk ledger', needsPolicy: false },
-  { id: 'retention', title: 'Data retention', needsPolicy: false },
-  { id: 'demo', title: 'Demo data', needsPolicy: false },
+  { id: 'setup', title: 'Setup checklist', needsPolicy: false, group: 'start' },
+  { id: 'projects', title: 'Projects and transitions', needsPolicy: true, group: 'start' },
+  { id: 'severity', title: 'Severity policy', needsPolicy: true, group: 'rules' },
+  { id: 'roles', title: 'Roles', needsPolicy: true, group: 'rules' },
+  { id: 'review-mode', title: 'Review mode', needsPolicy: true, group: 'rules' },
+  { id: 'budgets', title: 'Budgets', needsPolicy: true, group: 'rules' },
+  { id: 'incidents', title: 'Incidents', needsPolicy: true, group: 'rules' },
+  { id: 'warn-only', title: 'Warn-only mode', needsPolicy: true, group: 'rules' },
+  { id: 'notifications', title: 'Notifications', needsPolicy: true, group: 'rules' },
+  { id: 'suppressions', title: 'Suppressions', needsPolicy: false, group: 'rules' },
+  { id: 'runs', title: 'Recent runs', needsPolicy: false, group: 'records' },
+  { id: 'keys', title: 'Signing keys', needsPolicy: false, group: 'records' },
+  { id: 'ci', title: 'CI verification', needsPolicy: false, group: 'records' },
+  { id: 'ledger', title: 'Risk ledger', needsPolicy: false, group: 'records' },
+  { id: 'retention', title: 'Data retention', needsPolicy: false, group: 'records' },
+  { id: 'demo', title: 'Demo data', needsPolicy: false, group: 'start' },
+] as const;
+const GROUPS = [
+  { id: 'start', label: 'Get started' },
+  { id: 'rules', label: 'Rules' },
+  { id: 'records', label: 'Records and keys' },
 ] as const;
 const anchor = (id: string) => `threatline-admin-${id}`;
 
@@ -70,16 +76,27 @@ export function AdminPage({ api }: { api: AdminApi }) {
 
   return (
     <main style={{ display: 'grid', gap: 28, padding: 16, maxWidth: 880, minWidth: 0, color: token('color.text') }}>
-      <nav aria-label="Admin sections">
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: '4px 16px', font: token('font.body.small') }}>
-          {shown.map((s) => (
-            <li key={s.id} style={{ margin: 0 }}>
-              <a href={`#${anchor(s.id)}`} style={{ color: token('color.link') }}>
-                {s.title}
-              </a>
-            </li>
-          ))}
-        </ul>
+      <nav aria-label="Admin sections" style={{ display: 'grid', gap: 4, font: token('font.body.small') }}>
+        {GROUPS.map((g) => {
+          const links = shown.filter((s) => s.group === g.id);
+          if (links.length === 0) return null;
+          return (
+            <div key={g.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', alignItems: 'baseline' }}>
+              <span id={`threatline-admin-nav-${g.id}`} style={{ color: token('color.text.subtle'), fontWeight: 600, minWidth: 120 }}>
+                {g.label}
+              </span>
+              <ul aria-labelledby={`threatline-admin-nav-${g.id}`} style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+                {links.map((s) => (
+                  <li key={s.id} style={{ margin: 0 }}>
+                    <a href={`#${anchor(s.id)}`} style={{ color: token('color.link') }}>
+                      {s.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </nav>
       {dto?.licenseInactive && <LicenseBanner />}
       {dto && wizard && <FirstRun api={api} policy={dto.policy} onSaved={onSaved} />}
