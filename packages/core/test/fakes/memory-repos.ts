@@ -169,6 +169,13 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
       }
       return ok(out);
     },
+    async threatsFor(reviewIds, states, limit) {
+      // Like SQL: in the order of the review ids given (at most 200), then by position, at most `limit` (capped at 2000).
+      const n = Math.max(1, Math.min(2000, Math.floor(limit)));
+      const want = new Set(states);
+      const out = [...new Set(reviewIds)].slice(0, 200).flatMap((id) => (threats.get(id) ?? []).filter((t) => want.has(t.state)));
+      return ok(out.slice(0, n).map(clone));
+    },
   };
 }
 
@@ -177,6 +184,10 @@ export function memoryRequirementRepo(): RequirementRepo {
   return {
     async forIssue(issueId) {
       return ok([...reqs.values()].filter((r) => r.issueId === issueId).map(clone));
+    },
+    async forIssues(issueIds) {
+      const ids = new Set([...new Set(issueIds)].slice(0, 100));
+      return ok([...reqs.values()].filter((r) => ids.has(r.issueId)).sort((a, b) => a.issueId.localeCompare(b.issueId) || a.id.localeCompare(b.id)).map(clone));
     },
     async get(id) {
       const r = reqs.get(id);

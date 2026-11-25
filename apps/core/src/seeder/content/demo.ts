@@ -24,15 +24,21 @@ export const STORIES = [
   },
 ];
 
+/**
+ * Two past incidents on the demo component, written the way a postmortem summary reads. Their wording is what the
+ * "Seen before" matcher compares with the review's threats (docs/MEMORY.md), so they name the failure plainly.
+ * Summaries are the seeder's idempotency key: keep them as they are.
+ */
 export const INCIDENTS = [
   {
     summary: 'Chat agent revealed another customer’s delivery address',
     description:
-      'A customer typed someone else’s order number into the chat and the agent returned that order’s delivery address. The lookup tool did not check that the order belonged to the person chatting.',
+      'A customer typed another customer’s order number into the support chat, and the agent returned that order’s status, delivery address and the last four card digits. The getOrder lookup tool did not check that the order belonged to the customer chatting: any order number worked. Root cause: no ownership check on order lookups (CWE-639).',
   },
   {
     summary: 'Spike of refund requests from one IP through the chat widget',
-    description: 'Over two hours one IP address sent 1,400 chat messages asking for refunds. No rate limit applied to the public chat endpoint; 31 refunds under $500 went through.',
+    description:
+      'Bots flooded the public chat endpoint (POST /api/chat) from one IP address: 1,400 chat messages in two hours, each asking for a refund. There is no per-IP rate limit on the endpoint, and 31 refunds under $500 went through with no human approval.',
   },
 ];
 

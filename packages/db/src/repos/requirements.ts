@@ -9,6 +9,12 @@ export function sqlRequirementRepo(x: SqlExecutor): RequirementRepo {
       const r = await x.query<{ requirement_json: string }>('SELECT requirement_json FROM requirements WHERE issue_id = ? ORDER BY id ASC', [issueId]);
       return r.ok ? collect(r.value.map((row) => parseJson(RequirementSchema, row.requirement_json, 'requirements'))) : r;
     },
+    async forIssues(issueIds) {
+      const ids = [...new Set(issueIds)].slice(0, 100);
+      if (ids.length === 0) return ok([]);
+      const r = await x.query<{ requirement_json: string }>(`SELECT requirement_json FROM requirements WHERE issue_id IN (${ids.map(() => '?').join(', ')}) ORDER BY issue_id ASC, id ASC`, ids);
+      return r.ok ? collect(r.value.map((row) => parseJson(RequirementSchema, row.requirement_json, 'requirements'))) : r;
+    },
     async get(id) {
       const r = await x.query<{ requirement_json: string }>('SELECT requirement_json FROM requirements WHERE id = ?', [id]);
       if (!r.ok) return r;

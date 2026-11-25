@@ -60,7 +60,7 @@ Two Forge apps (Jira + Confluence, and Bitbucket) and a GitHub Action, in TypeSc
 a chain of queue jobs with checkpoints; Forge SQL stores reviews, requirements and the ledger; Forge KVS and secret
 storage hold policy and signing keys; Custom UI with Atlaskit for every surface. The design rule: the model proposes,
 code decides. Consensus, quote grounding, scoring, the verdict and the gates are deterministic and unit-tested
-(1,903 tests, browser journeys, and a 55-case eval set with poisoned twins).
+(1,910 tests, browser journeys, and a 55-case eval set with poisoned twins).
 
 ## Challenges
 

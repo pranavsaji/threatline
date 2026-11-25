@@ -1,5 +1,6 @@
 import { panelDelivery, panelDiff, panelEnrich, panelGet, panelRerun, panelStatus, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
 import { requirementsCreate, requirementsSetStatus } from './requirements.js';
+import { panelMemory } from './memory.js';
 import { reviewConfirm, threatsTriage } from './threats.js';
 import { confluencePublish } from './confluence.js';
 import { adminGetPolicy, adminInstallGate, adminProjectStatuses, adminPurgeProject, adminResumeReviews, adminRuns, adminSeed, adminSetNotifications, adminSetPolicy, adminSetupStatus, adminUsage, adminWarnOnly, adminWarnOnlyEnd } from './admin.js';
@@ -34,6 +35,7 @@ export function resolverTable(env: { enricher: () => Enricher; delivery?: () => 
     'panel.enrich': (deps, v) => panelEnrich(deps, v, env.enricher()),
     'panel.delivery': (deps, v) =>
       panelDelivery(deps, v, env.delivery?.() ?? { links: async () => ({ pullRequests: [], deployments: [], partial: true, reasons: ['graph_not_configured'] }) }),
+    'panel.memory': (deps, v) => panelMemory(deps, v),
     'panel.diff': (deps, v, payload) => panelDiff(deps, v, payload),
     'panel.whatIf': (deps, v, payload) => panelWhatIf(deps, v, payload),
     'threat.explain': (deps, v, payload) => threatExplain(deps, v, payload as { reviewId?: unknown; threatId?: unknown }),

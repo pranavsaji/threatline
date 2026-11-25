@@ -1,7 +1,10 @@
 import Lozenge from '@atlaskit/lozenge';
 import { token } from '@atlaskit/tokens';
 import { RiskRing } from '../components/RiskRing.js';
-import type { PanelDto } from '../types.js';
+import type { PanelApi } from '../bridge.js';
+import type { PanelDto, SeenBeforeDto } from '../types.js';
+import { TurnIntoTasks } from './CreateTasks.js';
+import { HappenedBefore, type OpenIssue } from './SeenBefore.js';
 import { day, utc } from '../text.js';
 import { OVERRIDDEN, VERDICT } from './verdict-labels.js';
 
@@ -28,8 +31,27 @@ export function headlineOf(v: PanelDto['verdict']): string | null {
   return `${things.charAt(0).toUpperCase()}${things.slice(1)} between this work item and Done${n > 3 ? ' (the first three below)' : ''}:`;
 }
 
-/** Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline, then the top three actions. */
-export function Header({ dto, onRerun, busy = false }: { dto: PanelDto; onRerun?: () => void; busy?: boolean }) {
+/**
+ * Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline, the one positive action
+ * (turn the open requirements into tasks), "this happened before" when a blocking threat was an incident, then the top
+ * three things to do.
+ */
+export function Header({
+  dto,
+  onRerun,
+  busy = false,
+  tasks,
+  memory = null,
+  onOpen,
+}: {
+  dto: PanelDto;
+  onRerun?: () => void;
+  busy?: boolean;
+  /** Turn the open requirements into tasks (absent: no action, e.g. in a read-only preview). */
+  tasks?: { api: PanelApi; onChanged: () => void };
+  memory?: SeenBeforeDto | null;
+  onOpen?: OpenIssue;
+}) {
   const v = dto.verdict;
   const overridden = v?.state === 'pass' && v.overridden === true;
   const meta = overridden ? OVERRIDDEN : v ? VERDICT[v.state] : null;
@@ -62,6 +84,8 @@ export function Header({ dto, onRerun, busy = false }: { dto: PanelDto; onRerun?
           {headline}
         </p>
       )}
+      {tasks && dto.review && <TurnIntoTasks dto={dto} api={tasks.api} onChanged={tasks.onChanged} onOpen={onOpen} />}
+      {dto.review && <HappenedBefore memory={memory} onOpen={onOpen} />}
       {actions.length > 0 && (v?.state !== 'pass' || overridden) && (
         <ul aria-label="What to do next" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
           {actions.map((a, i) => (
