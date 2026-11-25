@@ -54,6 +54,11 @@ export const SitePolicySchema = z
       .strict(),
     /** Absent on sites saved before it existed: read it with incidentPolicyOf (defaults). */
     incidents: IncidentPolicySchema.optional(),
+    /**
+     * Comment on the work item, as Threatline, when its review settles: the verdict, counts and the top threat it may
+     * name to everyone who can see the work item (docs/ENGINE.md). Absent means on; only `false` turns it off.
+     */
+    postReviewComments: z.boolean().optional(),
   })
   .strict();
 export type SitePolicy = z.infer<typeof SitePolicySchema>;

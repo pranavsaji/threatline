@@ -6,6 +6,7 @@ import { log } from '../adapters/log.js';
 import type { ReviewJob } from '../jobs/types.js';
 import { checkRerunLimit } from '../services/rate-limit.js';
 import { isLicensed, licenseRefusal } from '../services/license.js';
+import { ownAccountId } from '../services/own-account.js';
 
 export const RERUN_LABEL = 'threatline-review';
 
@@ -108,6 +109,12 @@ export async function onIssueChange(deps: CoreDeps, raw: unknown): Promise<void>
     else if (items.some((i) => names(i).some((n) => RELEVANT.has(n)))) job = { kind: 'gather', issueId: e.issue.id, reason: 'updated', ...actor };
   }
   let jobs = [job, await incidentJob(deps, e, items, policy.value, actor)].filter((j): j is ReviewJob => j !== null);
+  // No feedback loop: the manifest's ignoreSelf already drops events Threatline caused (its comments, labels and
+  // properties). Should one arrive anyway, an event by Threatline's own account queues no review and no staleness check.
+  if (jobs.length > 0 && e.atlassianId && e.atlassianId === (await ownAccountId(deps.state))) {
+    log('trigger.issue.ignored', { reason: 'self' });
+    return;
+  }
   // Paid via Atlassian: an inactive license queues no review (a gather, or an incident's re-reviews); verdict refreshes
   // still run. The manifest's appIsLicensed filter normally skips this trigger first (docs/LICENSING.md).
   if (jobs.some((j) => j.kind === 'gather' || j.kind === 'incident') && !isLicensed(await deps.license.state())) {

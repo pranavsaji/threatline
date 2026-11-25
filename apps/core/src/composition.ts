@@ -1,4 +1,5 @@
 import { ownPageId } from './services/confluence-page.js';
+import { ownAccountId } from './services/own-account.js';
 import { forgeLlm } from './adapters/forge-llm.js';
 import { DEFAULT_INCIDENT_POLICY, incidentPolicyOf } from '@threatline/core';
 import api, { route } from '@forge/api';
@@ -80,7 +81,7 @@ export function composeCore(ctx?: ForgeContext, opts: { licenseAuthoritative?: b
     llm: forgeLlm(),
     jira,
     confluence,
-    gatherer: restGatherer({ jira, confluence, reviews, issues, clock: systemClock, cloudId: cloudIdOf(ctx), siteUrl: siteUrl(state), incidentRule, ownPage: (id) => ownPageId({ state }, id) }),
+    gatherer: restGatherer({ jira, confluence, reviews, issues, clock: systemClock, cloudId: cloudIdOf(ctx), siteUrl: siteUrl(state), incidentRule, ownPage: (id) => ownPageId({ state }, id), ownAccount: () => ownAccountId(state) }),
     verdicts: jiraVerdictSink(jira),
     config,
     state,

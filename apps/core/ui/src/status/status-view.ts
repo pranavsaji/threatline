@@ -1,5 +1,5 @@
 import type { StatusDto } from '../types.js';
-import { utc } from '../text.js';
+import { count, utc } from '../text.js';
 import { OVERRIDDEN, VERDICT } from '../panel/verdict-labels.js';
 
 export type StatusKind = 'license' | 'reviewing' | 'not_reviewed' | 'overridden' | 'pass' | 'block' | 'warn';
@@ -11,7 +11,10 @@ export interface StatusView {
   icon: string | null;
   label: string;
   appearance: 'default' | 'inprogress' | 'success' | 'removed' | 'moved';
-  /** "2 open": what still blocks Done (open requirements, threats awaiting a champion), when the gate is not passing. */
+  /**
+   * "2 open": what still blocks Done (open requirements, threats awaiting a champion), when the gate is not passing.
+   * While a review runs: "first look: 3 risks", the rule-based risks found before any model call.
+   */
   open: string | null;
   /** The top reason, or what the state means; null when there is nothing to add. */
   line: string | null;
@@ -42,7 +45,11 @@ export function statusOf(dto: StatusDto): StatusView {
 
   // Paid via Atlassian: with the license inactive the Done gate does not block (docs/LICENSING.md), so no verdict is shown.
   if (dto.licenseInactive) return view('license', 'License inactive', 'moved', '!', 'The Done gate does not block until Threatline is renewed.');
-  if (dto.review && REVIEWING.has(dto.review.status)) return view('reviewing', 'Reviewing…', 'inprogress', null, top);
+  if (dto.review && REVIEWING.has(dto.review.status)) {
+    // The first look (rule-based risks found before any model call) gives the column something to say in seconds.
+    const risks = dto.firstLook?.risks ?? 0;
+    return { ...view('reviewing', 'Reviewing…', 'inprogress', null, top), open: risks > 0 ? `first look: ${count(risks, 'risk')}` : null };
+  }
   if (!dto.review) {
     if (v?.state === 'block') return view('not_reviewed', 'Not reviewed', 'removed', VERDICT.block.icon, v.reasons[0]?.code === 'no_review' || !top ? 'Blocks Done until Threatline reviews it.' : top);
     return view('not_reviewed', 'Not reviewed', 'default', null, dto.inScope === false ? (dto.scopeMessage ?? null) : null);

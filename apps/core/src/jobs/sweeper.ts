@@ -3,6 +3,7 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { SCHEMA_VERSION_KEY, trace } from '../consumers/review-consumer.js';
 import { refreshVerdict } from '../services/verdict-service.js';
+import { commentOnSettle } from '../services/verdict-comment.js';
 
 const LATEST_SCHEMA = Math.max(...MIGRATIONS.map((m) => m.version));
 
@@ -55,6 +56,8 @@ export async function sweep(deps: CoreDeps): Promise<void> {
     });
     const v = await refreshVerdict(deps, r.issueId);
     if (!v.ok) log('sweep.verdict_failed', { reviewId: r.id, code: v.error.code });
+    // Nothing arrived, so the timeout is final: comment it. With runs to assemble, the assembly comments instead.
+    if (arrived === 0 && v.ok) await commentOnSettle(deps, r.id);
     const jobs = arrived > 0 ? [{ kind: 'assemble' as const, reviewId: r.id }] : [];
     const q = await deps.queue.push([...jobs, { kind: 'propagate', issueId: r.issueId }]);
     if (!q.ok) {

@@ -8,7 +8,7 @@ import { SUPPRESSIONS_FIXTURE } from './admin/suppressions-fixture.js';
 import { mockCiApi } from './admin/ci-api.js';
 import { MOCK_KID, checkMockAttestation, mockAttestationToken } from './mock-attestation.js';
 
-/** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
+/** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|reviewing|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
   const dto = FIXTURES[state] ?? FIXTURES.ready!;
   return {
@@ -21,6 +21,7 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
       inScope: dto.inScope ?? true,
       ...(dto.scopeMessage ? { scopeMessage: dto.scopeMessage } : {}),
       ...(dto.licenseInactive ? { licenseInactive: true as const } : {}),
+      ...(dto.firstLook ? { firstLook: { risks: dto.firstLook.risks } } : {}),
     }),
     threats: async () => ({ threats: [], cursor: null }),
     rerun: async () => ({ ok: true }),

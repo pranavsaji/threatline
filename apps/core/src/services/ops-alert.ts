@@ -1,6 +1,7 @@
 import type { CoreDeps } from '../deps.js';
 import type { AdfDoc, AdfNode } from '../adapters/jira.js';
 import { log } from '../adapters/log.js';
+import { rememberOwnAccount } from './own-account.js';
 
 export const OPS_CONFIG_KEY = 'config:ops';
 
@@ -28,6 +29,7 @@ export async function opsAlert(deps: Pick<CoreDeps, 'state' | 'jira'>, dedupeKey
     log('alert.comment_failed', { key: dedupeKey.split(':').slice(0, 2).join(':'), code: c.error.code });
     return false;
   }
+  await rememberOwnAccount(deps.state, c.value.authorAccountId);
   try {
     await deps.state.set(dedupeKey, true);
   } catch {

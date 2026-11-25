@@ -15,6 +15,7 @@ import { count } from '../text.js';
 import { ThreatDiff } from './ThreatDiff.js';
 import { WhatIf } from './WhatIf.js';
 import { StatusSteps } from './StatusSteps.js';
+import { FirstLook } from './FirstLook.js';
 import { ThreatCard } from './ThreatCard.js';
 import { pollMs, RERUN_WAIT_MS, rerunLanded, rerunWaitOf, viewOf, type RerunWait } from './states.js';
 import { useInFlight } from '../components/in-flight.js';
@@ -248,6 +249,8 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               <StatusSteps steps={view.steps} />
             </SectionMessage>
           )}
+          {/* Shown only while the review runs; the settled review replaces it (and includes the same rule checks). */}
+          {view.state === 'in_progress' && dto.firstLook && <FirstLook firstLook={dto.firstLook} facts={facts} />}
           {view.state === 'failed' && (
             <SectionMessage
               appearance="error"

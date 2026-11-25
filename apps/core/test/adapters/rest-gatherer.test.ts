@@ -11,7 +11,7 @@ const ACTOR = { actorAccountId: 'acc-actor' };
 const PROJECT = JSON.stringify({ id: '10000', key: 'PAY', issueTypes: [{ id: '10001', name: 'Story' }, { id: '10004', name: 'Incident' }] });
 
 function setup(
-  over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; project?: Reply; siteUrl?: () => Promise<string>; incidentRule?: { labels: string[]; issueTypes: string[] }; ownPage?: string | null } = {},
+  over: { page?: Reply; comments?: Reply; incidents?: Reply; parent?: Reply; pageRead?: Reply; incidentBrowse?: Reply; project?: Reply; siteUrl?: () => Promise<string>; incidentRule?: { labels: string[]; issueTypes: string[] }; ownPage?: string | null; ownAccount?: string | null } = {},
 ) {
   const jiraHttp = fakeHttp([
     [/GET \/rest\/api\/3\/project\/PAY$/, over.project ?? { status: 200, body: PROJECT }],
@@ -31,7 +31,7 @@ function setup(
   const reviews = memoryReviewRepo();
   const issues = memoryIssueRepo();
   const clock = fixedClock('2026-11-15T12:00:00Z');
-  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}), ...(over.incidentRule ? { incidentRule: async () => over.incidentRule! } : {}), ...(over.ownPage !== undefined ? { ownPage: async () => over.ownPage! } : {}) });
+  const g = restGatherer({ jira: createJiraClient(jiraHttp.request, opts), confluence: createConfluenceClient(confHttp.request, opts), reviews, issues, clock, cloudId: CLOUD, ...(over.siteUrl ? { siteUrl: over.siteUrl } : {}), ...(over.incidentRule ? { incidentRule: async () => over.incidentRule! } : {}), ...(over.ownPage !== undefined ? { ownPage: async () => over.ownPage! } : {}), ...(over.ownAccount !== undefined ? { ownAccount: async () => over.ownAccount! } : {}) });
   return { g, reviews, issues, jiraCalls: jiraHttp.calls, confCalls: confHttp.calls };
 }
 
@@ -289,6 +289,40 @@ describe('restGatherer', () => {
       if (!allowed.ok || !denied.ok || !none.ok) throw new Error('gather failed');
       expect(denied.value.contextHash).toBe(allowed.value.contextHash);
       expect(none.value.contextHash).toBe(allowed.value.contextHash);
+    });
+  });
+
+  describe("Threatline's own comments are never context (no feedback loop)", () => {
+    const APP = '557058:threatline-app';
+    const c = (id: number, author: string, body: string) => ({ id: String(id), author: { accountId: author }, created: 't', body });
+    const replies = (list: ReturnType<typeof c>[]) => ({ status: 200, body: JSON.stringify({ comments: list }) });
+    const commentFacts = (r: Awaited<ReturnType<ReturnType<typeof setup>['g']['gather']>>) => (r.ok ? r.value.facts.filter((f) => f.sourceType === 'jira_comment').map((f) => f.excerpt) : []);
+
+    it("a comment by Threatline's account is neither a fact nor hashed: the hash is as if it were not there", async () => {
+      const people = [c(1, 'acc-2', 'Uses the shared secret')];
+      const withOwn = await setup({ ownAccount: APP, comments: replies([c(9, APP, 'Threatline security review: Blocks Done and merge'), ...people]) }).g.gather('10042', ACTOR);
+      const without = await setup({ ownAccount: APP, comments: replies(people) }).g.gather('10042', ACTOR);
+      if (!withOwn.ok || !without.ok) throw new Error('gather');
+      expect(commentFacts(withOwn)).toEqual(['Uses the shared secret']);
+      expect(withOwn.value.contextHash).toBe(without.value.contextHash);
+    });
+
+    it("Threatline's comments never push a person's comment out of the 20 the review reads", async () => {
+      const people = Array.from({ length: 20 }, (_, n) => c(100 + n, 'acc-2', `Person note ${n}`));
+      const own = Array.from({ length: 5 }, (_, n) => c(900 + n, APP, `Threatline note ${n}`));
+      const r = await setup({ ownAccount: APP, comments: replies([...own, ...people]) }).g.gather('10042', ACTOR);
+      expect(commentFacts(r)).toHaveLength(20);
+      expect(commentFacts(r).every((x) => x.startsWith('Person note'))).toBe(true);
+    });
+
+    it('only the recorded account counts: another app, or a person quoting Threatline, is still read', async () => {
+      const r = await setup({ ownAccount: APP, comments: replies([c(1, '557058:other-app', 'Automation: build passed'), c(2, 'acc-2', 'Threatline security review: Ready for Done (says me)')]) }).g.gather('10042', ACTOR);
+      expect(commentFacts(r)).toEqual(['Automation: build passed', 'Threatline security review: Ready for Done (says me)']);
+    });
+
+    it('before Threatline has commented (no account recorded) every comment is read, as before', async () => {
+      const r = await setup({ ownAccount: null, comments: replies([c(1, APP, 'from the app'), c(2, 'acc-2', 'from a person')]) }).g.gather('10042', ACTOR);
+      expect(commentFacts(r)).toEqual(['from the app', 'from a person']);
     });
   });
 
