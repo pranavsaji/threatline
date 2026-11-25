@@ -17,6 +17,20 @@ Each stage is its own queue job, so every model call fits a function timeout and
 | 5. Gap check | deep | the same fenced review context, the threats the runs agreed on, and the ones only one run raised | at most 3 threats the list misses, after a one-line check of each threat reviews commonly leave out (automated abuse, staff screens showing other people's content, no record of who deleted or paid, cached documents, attacker text reaching logs or exports). Each is stored **hidden** (dismissed, "unconfirmed") until the verifier keeps it |
 | 6. Verify (adversarial) | deep | each accepted AI threat and each gap-check candidate (listed last, marked "added") with the quotes it rests on, fenced as data | keep or drop, with a reason |
 
+### The first look, in seconds
+
+As soon as stage 1 finishes, before any model call, the gather's own assembly (no runs yet) gives Threatline's
+rule-based floor for the revision: the same deterministic checks assembly always adds (authentication, personal data,
+payments, public endpoints, AI agents, file upload, secrets), with team suppression rules and earlier dismissals
+applied. They are stored with the revision (the `first_look` stage). While the review runs, the panel shows them as a
+**First look**, in plain language with their severity and the sentence each quotes, labelled "First look from
+Threatline's rules. The AI review is running (stage *N* of 6) and will replace this.", and the right-hand column says
+**Reviewing… · first look: *N* risks** (`panel.status` reads one extra row, and only while a review runs). The first
+look decides nothing: the gate keeps blocking while the review runs, nothing in it is triaged or ledgered, and it is
+not shown once the review settles (the full review includes the same rule-based floor). Like the panel's threats, a
+first-look threat citing a source the viewer cannot open is counted, never shown. Rovo agent reviews get the same first
+look, without stage numbers; a rule-based review settles at once and has none.
+
 Code decides what a verifier verdict does:
 
 - A kept threat is marked **Verified** in the panel.
@@ -40,6 +54,33 @@ blocks (AI errors count as missing). Failed runs never count as answers: an outa
 threats rather than dropping the ones no run raised again. A queue job that hits a brief Jira or storage outage is
 retried the same way. A failed verification leaves the review as assembled, which is stricter, never looser. What to
 watch and what each alert means: [OPERATIONS.md](OPERATIONS.md).
+
+## When a review settles: the verdict comment
+
+When a revision reaches its final state (ready after the verifier has run, or failed; a timed-out or budget-paused
+review counts, and so do rules-only and Rovo agent reviews, which share the settle path), Threatline posts one plain
+comment on the work item, as the app (`apps/core/src/services/verdict-comment.ts`): the verdict in the panel's words
+(shared with the panel through `@threatline/shared/verdict-words`), what stands between the work item and Done (the
+first three reasons), the threats by severity, the top risk in plain language, how many security requirements there
+are and that each can become a task in one click, and a pointer to the Threatline panel.
+
+- **Once per revision.** The `comment` stage is claimed with an insert-only write before posting, so a redelivered or
+  concurrent job never posts twice. A failed post is logged and recorded on the stage, never retried and never a
+  failed review.
+- **Quiet re-runs.** A re-run comments only when the verdict (or break-glass) or the blocking count changed from the
+  revision Threatline last commented on.
+- **No leaks.** Everyone who can see the work item can read the comment, so it names a threat only when every source
+  that threat cites is the work item's own (its fields or its unrestricted comments), the rule used for sub-task
+  titles. An AI-written threat is named only when it is accepted and no source in the review looked like instructions
+  to an AI, so attacker text is never posted by Threatline; a rule-based threat's wording is Threatline's own. Anything
+  else is counted, never named, and a reason inherited from a parent does not name the parent.
+- **No feedback loop.** Threatline learns its own account from Jira's answer to its first comment. Its comments (this
+  one, risk-acceptance and break-glass notes) are never gathered as review context and never part of the context
+  hash, so they never mark a review out of date; they are skipped before the newest 20 comments are taken, so they
+  never push a person's comment out either. A comment changes no field the issue trigger watches, the trigger ignores
+  Threatline's own events (`ignoreSelf`), and an event by Threatline's account queues nothing even if one arrives.
+- **Off switch.** Threatline admin → Review mode → **Comment on the work item when its review finishes** (site policy
+  `postReviewComments`, on by default).
 
 ## Cost and limits
 

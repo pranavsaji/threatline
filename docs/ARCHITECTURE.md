@@ -60,7 +60,9 @@ flowchart LR
    are *trusted*; every piece of free text is *untrusted* and wrapped as data. Pages and incidents the actor cannot
    read are left out (they still count towards the context hash). Secrets are redacted and text that looks like
    instructions to an AI is flagged (`injectionSuspected`). The review is created in `awaiting_agent` and its verdict
-   already blocks.
+   already blocks. Before any model call, the gather's assembly stores the revision's rule-based threats as its
+   **first look**, which the panel and the context column show while the review runs (display only; see
+   [ENGINE.md](ENGINE.md)). Threatline's own comments are never gathered and never hashed.
 3. **Proposals.**
    - *Threatline Engine:* a quarantined injection check reads the raw untrusted text, fenced with a random nonce, on
      the balanced tier; its model-based flag joins the scanner's. Then three independent runs (`agentSamples`, 3 by
@@ -90,6 +92,9 @@ flowchart LR
    check did not complete. If it fails, the review stands as assembled.
 6. **Enforcement.** The verdict is written to KVS (read by the workflow validator, under 500 ms) and to an issue
    property (for JQL). The Bitbucket merge check verifies an attestation offline with the published public keys.
+7. **Verdict comment.** When the revision is final (after verification, or failed), Threatline comments the verdict on
+   the work item once: counts, the top risk only when everyone who can see the work item may read its sources, and
+   the requirements. A re-run comments only when the verdict or blocking count changed. See [ENGINE.md](ENGINE.md).
 
 The earlier dual-LLM design (proposals that saw only an extracted sketch) is kept in `packages/core/src/pipeline.ts`
 for the eval; it measured worse and does not run in the product. A third mode, **Rule-based checks only**, settles
@@ -152,8 +157,8 @@ SQL implementation (`packages/core/test/contracts`).
 
 | Store | What |
 | --- | --- |
-| Forge SQL | `reviews`, `review_stages` (doubles as the run trace), `agent_samples`, `context_facts`, `threats`, `review_discarded`, `requirements`, `feedback`, `issues`, `issue_pages`, `attestations`, `ledger`, `merkle_heads`, `posture_snapshots`, `usage_monthly`, `rate_limits`, `suppression_rules`, `suppression_matches`. Reviews are purged after 400 days; the ledger never is. |
-| KVS | Verdicts (what the gate reads), site and project policy and its version, rate-limit counters, single-use submission tokens. |
+| Forge SQL | `reviews`, `review_stages` (doubles as the run trace, and holds the first look and the once-only verdict-comment claim), `agent_samples`, `context_facts`, `threats`, `review_discarded`, `requirements`, `feedback`, `issues`, `issue_pages`, `attestations`, `ledger`, `merkle_heads`, `posture_snapshots`, `usage_monthly`, `rate_limits`, `suppression_rules`, `suppression_matches`. Reviews are purged after 400 days; the ledger never is. |
+| KVS | Verdicts (what the gate reads), site and project policy and its version, rate-limit counters, single-use submission tokens, Threatline's own account id (`app:account-id`, learnt from its first comment) and the last verdict comment per work item (`comment:last:<id>`). |
 | Forge secret storage | The Ed25519 signing key (generated on install, never sent to the UI; rotation keeps old keys verifying for a grace period). |
 | Issue property `threatline.verdict` | Searchable copy of the verdict for JQL and dashboards. It is never read by the gate, because users can edit issue properties. |
 
@@ -189,9 +194,10 @@ exit 1
 
 ## Surfaces
 
-- **Issue panel**: verdict and the reasons behind it, risk score, threats (plain language first, evidence quotes with
-  links), requirements and evidence, risk acceptances, history and the diff since the last review, what-if, merge
+- **Issue panel**: verdict and the reasons behind it, risk score, the first look while a review runs, threats (plain
+  language first, evidence quotes with links), requirements and evidence, risk acceptances, history and the diff since the last review, what-if, merge
   attestation, champion triage.
+- **Work item comment**: the verdict once per settled review (site policy `postReviewComments`).
 - **Admin page**: first-run wizard, projects and guarded transitions, severity policy, roles, budgets, warn-only,
   notifications, recent runs with stage timings, signing keys, ledger verification and Merkle proofs, demo data.
 - **Security posture** global page and dashboard gadget: open Critical/High, where they are, trend, release report.
