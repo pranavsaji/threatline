@@ -1,5 +1,5 @@
 import type { AdminApi, InboxApi, PanelApi, PostureApi } from './bridge.js';
-import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
+import { ACCURACY_EMPTY, ACCURACY_FIXTURE, DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
 import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
 import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
@@ -148,10 +148,18 @@ export function mockAdminApi(
   };
 }
 
-export function mockPostureApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PostureApi {
+/**
+ * Local preview of the posture page (`?view=posture`). `?state=empty` is a site with nothing reviewed yet;
+ * `&accuracy=empty` shows the accuracy card before any decision, `&accuracy=unavailable` when it could not be read.
+ */
+export function mockPostureApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready', accuracy = new URLSearchParams(window.location.search).get('accuracy') ?? 'ready'): PostureApi {
   const empty = state === 'empty';
+  const figures = accuracy === 'empty' ? ACCURACY_EMPTY : accuracy === 'unavailable' ? null : ACCURACY_FIXTURE;
   return {
-    get: async () => (empty ? { ...structuredClone(POSTURE_FIXTURE), projects: [], issuesCounted: 0, byTeamComponent: [], openBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 } } : structuredClone(POSTURE_FIXTURE)),
+    get: async () =>
+      empty
+        ? { ...structuredClone(POSTURE_FIXTURE), projects: [], issuesCounted: 0, byTeamComponent: [], openBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 }, accuracy: structuredClone(ACCURACY_EMPTY) }
+        : { ...structuredClone(POSTURE_FIXTURE), accuracy: structuredClone(figures) },
     drill: async () => structuredClone(DRILL_FIXTURE),
     release: async (fixVersion) => RELEASE_FIXTURE(fixVersion),
     controls: async () => (empty ? { ...structuredClone(CONTROLS_FIXTURE), issuesCounted: 0, frameworks: CONTROLS_FIXTURE.frameworks.map((f) => ({ ...f, controls: [] })) } : structuredClone(CONTROLS_FIXTURE)),

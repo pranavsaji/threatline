@@ -2,6 +2,10 @@ export type { PanelDto, StatusDto, FactDto, ThreatExplanation, ThreatDiffDto, Th
 export type { ApiError } from '../../src/resolvers/errors.js';
 export type { Threat, Requirement, RequirementStatus, Severity, Stride, Citation, Evidence, Acceptance, AcceptanceState } from '@threatline/shared';
 export type { PostureDto, DrillDto } from '../../src/resolvers/posture.js';
+import type { PostureDto } from '../../src/resolvers/posture.js';
+/** "How accurate is Threatline here?" on the posture page (docs/ACCURACY.md). */
+export type Accuracy = NonNullable<PostureDto['accuracy']>;
+export type AccuracyRate = Accuracy['champion']['rate'];
 export type { ControlsPostureDto } from '../../src/resolvers/compliance.js';
 export type { ReleaseReadinessResult } from '../../src/actions/release-readiness.js';
 export type { AdminPolicyDto, OpsConfig, DigestConfig, RunDto, RunStage, UsageDto } from '../../src/resolvers/admin.js';
