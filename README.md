@@ -5,7 +5,7 @@
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![egress](https://img.shields.io/badge/egress-none-informational)
-![Jira app](https://img.shields.io/badge/Threatline%20for%20Jira-5.15.0-0052CC)
+![Jira app](https://img.shields.io/badge/Threatline%20for%20Jira-5.16.0-0052CC)
 ![Bitbucket app](https://img.shields.io/badge/Threatline%20for%20Bitbucket-2.12.0-0052CC)
 
 **Security review that gates Done and merge.** Security review is advisory, so it loses to the deadline. Threatline
@@ -58,7 +58,7 @@ someone allowed to accept it.
 | --- | --- |
 | **What** | AI threat modelling for Jira work items, enforced at Done (workflow validator) and at merge (signed attestation checked by a Bitbucket merge check or a GitHub Action). |
 | **Who it is for** | Software teams that ship through Jira and Bitbucket or GitHub, and the security champions who cannot read every design. |
-| **Apps** | **Threatline for Jira** 5.15.0 (Jira, with Confluence) and **Threatline for Bitbucket** 2.12.0, both on Atlassian Forge in production. Two apps because Forge cannot put a site (Jira, Confluence) and a Bitbucket workspace in one app; they share only a public key. |
+| **Apps** | **Threatline for Jira** 5.16.0 (Jira, with Confluence) and **Threatline for Bitbucket** 2.12.0, both on Atlassian Forge in production. Two apps because Forge cannot put a site (Jira, Confluence) and a Bitbucket workspace in one app; they share only a public key. |
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
 | **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
