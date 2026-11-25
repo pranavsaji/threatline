@@ -3,5 +3,5 @@ Threatline security review: ✕ Blocks Done and merge
 • 3 open security requirements at High or above.
 4 threats: 3 High, 1 Medium.
 Top risk (High): Anyone on the internet could post a fake refund and get money back.
-4 security requirements. Each can become a task in one click: Threatline panel → Requirements → Create sub-tasks.
+4 security requirements. One click turns the 4 open ones into tasks: "Turn 4 requirements into tasks" in the Threatline panel.
 Evidence, requirements and next steps are in the Threatline panel on this work item.

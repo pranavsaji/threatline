@@ -287,7 +287,7 @@ describe('verdictCommentLines: wording and the leak rule', () => {
     const req = (id: string, over: Partial<Requirement> = {}): Requirement => ({ id, threatId: 't1', issueId: ISSUE, issueKey: 'PAY-7', title: 'R', criteria: [{ given: 'g', when: 'w', then: 't' }], asvsIds: [], severity: 'High', status: 'Open', ...over });
     const t2 = threat('t2');
     const lines = verdictCommentLines(input({ threats: [threat('t1'), t2], requirements: [req('r1'), req('r2', { threatId: 't2', status: 'Verified' }), req('r3', { threatId: 'gone' })] }));
-    expect(lines).toContain('2 security requirements (1 open). It can become a task in one click: Threatline panel → Requirements → Create sub-tasks.');
+    expect(lines).toContain('2 security requirements (1 open). One click turns the open one into a task: "Turn 1 requirement into tasks" in the Threatline panel.');
     const tasked = verdictCommentLines(input({ requirements: [req('r1', { subtaskKey: 'PAY-8' })] }));
     expect(tasked).toContain('1 security requirement.');
   });

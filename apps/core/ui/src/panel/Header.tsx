@@ -25,9 +25,9 @@ function relative(iso: string, now = Date.now()): string {
 export { headlineOf };
 
 /**
- * Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline, the one positive action
- * (turn the open requirements into tasks), "this happened before" when a blocking threat was an incident, then the top
- * three things to do.
+ * Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline and the top three things to do
+ * (the headline's colon introduces that list), "this happened before" when a blocking threat was an incident, then the
+ * one positive action (turn the open requirements into tasks).
  */
 export function Header({
   dto,
@@ -77,8 +77,6 @@ export function Header({
           {headline}
         </p>
       )}
-      {tasks && dto.review && <TurnIntoTasks dto={dto} api={tasks.api} onChanged={tasks.onChanged} onOpen={onOpen} />}
-      {dto.review && <HappenedBefore memory={memory} onOpen={onOpen} />}
       {actions.length > 0 && (v?.state !== 'pass' || overridden) && (
         <ul aria-label="What to do next" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
           {actions.map((a, i) => (
@@ -103,6 +101,8 @@ export function Header({
           ))}
         </ul>
       )}
+      {dto.review && <HappenedBefore memory={memory} onOpen={onOpen} />}
+      {tasks && dto.review && <TurnIntoTasks dto={dto} api={tasks.api} onChanged={tasks.onChanged} onOpen={onOpen} />}
     </header>
   );
 }

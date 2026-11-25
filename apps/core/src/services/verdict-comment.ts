@@ -113,7 +113,8 @@ export function verdictCommentLines(i: CommentInput): string[] {
   if (reqs.length > 0) {
     const untasked = open.filter((q) => !q.subtaskKey).length;
     const head = `${count(reqs.length, 'security requirement')}${open.length < reqs.length ? ` (${open.length} open)` : ''}.`;
-    lines.push(untasked > 0 ? `${head} ${untasked === 1 ? 'It' : 'Each'} can become a task in one click: Threatline panel → Requirements → Create sub-tasks.` : head);
+    // The panel's header button ("Turn N requirements into tasks", CreateTasks.tsx) counts the same open, untasked ones.
+    lines.push(untasked > 0 ? `${head} One click turns ${untasked === 1 ? 'the open one into a task' : `the ${untasked} open ones into tasks`}: "Turn ${count(untasked, 'requirement')} into tasks" in the Threatline panel.` : head);
   }
   if (r.modelIds.includes('threatline-rules')) lines.push("From Threatline's rule-based checks: AI review is off on this site.");
   lines.push('Evidence, requirements and next steps are in the Threatline panel on this work item.');

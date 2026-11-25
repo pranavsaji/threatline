@@ -42,9 +42,10 @@ export function FirstLook({ firstLook, facts }: { firstLook: FirstLookDto; facts
                 <strong>{t.plainLanguage || t.title}</strong>
               </span>
               {t.citations.map((c, i) => (
-                <blockquote key={`${c.factId}-${i}`} style={{ margin: 0, paddingLeft: 10, borderLeft: `2px solid ${token('color.border')}`, font: token('font.body.small') }}>
-                  “{c.quote}” <CitationLink citation={c} fact={facts.get(c.factId)} />
-                </blockquote>
+                // Not a <blockquote>: Atlaskit's CSS reset draws its own quote marks around one, doubling ours.
+                <p key={`${c.factId}-${i}`} style={{ margin: 0, paddingLeft: 10, borderLeft: `2px solid ${token('color.border')}`, font: token('font.body.small') }}>
+                  “{c.quote}” — <CitationLink citation={c} fact={facts.get(c.factId)} />
+                </p>
               ))}
             </li>
           ))}
