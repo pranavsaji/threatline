@@ -345,7 +345,7 @@ modules:
       name: Get security posture
       function: postureSummaryFn
       actionVerb: GET
-      description: Summarises security posture across Threatline-enabled projects - open requirements by severity, the riskiest components, and the risk acceptances that expire in the next 31 days (soonest first).
+      description: Summarises security posture across Threatline-enabled projects - open requirements by severity, the riskiest components, the risk acceptances that expire in the next 31 days (soonest first), and how accurate Threatline has been over the last 90 days (champion agreement, blocking requirements that held up, verifier keep rate; each with its counts, and no percentage below 5 decisions).
       inputs:
         project:
           title: Project key
