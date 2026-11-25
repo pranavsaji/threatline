@@ -18,6 +18,7 @@ import { buildDiagram, type DiagramDto } from '../services/diagram-service.js';
 import type { ApiError } from './errors.js';
 import { isLicensed, licenseRefusal } from '../services/license.js';
 import type { DeliveryLinks, LinkedDeployment, LinkedPullRequest } from '../adapters/graph-delivery.js';
+import { engineStage, scopeFirstLook, storedFirstLook, type FirstLookDto } from '../services/first-look.js';
 
 export const PAGE_SIZE = 50;
 const HISTORY_REVISIONS = 5;
@@ -85,6 +86,11 @@ export interface PanelDto {
   reviewMode?: SitePolicy['reviewMode'];
   /** Paid via Atlassian: the site's license is inactive, so no new reviews start (docs/LICENSING.md). */
   licenseInactive?: true;
+  /**
+   * While the review runs: Threatline's rule-based threats from the gather, before any model call (docs/ENGINE.md).
+   * Display only; absent once the review settles, and on reviews gathered before the first look existed.
+   */
+  firstLook?: FirstLookDto;
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited'; message?: string };
@@ -199,6 +205,8 @@ export interface StatusDto {
   inScope?: boolean;
   scopeMessage?: string;
   licenseInactive?: true;
+  /** While the review runs: how many rule-based risks its first look found (a count: no titles, no sources). */
+  firstLook?: { risks: number };
 }
 
 /**
@@ -216,7 +224,8 @@ export async function panelStatus(deps: CoreDeps, v: Viewer): Promise<StatusDto 
   ]);
   if (!latest.ok || !policy.ok) return { error: 'unavailable' };
   const review = latest.value;
-  const verdict = await shownVerdict(deps, v, review, stored);
+  // One extra read, and only while a review runs: the first look's count.
+  const [verdict, firstLook] = await Promise.all([shownVerdict(deps, v, review, stored), review ? storedFirstLook(deps, review).catch(() => null) : null]);
   const outOfScope = scopeRefusal(auth.issue, policy.value);
   return {
     issueKey: auth.issueKey,
@@ -233,6 +242,7 @@ export async function panelStatus(deps: CoreDeps, v: Viewer): Promise<StatusDto 
     inScope: outOfScope === null,
     ...(outOfScope ? { scopeMessage: outOfScope } : {}),
     ...(isLicensed(license) ? {} : { licenseInactive: true as const }),
+    ...(firstLook ? { firstLook: { risks: firstLook.length } } : {}),
   };
 }
 
@@ -262,9 +272,15 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   let hiddenDiscarded = 0;
   let score = review?.riskScore ?? 0;
   let sketchVisible = false;
+  let firstLook: FirstLookDto | undefined;
   if (review) {
     const scoped = await scopedReview(deps, v, review.id, cache);
     if (!scoped) return { error: 'unavailable' };
+    const first = await storedFirstLook(deps, review).catch(() => null);
+    if (first) {
+      const stage = await engineStage(deps, review).catch(() => undefined);
+      firstLook = { ...scopeFirstLook(first, scoped.facts), ...(stage ? { stage } : {}) };
+    }
     score = viewerScore(review.riskScore, scoped);
     threats = listedThreats(scoped.threats);
     covered = scoped.threats.flatMap((t) => (t.state === 'covered' && t.coveredBy ? [{ title: t.title, coveredBy: t.coveredBy }] : []));
@@ -336,6 +352,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     reviewMode: p.reviewMode,
     ...(verifying ? { verifying: true } : {}),
     ...(isLicensed(license) ? {} : { licenseInactive: true as const }),
+    ...(firstLook ? { firstLook } : {}),
   };
 }
 

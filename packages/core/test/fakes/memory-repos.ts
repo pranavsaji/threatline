@@ -131,6 +131,12 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
       stages.set(`${reviewId}:${stage}`, { status, checkpoint: clone(checkpoint), ...(error ? { error } : {}), at: at ?? new Date().toISOString() });
       return ok(undefined);
     },
+    async claimStage(reviewId, stage, status, checkpoint, at) {
+      const key = `${reviewId}:${stage}`;
+      if (stages.has(key)) return ok(false);
+      stages.set(key, { status, checkpoint: clone(checkpoint), at: at ?? new Date().toISOString() });
+      return ok(true);
+    },
     async stage(reviewId, stage) {
       const s = stages.get(`${reviewId}:${stage}`);
       if (!s) return ok(null);

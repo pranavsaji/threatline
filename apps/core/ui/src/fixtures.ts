@@ -56,9 +56,37 @@ const base: PanelDto = {
 
 const withReview = (o: Partial<NonNullable<PanelDto['review']>>, rest: Partial<PanelDto> = {}): PanelDto => ({ ...base, review: { ...base.review!, ...o }, ...rest });
 
+/** Threatline's rule-based threats for PAY-6, as the gather finds them before any model call (the first look). */
+const RULE_BASED: Threat[] = [
+  threat(11, { origin: 'baseline', stride: 'Spoofing', title: 'Account takeover through weak authentication', component: 'authentication', severity: 'High', votes: 3, plainLanguage: 'Someone could log in as a customer using a stolen password or session.', citations: [{ factId: 'fact_body', quote: 'Customers sign in with a magic link sent to their email address.' }] }),
+  threat(12, { origin: 'baseline', stride: 'InformationDisclosure', title: 'Personal data exposed to unauthorised users', component: 'customer data', severity: 'High', votes: 3, plainLanguage: 'Someone could see another customer’s personal details.', citations: [{ factId: 'fact_body', quote: 'After sign-in the customer can change the email address and phone number on the account.' }] }),
+  threat(13, { origin: 'baseline', stride: 'DenialOfService', title: 'Public endpoint flooded with requests', component: 'public endpoint', severity: 'Medium', likelihood: 3, impact: 3, votes: 3, plainLanguage: 'Someone could flood the public reset page and slow it down for everyone.', citations: [{ factId: 'fact_body', quote: 'The reset page is public and accepts any email address.' }] }),
+];
+
+/**
+ * A Threatline Engine review in its third stage, with the first look: what the panel shows seconds after a work item
+ * is created (`?state=reviewing`; `?view=status&state=reviewing` for the context column).
+ */
+const reviewing: PanelDto = withReview(
+  { status: 'awaiting_agent', samplesReceived: 1, riskScore: 34, modelIds: [] },
+  {
+    reviewMode: 'engine',
+    threats: RULE_BASED,
+    threatsTotal: RULE_BASED.length,
+    discarded: [],
+    requirements: [],
+    requirementControls: {},
+    history: [{ revision: 1, createdAt: '2026-11-16T05:30:43.000Z', riskScore: 34, status: 'awaiting_agent', added: 3, removed: 0 }],
+    samples: { received: 1, expected: 3 },
+    verdict: { ...base.verdict!, blockingCount: 0, maxOpenSeverity: null, reasons: [{ code: 'agent_missing', message: 'Review in progress (1 of 3 agent runs received).' }] },
+    firstLook: { risks: RULE_BASED.length, threats: RULE_BASED, hidden: 0, stage: { n: 3, of: 6, name: 'Independent AI runs, 1 of 3 done' } },
+  },
+);
+
 export const FIXTURES: Record<string, PanelDto> = {
   ready: base,
   not_reviewed: { ...base, review: null, verdict: { ...base.verdict!, reasons: [{ code: 'no_review', message: 'Threatline has not reviewed this work item yet.' }] }, threats: [], threatsTotal: 0, discarded: [], facts: [], requirements: [], history: [], samples: { received: 0, expected: 0 } },
+  reviewing,
   in_progress: withReview({ status: 'awaiting_agent', samplesReceived: 1, riskScore: 40 }, { samples: { received: 1, expected: 3 }, verdict: { ...base.verdict!, reasons: [{ code: 'agent_missing', message: 'Review in progress (1 of 3 agent runs received).' }] } }),
   partial: withReview({ partial: true }),
   failed: withReview({ status: 'failed', failureReason: 'context_unavailable' }, { verdict: { ...base.verdict!, reasons: [{ code: 'review_failed', message: 'The security review failed.', action: { label: 'Re-run review', href: '?rerun=1' } }] } }),

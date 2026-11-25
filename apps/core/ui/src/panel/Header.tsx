@@ -3,6 +3,7 @@ import { token } from '@atlaskit/tokens';
 import { RiskRing } from '../components/RiskRing.js';
 import type { PanelDto } from '../types.js';
 import { day, utc } from '../text.js';
+import { headlineOf } from '@threatline/shared/verdict-words';
 import { OVERRIDDEN, VERDICT } from './verdict-labels.js';
 
 function relative(iso: string, now = Date.now()): string {
@@ -16,17 +17,9 @@ function relative(iso: string, now = Date.now()): string {
 
 /**
  * One sentence a reader takes away from the panel: what stands between this work item and Done, or that nothing does.
- * Exported for tests; null before the first verdict.
+ * Shared with the comment Threatline posts when a review settles (@threatline/shared/verdict-words), so both say the same.
  */
-export function headlineOf(v: PanelDto['verdict']): string | null {
-  if (!v) return null;
-  const n = v.reasons.length;
-  const things = `${n} ${n === 1 ? 'thing stands' : 'things stand'}`;
-  if (v.state === 'pass' && v.overridden) return `Done and merge are let through by a break-glass override, but ${things} in the way.`;
-  if (v.state === 'pass') return 'Nothing stands between this work item and Done or merge.';
-  if (v.state === 'warn') return `Warn only: Done and merge go through for now, but ${things} in the way.`;
-  return `${things.charAt(0).toUpperCase()}${things.slice(1)} between this work item and Done${n > 3 ? ' (the first three below)' : ''}:`;
-}
+export { headlineOf };
 
 /** Risk ring, verdict (icon + words, never colour alone), last reviewed time, the headline, then the top three actions. */
 export function Header({ dto, onRerun, busy = false }: { dto: PanelDto; onRerun?: () => void; busy?: boolean }) {

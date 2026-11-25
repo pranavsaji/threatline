@@ -313,6 +313,21 @@ describe('jira client: writes', () => {
     expect(JSON.parse(calls[0]!.init!.body!)).toEqual({ body: doc });
   });
 
+  it("comment returns the new comment's id and author (Threatline's own account, for comments posted as the app)", async () => {
+    const doc: AdfDoc = { type: 'doc', version: 1, content: [] };
+    const posted = client([[/POST \/rest\/api\/3\/issue\/10042\/comment/, { status: 201, body: '{"id":"301","author":{"accountId":"557058:app","accountType":"app"}}' }]]);
+    expect(await posted.jira.comment('10042', doc)).toEqual({ ok: true, value: { id: '301', authorAccountId: '557058:app' } });
+    // The comment exists even when the reply is not the expected shape: that is still a success, never a retry.
+    const odd = client([[/POST \/rest\/api\/3\/issue\/10042\/comment/, { status: 201, body: '{"id":7}' }]]);
+    expect(await odd.jira.comment('10042', doc)).toEqual({ ok: true, value: { id: '', authorAccountId: '' } });
+  });
+
+  it('comments reads a window wider than the 20 the gatherer keeps', async () => {
+    const { jira, calls } = client([[/issue\/10042\/comment/, { status: 200, body: '{"comments":[]}' }]]);
+    await jira.comments('10042');
+    expect(calls[0]!.path).toMatch(/orderBy=-created&maxResults=50$/);
+  });
+
   it('a 400 on write → err(validation) carrying Jira’s messages', async () => {
     const { jira } = client([[/PUT/, { status: 400, body: '{"errorMessages":["Field labels cannot be set"],"errors":{}}' }]]);
     const r = await jira.addLabel('10042', 'x');

@@ -42,6 +42,9 @@ export function jiraIssue(over: Partial<JiraIssue> & { id: string; key: string }
   };
 }
 
+/** The account the fake Jira says Threatline's comments are written by (the app user). */
+export const APP_ACCOUNT = '557058:threatline-app';
+
 /** A Jira fake: issues by id, records properties, comments and label changes. */
 export function fakeJira(issues: JiraIssue[]): JiraClient & { props: Map<string, unknown>; commented: Array<{ issueId: string; adf: unknown }>; labels: string[] } {
   const byRef = (ref: string) => issues.find((i) => i.id === ref || i.key === ref);
@@ -93,7 +96,7 @@ export function fakeJira(issues: JiraIssue[]): JiraClient & { props: Map<string,
     },
     comment: async (issueId, adf) => {
       commented.push({ issueId, adf });
-      return ok(undefined);
+      return ok({ id: String(30000 + commented.length), authorAccountId: APP_ACCOUNT });
     },
     search: async () => ok([]),
   };

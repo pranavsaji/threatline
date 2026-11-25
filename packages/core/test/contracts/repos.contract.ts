@@ -82,6 +82,13 @@ export function repoContract(name: string, f: RepoFactory): void {
       await r.saveStage('rev_1', 'extract', 'done', { sketch: { a: 1 } });
       expect((await r.stage('rev_1', 'extract')).ok && (await r.stage('rev_1', 'extract'))).toMatchObject({ ok: true, value: { status: 'done', checkpoint: { sketch: { a: 1 } } } });
       expect((await r.stage('rev_1', 'none')).ok && (await r.stage('rev_1', 'none'))).toEqual({ ok: true, value: null });
+      // claimStage inserts once: the second claim (a redelivered job) gets false and leaves the first one's record.
+      expect(await r.claimStage('rev_1', 'comment', 'running', { by: 'first' })).toEqual({ ok: true, value: true });
+      expect(await r.claimStage('rev_1', 'comment', 'running', { by: 'second' })).toEqual({ ok: true, value: false });
+      expect(await r.stage('rev_1', 'comment')).toEqual({ ok: true, value: { status: 'running', checkpoint: { by: 'first' } } });
+      expect(await r.claimStage('rev_1', 'extract', 'done')).toEqual({ ok: true, value: false });
+      await r.saveStage('rev_1', 'comment', 'done', { posted: true });
+      expect(await r.stage('rev_1', 'comment')).toEqual({ ok: true, value: { status: 'done', checkpoint: { posted: true } } });
     });
 
     it('reviews: saveThreats refuses duplicate threat ids (conflict) and leaves the stored set as it was', async () => {

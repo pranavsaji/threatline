@@ -9,6 +9,7 @@ import { storeSample } from './samples.js';
 import { isLicensed, licenseRefusal } from './license.js';
 import { opsAlert } from './ops-alert.js';
 import { isTransientCode } from '../consumers/retry.js';
+import { commentOnSettle } from './verdict-comment.js';
 
 type EngineJob = Extract<ReviewJob, { kind: 'engine' }>;
 const voidOk = (): Result<void> => ok(undefined);
@@ -264,6 +265,7 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
   if (!checked || sketchFlag || facts.value.some((f) => f.injectionSuspected)) {
     await deps.reviews.saveStage(review.id, 'verify', 'done', { skipped: 'injection' });
     await trace(deps, review.id, 'verify', 'done', checked ? 'skipped: injection suspected' : 'skipped: injection check did not complete');
+    await commentOnSettle(deps, review.id);
     return voidOk();
   }
   // The gap check runs once, in its own job, before the verifier (which then runs in the next job, so each model call
@@ -280,6 +282,7 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
     if (v.error.code === 'budget') await tokenBudgetReached(deps, review, 'verifier', cap);
     await deps.reviews.saveStage(review.id, 'verify', 'failed', undefined, v.error.code);
     await trace(deps, review.id, 'verify', 'failed', v.error.code);
+    await commentOnSettle(deps, review.id);
     return voidOk();
   }
   const stored = await applyAndStore(deps, review, v.value);
@@ -289,6 +292,8 @@ async function verify(deps: CoreDeps, review: Review, stageDeps: Parameters<type
   log('engine.verified', { reviewId: review.id, checked: v.value.length, rejected: v.value.filter((x) => !x.keep).length });
   const r = await refreshVerdict(deps, review.issueId);
   if (!r.ok) return r;
+  // The review is final now: comment the verified verdict on the work item.
+  await commentOnSettle(deps, review.id);
   return deps.queue.push([{ kind: 'propagate', issueId: review.issueId }]);
 }
 

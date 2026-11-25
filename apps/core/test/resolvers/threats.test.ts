@@ -232,9 +232,10 @@ describe('review.confirm', () => {
     t.kv.data.set(OPS_CONFIG_KEY, { issueKey: 'OPS-1', accountIds: ['acc-admin'] });
     const row = await reviewConfirm(t.deps, who, { reviewId, kind: 'budget' });
     expect(row).toMatchObject({ eventType: 'budget.champion_confirmed' });
-    expect(t.jira.commented).toHaveLength(1);
-    expect(t.jira.commented[0]!.issueId).toBe('OPS-1');
-    expect(JSON.stringify(t.jira.commented[0]!.adf)).toMatch(/PAY-7/);
+    const ops = t.jira.commented.filter((c) => c.issueId !== ISSUE);
+    expect(ops).toHaveLength(1);
+    expect(ops[0]!.issueId).toBe('OPS-1');
+    expect(JSON.stringify(ops[0]!.adf)).toMatch(/PAY-7/);
     expect(verdict(t).reasons.map((r) => r.code)).not.toContain('budget_paused');
   });
 

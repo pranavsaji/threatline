@@ -332,8 +332,11 @@ describe('panel.status (the context column: the gate status alone)', () => {
       verdict: { state: full.verdict!.state, blockingCount: 2, reasons: [full.verdict!.reasons[0]] },
       review: { status: 'awaiting_agent' },
       inScope: true,
+      // The first look's count only: no titles, quotes or sources.
+      firstLook: { risks: full.firstLook!.risks },
     });
-    expect(JSON.stringify(s)).not.toMatch(/gate message|thr_|riskScore/);
+    expect(full.firstLook!.risks).toBeGreaterThan(0);
+    expect(JSON.stringify(s)).not.toMatch(/gate message|thr_|riskScore|quote/);
   });
 
   it('a never-reviewed item in scope: no verdict and no review', async () => {

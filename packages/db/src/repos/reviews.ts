@@ -185,6 +185,14 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
       ]);
       return r.ok ? ok(undefined) : r;
     },
+    async claimStage(reviewId, stage, status, checkpoint, at) {
+      // INSERT, not REPLACE: the primary key (review_id, stage) lets exactly one caller claim the stage.
+      const r = await x.exec('INSERT INTO review_stages (review_id, stage, status, checkpoint_json, error, updated_at) VALUES (?, ?, ?, ?, NULL, ?)', [
+        reviewId, stage, status, checkpoint === undefined ? null : JSON.stringify(checkpoint), at ?? new Date().toISOString(),
+      ]);
+      if (r.ok) return ok(true);
+      return r.error.code === 'conflict' ? ok(false) : r;
+    },
     async stage(reviewId, stage) {
       const r = await x.query<Row>('SELECT status, checkpoint_json FROM review_stages WHERE review_id = ? AND stage = ?', [reviewId, stage]);
       if (!r.ok) return r;

@@ -2,7 +2,7 @@ import { contextHash, DEFAULT_INCIDENT_POLICY, isIncident, normalizeFacts, type 
 import { sha256Hex } from '@threatline/crypto';
 import { ok, type ContextBundle, type ContextFact, type IncidentPolicy, type Result } from '@threatline/shared';
 import type { ConfluenceClient } from './confluence.js';
-import type { JiraClient, JiraIssue } from './jira.js';
+import type { JiraClient, JiraComment, JiraIssue } from './jira.js';
 
 export interface RestGathererDeps {
   jira: JiraClient;
@@ -18,6 +18,22 @@ export interface RestGathererDeps {
   incidentRule?: () => Promise<Pick<IncidentPolicy, 'labels' | 'issueTypes'>>;
   /** The Confluence page Threatline published for this work item (its threat model), if any: never read as context. */
   ownPage?: (issueId: string) => Promise<string | null>;
+  /** Threatline's own Atlassian account (services/own-account.ts): its comments are never read as context. */
+  ownAccount?: () => Promise<string | null>;
+}
+
+/** The newest comments read as context: people's comments only, never Threatline's own. */
+const MAX_COMMENTS = 20;
+
+/**
+ * The comments that are review context: the newest MAX_COMMENTS that Threatline did not write, then without restricted
+ * ones. Threatline's own comments (its verdict comment, risk-acceptance notes) are its output, not evidence: read back
+ * they would feed the model its own verdict and change the context hash, marking the review out of date, which would
+ * ask for a re-run that comments again. They are skipped before the window is cut, so they never push a person's comment
+ * out of it either. Without a known own account (Threatline has not commented yet) every comment is read.
+ */
+export function contextComments(comments: readonly JiraComment[], ownAccount: string | null): JiraComment[] {
+  return comments.filter((c) => !ownAccount || c.author !== ownAccount).slice(0, MAX_COMMENTS).filter((c) => !c.restricted);
 }
 
 /** The remote-link globalId Threatline gives the threat-model page it links on a work item (confluence-page.ts). */
@@ -145,7 +161,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
       const rule = d.incidentRule ? await d.incidentRule().catch(() => DEFAULT_INCIDENT_POLICY) : DEFAULT_INCIDENT_POLICY;
       const incidentJql = await incidentQuery(d.jira, issue, rule, reasons);
 
-      const [parent, children, comments, links, incidents, history, ownPage] = await Promise.all([
+      const [parent, children, comments, links, incidents, history, ownPage, ownAccount] = await Promise.all([
         issue.parent ? d.jira.issue(issue.parent.id) : Promise.resolve(null),
         d.jira.children(issue.id),
         d.jira.comments(issue.id),
@@ -153,6 +169,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
         incidentJql ? d.jira.search(incidentJql, ['summary', 'description', 'issuetype', 'labels', 'project', 'status', 'created'], 20) : Promise.resolve(ok([])),
         d.reviews.history(issue.id),
         d.ownPage ? d.ownPage(issue.id).catch(() => null) : Promise.resolve(null),
+        d.ownAccount ? d.ownAccount().catch(() => null) : Promise.resolve(null),
       ]);
 
       if (parent) {
@@ -167,7 +184,7 @@ export function restGatherer(d: RestGathererDeps): ContextGatherer {
       } else reasons.push('children_unavailable');
 
       if (comments.ok) {
-        for (const c of comments.value.filter((x) => !x.restricted))
+        for (const c of contextComments(comments.value, ownAccount))
           facts.push(
             raw({
               sourceAri: `ari:cloud:jira:${d.cloudId}:issue-comment/${c.id}`,

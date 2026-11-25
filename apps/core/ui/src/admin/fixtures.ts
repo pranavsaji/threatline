@@ -41,9 +41,11 @@ export const RUNS_FIXTURE: RunDto[] = [
     reviewId: 'rev_10042_2', issueKey: 'PAY-7', revision: 2, status: 'ready', failureReason: null, partial: false, samplesExpected: 3, samplesReceived: 3,
     tokensIn: 0, tokensOut: 0, promptVersion: '1.2.0', createdAt: t(0), durationMs: 47_000,
     stages: [
+      { stage: 'first_look', status: 'done', at: t(0), ms: 0 },
       { stage: 'gather', status: 'done', at: t(0), ms: 0 },
       { stage: 'agent_1', status: 'done', at: new Date(Date.parse(t(0)) + 21_000).toISOString(), ms: 21_000 },
       { stage: 'assemble', status: 'done', at: new Date(Date.parse(t(0)) + 47_000).toISOString(), ms: 26_000 },
+      { stage: 'comment', status: 'done', at: new Date(Date.parse(t(0)) + 48_000).toISOString(), ms: 1_000 },
     ],
   },
   {

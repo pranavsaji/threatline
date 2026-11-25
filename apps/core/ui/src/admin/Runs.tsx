@@ -25,6 +25,8 @@ function stageName(stage: string): string {
   if (stage === 'assemble') return 'Assemble';
   if (stage === 'agent') return 'Agent runs';
   if (stage === 'extract') return 'Extract';
+  if (stage === 'first_look') return 'First look (rule-based)';
+  if (stage === 'comment') return 'Verdict comment';
   const m = /^agent_(\d+)$/.exec(stage);
   if (m) return `Agent run ${m[1]}`;
   return stage.replace(/_/g, ' ');

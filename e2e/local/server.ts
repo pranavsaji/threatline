@@ -45,6 +45,12 @@ function fresh() {
   return t;
 }
 
+type AdfNode = { type: string; text?: string; content?: AdfNode[] };
+const textIn = (n: AdfNode): string => n.text ?? (n.content ?? []).map(textIn).join('');
+/** A comment's ADF as lines: one per paragraph, one per list item. */
+const adfLines = (doc: unknown): string[] =>
+  ((doc as AdfNode).content ?? []).flatMap((n) => (n.type === 'bulletList' ? (n.content ?? []).map((li) => `• ${textIn(li)}`) : [textIn(n)]));
+
 let t = fresh();
 const settle = () => drain((job) => handleJob(t.deps, job), t.pushed);
 
@@ -100,6 +106,8 @@ const routes: Record<string, (body: Record<string, unknown>) => Promise<unknown>
       nowSec: Math.floor(t.clock.now().getTime() / 1000),
     });
   },
+  /** The comments Threatline posted on the work item, each as its lines of text (list items prefixed "• "). */
+  comments: async () => ({ comments: t.jira.commented.filter((c) => c.issueId === ISSUE_ID).map((c) => adfLines(c.adf)) }),
   /** Time passes: move the clock, then run the hourly job (it expires overdue acceptances) and the queue. */
   advance: async (b) => {
     t.clock.advance(Number(b.days ?? 0) * 86_400_000);

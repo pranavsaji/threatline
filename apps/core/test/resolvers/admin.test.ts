@@ -197,7 +197,7 @@ describe('admin.runs (last 50 reviews, with the stage trace)', () => {
     expect(out.runs).toHaveLength(1);
     const run = out.runs[0]!;
     expect(run).toMatchObject({ reviewId: expect.any(String), issueKey: expect.stringMatching(/^PAY-/), revision: 1, status: 'ready', samplesReceived: 3, samplesExpected: 3, failureReason: null });
-    expect(run.stages.map((s) => s.stage).sort()).toEqual(['agent_1', 'agent_2', 'agent_3', 'assemble', 'gather']);
+    expect(run.stages.map((s) => s.stage).sort()).toEqual(['agent_1', 'agent_2', 'agent_3', 'assemble', 'comment', 'first_look', 'gather']);
     for (const s of run.stages) expect(s).toMatchObject({ status: expect.any(String), at: expect.any(String), ms: expect.any(Number) });
   });
 

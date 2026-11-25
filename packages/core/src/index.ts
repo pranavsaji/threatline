@@ -25,3 +25,4 @@ export * from './gaps.js';
 export * from './compliance.js';
 export * from './suppressions.js';
 export * from './diagram.js';
+export * from './first-look.js';

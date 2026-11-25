@@ -301,6 +301,10 @@ describe('Admin: recent runs (Task 30)', () => {
     await userEvent.click(within(table).getByRole('button', { name: 'Show stages for PAY-9 revision 1' }));
     const stages = screen.getByRole('list', { name: 'Stages of PAY-9 revision 1' });
     expect(within(stages).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Gather context: done, 0 s', 'Agent run 1: done, 1 min', 'Agent runs: failed (timed out), 14 min']);
+    // The first look (stored by the gather) and the verdict comment (when the review settled) are in the trace too.
+    await userEvent.click(within(table).getByRole('button', { name: 'Show stages for PAY-7 revision 2' }));
+    const settled = screen.getByRole('list', { name: 'Stages of PAY-7 revision 2' });
+    expect(within(settled).getAllByRole('listitem').map((li) => li.textContent)).toEqual(expect.arrayContaining(['First look (rule-based): done, 0 s', 'Verdict comment: done, 1 s']));
   });
 });
 

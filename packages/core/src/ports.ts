@@ -101,6 +101,11 @@ export interface ReviewRepo {
   /** `at` is when the stage reached this status (defaults to now); the admin page reads it as the run's trace. */
   saveStage(reviewId: string, stage: string, status: 'running' | 'done' | 'failed', checkpoint?: unknown, error?: string, at?: string): Promise<Result<void>>;
   stage(reviewId: string, stage: string): Promise<Result<{ status: string; checkpoint?: unknown } | null>>;
+  /**
+   * Records a stage only if the review has none of that name yet (insert, never overwrite): true when this call claimed
+   * it, false when it was already there. For once-only side effects a redelivered or concurrent job must not repeat.
+   */
+  claimStage(reviewId: string, stage: string, status: 'running' | 'done' | 'failed', checkpoint?: unknown, at?: string): Promise<Result<boolean>>;
   /** Newest first by createdAt, at most `limit` (capped at 500); with `since`, only reviews created at or after it. */
   recent(limit: number, since?: string): Promise<Result<Review[]>>;
   /** The review's stage trace in time order, without checkpoints. */
