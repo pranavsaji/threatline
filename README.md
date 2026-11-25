@@ -1,6 +1,6 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1%2C858%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-1%2C903%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
@@ -53,7 +53,7 @@ someone allowed to accept it.
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
 | **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
-| **Quality** | 1,858 tests in 146 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Quality** | 1,903 tests in 149 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
 | **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
 
 ## The problem
@@ -224,6 +224,11 @@ rule in code, with tests:
   them, in the panel, on Confluence and for coding agents ([diagram](docs/DIAGRAM.md)).
 - **Less noise, by team.** A false positive dismissed on three work items becomes a suggested project rule; a champion
   approves it for up to 90 days, and it can never hide a threat that would block ([suppressions](docs/SUPPRESSIONS.md)).
+- **Accuracy you can check, on your own work.** The posture page's **Accuracy here** card, the gadget and
+  `posture-summary` show, for the last 90 days and the work items you can see, how often security champions agreed
+  with the threats sent to them, how many closed blocking requirements were fixed or risk-accepted rather than
+  dismissed as wrong, and the verifier's keep rate: counts, Wilson 95% intervals, and no percentage below 5 decisions
+  ([accuracy](docs/ACCURACY.md)).
 - **Audit-ready.** Requirements and evidence mapped (indicatively) to SOC 2, ISO 27001:2022 and PCI DSS v4.0 controls,
   in the posture page and an exportable controls summary ([compliance](docs/COMPLIANCE.md)).
 - **A ledger you can audit.** Every acceptance, override, refusal and policy change goes into an append-only hash
@@ -419,9 +424,14 @@ pnpm threatline eval --llm recorded --subset 30 --judge claude-code   # re-grade
 pnpm threatline eval --llm fake                             # deterministic baseline rules only, no model
 ```
 
+**In production.** The eval measures recall against an expert's list; it cannot see your work. The posture page's
+**Accuracy here** card measures precision as your team sees it, from decisions already in the ledger: champion
+agreement, blocking requirements that held up, and the verifier's keep rate, over the last 90 days
+([how each is defined, and its caveats](docs/ACCURACY.md)).
+
 ## Quality: tests and CI
 
-- **1,858 tests in 146 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **1,903 tests in 149 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
 - **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
   under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
   are tested but not part of that figure.
@@ -499,7 +509,7 @@ Detail: [roadmap](docs/ROADMAP.md).
 | [Security review](docs/SECURITY_REVIEW.md) | Threatline threat-modelled, each control with the test that proves it |
 | [MCP](docs/MCP.md) · [skill](mcp-skill/skill.md) | Coding agents reading and closing requirements |
 | [GitHub](docs/GITHUB.md) · [CI verification](docs/CI_VERIFICATION.md) | The merge gate on GitHub; tests that verify requirements |
-| [Incidents](docs/INCIDENTS.md) · [Champion inbox](docs/CHAMPION_INBOX.md) · [Diagram](docs/DIAGRAM.md) · [Suppressions](docs/SUPPRESSIONS.md) · [Compliance](docs/COMPLIANCE.md) | Each feature in depth |
+| [Incidents](docs/INCIDENTS.md) · [Champion inbox](docs/CHAMPION_INBOX.md) · [Diagram](docs/DIAGRAM.md) · [Suppressions](docs/SUPPRESSIONS.md) · [Compliance](docs/COMPLIANCE.md) · [Accuracy](docs/ACCURACY.md) | Each feature in depth |
 | [Operations](docs/OPERATIONS.md) | Logs to watch, alerts, re-running reviews, budgets |
 | [Pricing](docs/PRICING.md) · [Licensing](docs/LICENSING.md) · [Marketplace](docs/MARKETPLACE.md) | Cost per review, price, Paid via Atlassian, listing |
 | [Privacy](docs/PRIVACY.md) · [Terms](docs/TERMS.md) · [Support](docs/SUPPORT.md) | Data handling, terms, help and vulnerability reporting |

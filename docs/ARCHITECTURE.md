@@ -194,7 +194,8 @@ exit 1
   attestation, champion triage.
 - **Admin page**: first-run wizard, projects and guarded transitions, severity policy, roles, budgets, warn-only,
   notifications, recent runs with stage timings, signing keys, ledger verification and Merkle proofs, demo data.
-- **Security posture** global page and dashboard gadget: open Critical/High, where they are, trend, release report.
+- **Security posture** global page and dashboard gadget: open Critical/High, where they are, trend, release report,
+  and how accurate Threatline has been on the viewer's work over 90 days ([accuracy](ACCURACY.md)).
 - **MCP server** (`rovo:mcp`, eight tools): `get-review`, `get-security-requirements`, `check-change-risk`,
   `get-merge-attestation`, `request-risk-acceptance`, `verify-requirement`, `explain-threat`, `posture-summary`.
 - **Rovo agent** "Threatline": the same tools plus `release-readiness`, `start-review`, and (agent mode only) the two
