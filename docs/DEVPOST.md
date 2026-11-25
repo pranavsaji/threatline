@@ -40,6 +40,12 @@ written before the gap check existed. Severity comes from facts each threat stat
 Opus's tendency to call everything Critical no longer decides what blocks. Every run is recorded in the repository and
 replays offline.
 
+**In seconds, where you look, and it remembers:** a first look from Threatline's rules appears as soon as the story is
+read; when the review settles, Threatline comments once on the work item with the verdict; one click turns the
+requirements into tasks; under each threat, **Seen before** shows the past incident it repeats and the same threat on
+other work, fixed or accepted; and the posture page measures **Accuracy here** from your own champions' decisions.
+Other tools warn you. Threatline stops it shipping.
+
 **Where you look:** a Security gate label on every work item (✕ Blocks Done · 3 open, with the top reason), so nobody
 has to open the panel to know; and **Check an attestation** in the panel, so anyone can paste an attestation, change one
 character and watch the signature fail without Bitbucket. Setup is a wizard, one click to add the Done gate, and one
@@ -60,7 +66,7 @@ Two Forge apps (Jira + Confluence, and Bitbucket) and a GitHub Action, in TypeSc
 a chain of queue jobs with checkpoints; Forge SQL stores reviews, requirements and the ledger; Forge KVS and secret
 storage hold policy and signing keys; Custom UI with Atlaskit for every surface. The design rule: the model proposes,
 code decides. Consensus, quote grounding, scoring, the verdict and the gates are deterministic and unit-tested
-(1,910 tests, browser journeys, and a 55-case eval set with poisoned twins).
+(2,007 tests, browser journeys, and a 55-case eval set with poisoned twins).
 
 ## Challenges
 

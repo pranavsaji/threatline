@@ -1,6 +1,6 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-1%2C910%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-2%2C007%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
@@ -14,6 +14,15 @@ and neither the Done transition nor the merge goes through until each one is ver
 someone allowed to accept it.
 
 *Build with context, ship with confidence:* the threat model is the context, the gate is the confidence.
+
+| | |
+| --- | --- |
+| **Answers in seconds** | A first look from Threatline's rules appears as soon as the story is read; the full AI review replaces it in two to four minutes. |
+| **Says it where you look** | A **Security gate** label beside every work item, and one comment on the work item when the review settles. |
+| **Remembers** | Under each threat, **Seen before**: the incident it repeats and the same threat on other work, fixed or accepted. |
+| **Turns into work** | **Turn 9 requirements into tasks**: one click, under the headline. |
+| **Proves itself** | 60 of 60 high-severity threats on the eval, and **Accuracy here** measured on your own champions' decisions. |
+| **Stops it shipping** | Other tools warn. Threatline refuses Done and the merge until each requirement is fixed or knowingly accepted. |
 
 ![Threatline issue panel](docs/screenshots/jira-1-issue-panel.png)
 
@@ -53,7 +62,7 @@ someone allowed to accept it.
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
 | **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
-| **Quality** | 1,910 tests in 150 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Quality** | 2,007 tests in 158 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
 | **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
 
 ## The problem
@@ -76,11 +85,13 @@ Install [Threatline for Jira](#install) on any Jira Cloud site (no Rovo needed),
 | --- | --- | --- |
 | 1 | Jira settings → Apps → **Threatline**. In the wizard pick a project and its Done transition, save, then click **Add the gate for me**. On the setup checklist, click **Use “&lt;a group you are in&gt;”** for the champion group. | Every checklist item says **Done**. No group to create, no Automation rule, no agent to configure. |
 | 2 | **Demo data** → **Load demo data**. | An epic **Add AI support agent** with stories and two incidents, and a design whose one paragraph tells the AI to approve the change. |
-| 3 | Wait two to four minutes, then open the epic. | In the right-hand column, **Security gate: ✕ Blocks Done** with the top reason. In the panel: a risk score, “*N* things stand between this work item and Done”, threats in plain language with the sentence each one quotes, and a banner naming the paragraph that tried to instruct the AI. |
-| 4 | Move the epic to **Done**. | Refused by **Threatline security gate**, listing the open requirements. |
-| 5 | **Requirements** → mark each one *Verified* with a PR link. Move to Done again. | It goes through. |
-| 6 | **Requirements → Merge attestation**: enter a repository and a 40-character commit, copy the attestation, then paste it into **Check an attestation**. Change one character and check again. | **Valid**, signed for this work item and commit; then **Signature invalid**. The Bitbucket merge check makes the same call on the pull request. |
-| 7 | Admin page → **Risk ledger** → **Verify the ledger**. | The decisions you just made, in a hash chain that checks out intact. |
+| 3 | Open the epic right away. | Within seconds, a **First look** from Threatline's rules and **Reviewing… · first look: N risks** in the right-hand column. |
+| 4 | Wait two to four minutes. | A comment from Threatline on the epic with the verdict and the top threat. In the right-hand column, **Security gate: ✕ Blocks Done** with the top reason. In the panel: a risk score, “*N* things stand between this work item and Done”, **Turn N requirements into tasks**, threats in plain language with the sentence each one quotes and what was **seen before** on this site (the demo's past incidents), and a banner naming the paragraph that tried to instruct the AI. |
+| 5 | Move the epic to **Done**. | Refused by **Threatline security gate**, listing the open requirements. |
+| 6 | **Requirements** → mark each one *Verified* with a PR link. Move to Done again. | It goes through. |
+| 7 | **Requirements → Merge attestation**: enter a repository and a 40-character commit, copy the attestation, then paste it into **Check an attestation**. Change one character and check again. | **Valid**, signed for this work item and commit; then **Signature invalid**. The Bitbucket merge check makes the same call on the pull request. |
+| 8 | Admin page → **Risk ledger** → **Verify the ledger**. | The decisions you just made, in a hash chain that checks out intact. |
+| 9 | Apps → **Threatline security posture**. | Open risk across projects, and **Accuracy here**: how often champions agreed with Threatline on this site (it says "not enough decisions yet" until there are five). |
 
 More detail, Rovo agent mode and troubleshooting: [judge guide](docs/JUDGE_GUIDE.md). Each site gets 5 Engine reviews a
 month (see [limits](#limits-and-operations)); the demo data uses three of them.
@@ -94,6 +105,7 @@ Jira, Confluence, Rovo and the clock are simulated.
 pnpm install
 pnpm --filter @threatline/core-ui dev --port 5179   # http://localhost:5179/?state=ready  (the issue panel)
                                                     # ?view=status&state=ready  (the Security gate label)
+                                                    # ?state=reviewing  (the first look while a review runs)
                                                     # ?view=admin · ?view=posture
 pnpm threatline sign-demo                           # sign an attestation, change one character, watch it fail
 pnpm e2e                                            # both journeys and the merge check, in a real browser
@@ -119,6 +131,7 @@ the production apps ([index](docs/screenshots/README.md)).
 
 | Version (Jira / Bitbucket) | Date | What changed |
 | --- | --- | --- |
+| 5.16.0 / 2.12.0 | 2026-11-24 | **First look in seconds** from Threatline's rules while the AI review runs. **Verdict comment** on the work item when a review settles (once per revision, names a threat only when every viewer may see its evidence, never Threatline's own comments in the next review). **Turn N requirements into tasks** under the headline. **Seen before**: past incidents and the same threat on other work items, under each threat. **Accuracy here** on the posture page, gadget and `posture-summary`. |
 | 5.15.0 / 2.12.0 | 2026-11-24 | The Security gate label sizes its frame to its content and shows the second reason when two things block Done; setup checklist items keep their status beside long text. |
 | 5.14.0 / 2.12.0 | 2026-11-24 | **Security gate label** on every work item (`jira:issueContext`): ✕ Blocks Done, ✓ Ready for Done, Reviewing…, Warn only or Not reviewed, with the top reason, without opening the panel. **Check an attestation** in the panel: paste a merge attestation and see whether this site's key signed it, for which work item and commit, or exactly why not. **One-click champion group** from groups the admin is already in. The panel's headline says what stands between the work item and Done. |
 | 5.13.0 / 2.11.0 | 2026-11-24 | Reliability: Forge LLM retries with jittered backoff, queue retries before a run counts as failed, agent timeouts measured from review start, alerts for partial reviews, budgets and Rovo credits ([operations](docs/OPERATIONS.md)). Licensing gate built and off until February 2027 ([licensing](docs/LICENSING.md)). |
@@ -182,7 +195,8 @@ rule in code, with tests:
 | Place | Forge module | What it does |
 | --- | --- | --- |
 | Work item, right-hand column | `jira:issueContext` | **Security gate** label: ✕ Blocks Done · *N* open, ✓ Ready for Done, Reviewing…, Warn only, Gate overridden or Not reviewed, with the top reason. |
-| Work item panel | `jira:issuePanel` | The review: risk score, headline, threats with evidence, requirements, risk acceptance, data-flow diagram, delivery, history, merge attestation and **Check an attestation**. |
+| Work item activity | issue comment (as the app) | One comment when a review settles: the verdict, counts by severity, the top threat when every viewer may see its evidence. Site policy `postReviewComments`. |
+| Work item panel | `jira:issuePanel` | The review: first look while it runs, risk score, headline, **Turn N requirements into tasks**, threats with evidence and **Seen before**, requirements, risk acceptance, data-flow diagram, delivery, history, merge attestation and **Check an attestation**. |
 | Done transition | `jira:workflowValidator` | **Threatline security gate**: refuses the transition while the verdict is block, listing what is open. Added for you by **Add the gate for me**. |
 | JQL | `jira:entityProperty` | `threatlineState`, `threatlineBlocking`, `threatlineMaxSeverity`, `threatlineRisk` for filters and boards. |
 | Jira settings → Apps | `jira:adminPage` | Setup wizard and checklist, projects, review mode, severity policy, roles, budgets, notifications, demo data, risk ledger. |
@@ -196,6 +210,14 @@ rule in code, with tests:
 
 ## Features in depth
 
+- **First look in seconds.** As soon as Threatline has read the story, its deterministic rules show their threats in
+  the panel and the column label reads **Reviewing… · first look: N risks**; the full AI review replaces the first
+  look two to four minutes later. It never changes the verdict: the gate keeps blocking while a review runs
+  ([engine](docs/ENGINE.md)).
+- **One comment where the team already looks.** When a review settles, Threatline comments once on the work item: the
+  verdict, counts by severity, the top threat and a pointer to the panel. It names a threat only when every source it
+  cites is the work item itself, never repeats text flagged as an injection, posts again on a re-run only when the
+  verdict changed, and leaves its own comments out of the next review. Admins can turn it off.
 - **Plain-language threats with evidence.** "Anyone with the link can download another customer's orders", with the
   sentence it rests on, its STRIDE category, ASVS 5 requirement and CWE, a Given/When/Then requirement, a fix-by date
   (7, 30 or 90 days by severity) and a failing test skeleton to copy (TypeScript, Python or Java). "Explain like I'm
@@ -290,6 +312,9 @@ The [GitHub Action](docs/GITHUB.md) runs the same decision code and is exercised
 - **Threatline threat-modelled itself:** each control with the test that proves it ([security review](docs/SECURITY_REVIEW.md)).
   Vulnerabilities: report privately through GitHub's **Report a vulnerability** ([support](docs/SUPPORT.md)).
 
+<details>
+<summary><b>Every permission the Jira app asks for, and why</b></summary>
+
 | Jira app scope | Why |
 | --- | --- |
 | `read:jira-work`, `read:jira-user` (as the user) | Read the work item, links and comments, and who may see them. |
@@ -299,6 +324,8 @@ The [GitHub Action](docs/GITHUB.md) runs the same decision code and is exercised
 | `write:page:confluence` | Threat-model pages and ledger tree heads. |
 | `read:graph:issue:jira`, `read:graph:pull-request:external`, `read:graph:deployment:external` | Delivery check, read as the viewer, never stored. |
 | `storage:app` | Reviews, verdicts, keys and the ledger (Forge storage and Forge SQL). |
+
+</details>
 
 Data handling: [privacy](docs/PRIVACY.md) · [terms](docs/TERMS.md).
 
@@ -349,6 +376,9 @@ before the gap check and the verifier changes were built, and nothing was tuned 
 graded recall 100% both times (26 of 26 with one case ungraded before; 29 of 29 after), high-severity 12 of 12, judged
 precision of model-proposed threats 81.4% → 83.6% (`evals/results/2026-11-23-match-opus-5-v1.5-fresh.md`). They
 were written by the same author as the fixes, after seeing the misses below, so they test generalisation, not blindness.
+
+<details>
+<summary><b>How these numbers were made</b>: the gap check, what changed, tuning and held-out cases, model choice, older recordings, and how to run the eval yourself</summary>
 
 **The gap check** (stage 5 in [ENGINE.md](docs/ENGINE.md)). Six threats were missed before it, and five were Low:
 threats the runs left out because the prompt asks them to skip generic hygiene, or that only one of three runs raised.
@@ -431,6 +461,8 @@ pnpm threatline eval --llm recorded --subset 30 --judge claude-code   # re-grade
 pnpm threatline eval --llm fake                             # deterministic baseline rules only, no model
 ```
 
+</details>
+
 **In production.** The eval measures recall against an expert's list; it cannot see your work. The posture page's
 **Accuracy here** card measures precision as your team sees it, from decisions already in the ledger: champion
 agreement, blocking requirements that held up, and the verifier's keep rate, over the last 90 days
@@ -438,7 +470,7 @@ agreement, blocking requirements that held up, and the verifier's keep rate, ove
 
 ## Quality: tests and CI
 
-- **1,910 tests in 150 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **2,007 tests in 158 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
 - **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
   under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
   are tested but not part of that figure.
