@@ -40,7 +40,15 @@ export interface JiraIssue {
   fixVersions: string[];
   assignee?: string;
   created?: string;
+  /** Only when the search asked for the `priority` field. */
+  priority?: string;
 }
+
+/**
+ * How many of the newest comments are read. The gatherer keeps the newest 20 that are not Threatline's own, so the window
+ * is wider: Threatline's own comments must not push a person's comment out of the review context (and change its hash).
+ */
+export const COMMENT_WINDOW = 50;
 
 export interface JiraComment {
   id: string;
@@ -51,9 +59,16 @@ export interface JiraComment {
   restricted: boolean;
 }
 
+export interface PostedComment {
+  id: string;
+  /** Empty when Jira did not say (it normally does). */
+  authorAccountId: string;
+}
+
 export interface JiraClient {
   issue(idOrKey: string): Promise<Result<JiraIssue>>;
   children(issueId: string): Promise<Result<JiraIssue[]>>;
+  /** The newest comments first, at most COMMENT_WINDOW. */
   comments(issueId: string): Promise<Result<JiraComment[]>>;
   remoteLinks(issueId: string): Promise<Result<Array<{ url: string; title: string; globalId?: string }>>>;
   canBrowse(accountId: string, issueId: string): Promise<Result<boolean>>;
@@ -79,7 +94,11 @@ export interface JiraClient {
   /** Creates or updates (same globalId) a web link on the work item. */
   addRemoteLink(issueId: string, link: { globalId: string; url: string; title: string }): Promise<Result<void>>;
   removeLabel(issueId: string, label: string): Promise<Result<void>>;
-  comment(issueId: string, adf: AdfDoc): Promise<Result<void>>;
+  /**
+   * Adds a comment as the caller (the app, for every Threatline comment). Returns the new comment's id and its author's
+   * account id, which for the app's own comments is Threatline's account (see services/own-account.ts).
+   */
+  comment(issueId: string, adf: AdfDoc): Promise<Result<PostedComment>>;
   search(jql: string, fields: string[], max: number): Promise<Result<JiraIssue[]>>;
   /**
    * Adds the security gate to every transition into `toStatus` in the project's workflows, acting as the admin who
@@ -144,6 +163,7 @@ const IssueSchema = z.object({
     fixVersions: z.array(z.object({ name: z.string() })).nullish(),
     assignee: z.object({ accountId: z.string() }).nullish(),
     created: z.string().nullish(),
+    priority: z.object({ name: z.string() }).nullish(),
   }),
 });
 
@@ -178,6 +198,7 @@ function toIssue(raw: z.infer<typeof IssueSchema>): JiraIssue {
   if (f.parent) issue.parent = { id: f.parent.id, key: f.parent.key };
   if (f.assignee) issue.assignee = f.assignee.accountId;
   if (f.created) issue.created = f.created;
+  if (f.priority?.name) issue.priority = f.priority.name;
   return issue;
 }
 
@@ -364,7 +385,7 @@ export function createJiraClient(request: FetchLike, opts: JiraClientOptions = {
 
     async comments(issueId) {
       if (!ISSUE_REF.test(issueId)) return badRef('issue id');
-      const r = await call(`/rest/api/3/issue/${seg(issueId)}/comment?orderBy=-created&maxResults=20`);
+      const r = await call(`/rest/api/3/issue/${seg(issueId)}/comment?orderBy=-created&maxResults=${COMMENT_WINDOW}`);
       if (!r.ok) return r;
       const p = parse(
         z.object({
@@ -569,7 +590,11 @@ export function createJiraClient(request: FetchLike, opts: JiraClientOptions = {
 
     async comment(issueId, adf) {
       if (!ISSUE_REF.test(issueId)) return badRef('issue id');
-      return voidOf(await call(`/rest/api/3/issue/${seg(issueId)}/comment`, json('POST', { body: adf })));
+      const r = await call(`/rest/api/3/issue/${seg(issueId)}/comment`, json('POST', { body: adf }));
+      if (!r.ok) return r;
+      // The comment exists now: an unexpected reply shape must not turn it into a failure (a retry would post it twice).
+      const p = z.object({ id: z.string().optional(), author: z.object({ accountId: z.string() }).nullish() }).safeParse(r.value ?? {});
+      return ok({ id: p.success ? (p.data.id ?? '') : '', authorAccountId: p.success ? (p.data.author?.accountId ?? '') : '' });
     },
   };
 }

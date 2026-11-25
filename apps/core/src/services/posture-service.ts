@@ -1,4 +1,4 @@
-import { ACCEPTANCE_EVENTS, rebuildAcceptances, verifiedHours, type LedgerRow, type PostureRow } from '@threatline/core';
+import { ACCEPTANCE_EVENTS, rebuildAcceptances, verifiedHours, type LedgerEventType, type LedgerRow, type PostureRow } from '@threatline/core';
 import { appError, err, ok, type Acceptance, type Requirement, type Result } from '@threatline/shared';
 import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
@@ -17,23 +17,28 @@ export interface PostureItem {
 }
 
 /**
- * Scale: the acceptance events of these work items only (indexed by work item, 100 ids per query), in seq order,
- * instead of every acceptance event on the site. Rows that name no work item come back with every chunk: deduplicated.
+ * Scale: the ledger events of these types for these work items only (indexed by work item, 100 ids per query), in seq
+ * order, instead of every such event on the site. Rows that name no work item come back with every chunk: deduplicated.
  */
-export async function acceptanceRowsFor(deps: Pick<CoreDeps, 'ledger'>, issueIds: readonly string[]): Promise<Result<LedgerRow[]>> {
+export async function ledgerRowsFor(deps: Pick<CoreDeps, 'ledger'>, types: readonly LedgerEventType[], issueIds: readonly string[]): Promise<Result<LedgerRow[]>> {
   const bySeq = new Map<number, LedgerRow>();
   for (let i = 0; i < issueIds.length; i += 100) {
-    const r = await deps.ledger.forIssues(ACCEPTANCE_EVENTS, issueIds.slice(i, i + 100));
+    const r = await deps.ledger.forIssues(types, issueIds.slice(i, i + 100));
     if (!r.ok) return r;
     for (const row of r.value) bySeq.set(row.seq, row);
   }
   return ok([...bySeq.values()].sort((a, b) => a.seq - b.seq));
 }
 
+/** The acceptance events of these work items (see ledgerRowsFor). */
+export const acceptanceRowsFor = (deps: Pick<CoreDeps, 'ledger'>, issueIds: readonly string[]) => ledgerRowsFor(deps, ACCEPTANCE_EVENTS, issueIds);
+
 export interface PostureScope {
   items: PostureItem[];
   /** The rebuilt acceptances of these work items (callers filter to their items). */
   acceptances: Acceptance[];
+  /** The acceptance ledger rows they were rebuilt from (the accuracy figures read when each took effect). */
+  acceptanceRows: LedgerRow[];
   truncated: boolean;
 }
 
@@ -49,7 +54,7 @@ export function componentMatches(issue: JiraIssue, component: string | undefined
  * For a person, only work items they can browse; the app audience is for aggregate counts only.
  */
 export async function postureScope(deps: CoreDeps, audience: PostureAudience, i: { projects: string[]; reviewIssueTypes: string[]; component?: string }): Promise<Result<PostureScope>> {
-  if (i.projects.length === 0 || i.reviewIssueTypes.length === 0) return ok({ items: [], acceptances: [], truncated: false });
+  if (i.projects.length === 0 || i.reviewIssueTypes.length === 0) return ok({ items: [], acceptances: [], acceptanceRows: [], truncated: false });
   const jql = `project in (${i.projects.map(jqlString).join(', ')}) AND issuetype in (${i.reviewIssueTypes.map(jqlString).join(', ')}) ORDER BY updated DESC`;
   const found = await deps.jira.search(jql, ['summary', 'issuetype', 'project', 'components'], POSTURE_MAX_ITEMS + 1);
   if (!found.ok) return found;
@@ -75,7 +80,7 @@ export async function postureScope(deps: CoreDeps, audience: PostureAudience, i:
       items.push({ issue: x, requirements: r.value, acceptances: acceptances.filter((a) => a.issueId === x.id) });
     }
   }
-  return ok({ items, acceptances, truncated: found.value.length > POSTURE_MAX_ITEMS });
+  return ok({ items, acceptances, acceptanceRows: ledger.value, truncated: found.value.length > POSTURE_MAX_ITEMS });
 }
 
 /** Posture rows: the project is the team axis (sites do not share a Team field); the first Jira component is the component. */

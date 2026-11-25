@@ -15,6 +15,7 @@ import { count } from '../text.js';
 import { ThreatDiff } from './ThreatDiff.js';
 import { WhatIf } from './WhatIf.js';
 import { StatusSteps } from './StatusSteps.js';
+import { FirstLook } from './FirstLook.js';
 import { ThreatCard } from './ThreatCard.js';
 import { pollMs, RERUN_WAIT_MS, rerunLanded, rerunWaitOf, viewOf, type RerunWait } from './states.js';
 import { useInFlight } from '../components/in-flight.js';
@@ -26,6 +27,7 @@ import { reopenedText } from './reopened.js';
 import { UnhideThreat } from './UnhideThreat.js';
 import { DiagramTab } from './DiagramTab.js';
 import { DeliveryTab, ShippedWhileOpen, prSuggestions, useDelivery } from './DeliveryTab.js';
+import { useSeenBefore, type OpenIssue } from './SeenBefore.js';
 
 const STILL_STARTING = 'The review is still starting. Refresh the panel in a minute or two to see it.';
 /** Threatline Engine runs several analyses and a verifier itself: two to four minutes, not one. */
@@ -78,6 +80,8 @@ export function IssuePanel({ api }: { api: PanelApi }) {
 
   const view = useMemo(() => (dto ? viewOf(dto) : null), [dto]);
   const delivery = useDelivery(api, dto ? `${dto.verdict?.state ?? 'none'}:${dto.verdict?.blockingCount ?? 0}` : '');
+  // Seen before: once the review is ready, and again for a new revision or a changed verdict (docs/MEMORY.md).
+  const memory = useSeenBefore(api, dto?.review?.status === 'ready' ? `${dto.review.id}:${dto.verdict?.state ?? 'none'}:${dto.verdict?.blockingCount ?? 0}` : null);
   useEffect(() => {
     if (waiting && dto && rerunLanded(waiting, dto)) {
       setWaiting(null);
@@ -192,6 +196,13 @@ export function IssuePanel({ api }: { api: PanelApi }) {
   );
   const rerunActions = (label: string) => (canRun ? [action('rerun', label, () => void rerun())] : []);
   const needsEdit = !canRun && <p style={{ margin: '6px 0 0', color: token('color.text.subtle') }}>{NEEDS_EDIT}</p>;
+  /** Custom UI runs on Atlassian's CDN origin, so a /browse link must go through the Forge router to reach Jira. */
+  const openIssue: OpenIssue | undefined = api.navigate
+    ? (e, key) => {
+        e.preventDefault();
+        void api.navigate!(`/browse/${key}`, { newTab: e.metaKey || e.ctrlKey || e.shiftKey }).catch(() => setNotice(`Could not open ${key}. Find it in Jira search.`));
+      }
+    : undefined;
 
   return (
     <main
@@ -213,7 +224,14 @@ export function IssuePanel({ api }: { api: PanelApi }) {
         <EmptyState onRun={() => void rerun()} canRun={canRun} busy={busy} />
       ) : (
         <>
-          <Header dto={dto} {...(canRun ? { onRerun: () => void rerun() } : {})} busy={busy} />
+          <Header
+            dto={dto}
+            {...(canRun ? { onRerun: () => void rerun() } : {})}
+            busy={busy}
+            tasks={{ api, onChanged: () => void load() }}
+            memory={memory}
+            {...(openIssue ? { onOpen: openIssue } : {})}
+          />
           {dto.review && dto.review.modelIds.some((m) => m.startsWith('claude')) && (
             <SectionMessage appearance="discovery" title="Threatline Engine review">
               Threatline ran this review itself: independent analyses of the work item and its pages that must agree and quote their evidence word for word,
@@ -231,6 +249,8 @@ export function IssuePanel({ api }: { api: PanelApi }) {
               <StatusSteps steps={view.steps} />
             </SectionMessage>
           )}
+          {/* Shown only while the review runs; the settled review replaces it (and includes the same rule checks). */}
+          {view.state === 'in_progress' && dto.firstLook && <FirstLook firstLook={dto.firstLook} facts={facts} />}
           {view.state === 'failed' && (
             <SectionMessage
               appearance="error"
@@ -331,6 +351,8 @@ export function IssuePanel({ api }: { api: PanelApi }) {
                     threat={t}
                     facts={facts}
                     covers={dto.covered.filter((c) => c.coveredBy === t.id).map((c) => c.title)}
+                    seenBefore={memory?.threats[t.id] ?? []}
+                    onOpen={openIssue}
                     explain={async (x) => {
                       const r = await api.explain(x.reviewId, x.id).catch((): ApiError => ({ error: 'unavailable' }));
                       return isError(r) ? null : r;

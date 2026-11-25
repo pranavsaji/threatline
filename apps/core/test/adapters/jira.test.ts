@@ -204,6 +204,13 @@ describe('jira client: reads', () => {
     expect(calls).toHaveLength(1);
   });
 
+  it('search reads the priority name when asked for it (Seen before shows an incident’s priority)', async () => {
+    const body = JSON.stringify({ issues: [{ id: '20007', key: 'INC-7', fields: { summary: 'Duplicate refunds', priority: { name: 'Highest' } } }, { id: '20008', key: 'INC-8', fields: { summary: 'No priority' } }] });
+    const { jira } = client([[/search\/jql/, { status: 200, body }]]);
+    const r = await jira.search('labels = incident', ['summary', 'priority'], 10);
+    expect(r.ok && r.value.map((i) => [i.key, i.priority])).toEqual([['INC-7', 'Highest'], ['INC-8', undefined]]);
+  });
+
   it('children searches by parent id', async () => {
     const { jira, calls } = client([[/search\/jql/, [{ status: 200, body: fixture('jira', 'search-page1') }, { status: 200, body: fixture('jira', 'search-page2') }]]]);
     const r = await jira.children('10042');
@@ -311,6 +318,21 @@ describe('jira client: writes', () => {
     const { jira, calls } = client([[/POST \/rest\/api\/3\/issue\/10042\/comment/, { status: 201, body: '{"id":"1"}' }]]);
     expect((await jira.comment('10042', doc)).ok).toBe(true);
     expect(JSON.parse(calls[0]!.init!.body!)).toEqual({ body: doc });
+  });
+
+  it("comment returns the new comment's id and author (Threatline's own account, for comments posted as the app)", async () => {
+    const doc: AdfDoc = { type: 'doc', version: 1, content: [] };
+    const posted = client([[/POST \/rest\/api\/3\/issue\/10042\/comment/, { status: 201, body: '{"id":"301","author":{"accountId":"557058:app","accountType":"app"}}' }]]);
+    expect(await posted.jira.comment('10042', doc)).toEqual({ ok: true, value: { id: '301', authorAccountId: '557058:app' } });
+    // The comment exists even when the reply is not the expected shape: that is still a success, never a retry.
+    const odd = client([[/POST \/rest\/api\/3\/issue\/10042\/comment/, { status: 201, body: '{"id":7}' }]]);
+    expect(await odd.jira.comment('10042', doc)).toEqual({ ok: true, value: { id: '', authorAccountId: '' } });
+  });
+
+  it('comments reads a window wider than the 20 the gatherer keeps', async () => {
+    const { jira, calls } = client([[/issue\/10042\/comment/, { status: 200, body: '{"comments":[]}' }]]);
+    await jira.comments('10042');
+    expect(calls[0]!.path).toMatch(/orderBy=-created&maxResults=50$/);
   });
 
   it('a 400 on write → err(validation) carrying Jira’s messages', async () => {

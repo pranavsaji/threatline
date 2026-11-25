@@ -4,8 +4,8 @@ import { PANEL, post, tryDone, USERS } from './harness.js';
 /**
  * Journey C: a review rests on text that reads as instructions to an AI, so its threats wait for a security champion
  * and Done is blocked → a developer sees no inbox → the champion opens the Champion inbox on the global page, confirms
- * one threat and dismisses the other with a reason, by keyboard → the inbox is empty, Done now waits only on the
- * confirmed threat's requirement, and the ledger still verifies.
+ * one threat and dismisses the other with a reason, by keyboard → the inbox is empty, the posture page's accuracy card
+ * counts both decisions, Done now waits only on the confirmed threat's requirement, and the ledger still verifies.
  */
 test('Journey C: champion inbox decides the threats waiting for a person', async ({ page, request }) => {
   await post(request, 'reset');
@@ -42,6 +42,13 @@ test('Journey C: champion inbox decides the threats waiting for a person', async
   await form.getByRole('button', { name: 'Dismiss 1 threat' }).click();
   await expect(page.getByText('Dismissed 1 threat.')).toBeVisible();
   await expect(page.getByText('Nothing is waiting for a security champion.')).toBeVisible();
+
+  // Accuracy here counts the two decisions, and gives no percentage for so few (docs/ACCURACY.md).
+  await page.goto(`${PANEL}/?bridge=local&as=${USERS.champion}&view=posture`);
+  const accuracy = page.getByRole('region', { name: 'Accuracy here' });
+  const champion = accuracy.getByRole('list', { name: 'Accuracy figures' }).getByRole('listitem').first();
+  await expect(champion).toContainText('Not enough decisions yet (n < 5)');
+  await expect(champion).toContainText('1 of 2 threats sent to a champion were confirmed as real; 1 dismissed as not real.');
 
   const done = await tryDone(request);
   expect(done.result).toBe(false);

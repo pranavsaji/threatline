@@ -4,8 +4,9 @@ import Lozenge from '@atlaskit/lozenge';
 import { token } from '@atlaskit/tokens';
 import { SeverityLozenge } from '../components/SeverityLozenge.js';
 import { STRIDE_LABEL, StrideIcon } from '../components/StrideIcon.js';
-import type { FactDto, Threat, ThreatExplanation } from '../types.js';
+import type { FactDto, SeenItem, Threat, ThreatExplanation } from '../types.js';
 import { CitationLink } from './CitationLink.js';
+import { SeenBeforeList, type OpenIssue } from './SeenBefore.js';
 
 const GROUNDING: Record<Threat['grounding'], { label: string; appearance: 'success' | 'moved' | 'removed' }> = {
   supported: { label: 'Quote verified', appearance: 'success' },
@@ -28,6 +29,8 @@ export function ThreatCard({
   explain,
   children,
   covers = [],
+  seenBefore = [],
+  onOpen,
 }: {
   threat: Threat;
   facts: Map<string, FactDto>;
@@ -36,6 +39,9 @@ export function ThreatCard({
   children?: ReactNode;
   /** Titles of Threatline's rule-based checks this threat covers (they are not listed separately). */
   covers?: string[];
+  /** Past incidents and the same threat on other work items (docs/MEMORY.md), already filtered for this viewer. */
+  seenBefore?: readonly SeenItem[];
+  onOpen?: OpenIssue | undefined;
 }) {
   const [open, setOpen] = useState(false);
   const [explained, setExplained] = useState<ThreatExplanation | null>(null);
@@ -90,6 +96,7 @@ export function ThreatCard({
               ))}
             </ul>
           )}
+          <SeenBeforeList items={seenBefore} onOpen={onOpen} />
         </div>
         <Button appearance="subtle" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={bodyId}>
           {open ? 'Less' : 'Details'}

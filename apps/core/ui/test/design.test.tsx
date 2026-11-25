@@ -96,8 +96,14 @@ describe('colour is never the only signal (Task 32)', () => {
 });
 
 describe('keyboard path (Task 32)', () => {
-  it('panel: Tab reaches What if, the tabs and each threat’s Details; Enter opens details; arrow keys move between tabs', async () => {
+  it('panel: Tab reaches the tasks action, the past incident, What if, the tabs and each threat’s Details; Enter opens details; arrow keys move between tabs', async () => {
     await panel(mockApi('ready'));
+    await screen.findByTestId('threatline-happened-before');
+    // Under the headline's list: the incident it repeats, then the one positive action.
+    await userEvent.tab();
+    expect(document.activeElement!.textContent).toBe('INC-7');
+    await userEvent.tab();
+    expect(document.activeElement!.textContent).toBe('Turn 2 requirements into tasks');
     await userEvent.tab();
     expect(document.activeElement!.textContent).toMatch(/What if/);
     // The delivery alert (shipped while open) links its deployment before the tab row.

@@ -257,7 +257,10 @@ describe('Threatline Engine: transient model failures and the token budget', () 
     } finally {
       spy.mockRestore();
     }
-    expect(t.jira.commented).toHaveLength(1);
-    expect(JSON.stringify(t.jira.commented[0]!.adf)).toMatch(/reached its token budget \(400000 input \/ 10000 output tokens per review\)/);
+    const ops = t.jira.commented.filter((c) => c.issueId === 'OPS-1');
+    expect(ops).toHaveLength(1);
+    expect(JSON.stringify(ops[0]!.adf)).toMatch(/reached its token budget \(400000 input \/ 10000 output tokens per review\)/);
+    // The review failed closed, and the work item says so once (the verdict comment).
+    expect(t.jira.commented.filter((c) => c.issueId === ISSUE).map((c) => JSON.stringify(c.adf))).toEqual([expect.stringMatching(/Blocks Done and merge.*The security review failed.*re-run it from the Threatline panel/)]);
   });
 });

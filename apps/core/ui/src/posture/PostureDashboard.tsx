@@ -9,12 +9,13 @@ import { DrillDown, type DrillView } from './DrillDown.js';
 import { Onboarding } from './Onboarding.js';
 import { ReleaseReport } from './ReleaseReport.js';
 import { ControlsView } from './ControlsView.js';
+import { AccuracyCard } from './AccuracyCard.js';
 
 const skeleton = (h: number, w: number | string = '100%') => (
   <div aria-hidden="true" style={{ height: h, width: w, borderRadius: 6, background: token('color.skeleton') }} />
 );
 
-/** PR-1 global page: KPI row, heatmap, 30-day trend, drill-down and the release report. `compact` is the gadget (PR-5). */
+/** PR-1 global page: KPI row, accuracy, heatmap, 30-day trend, drill-down and the release report. `compact` is the gadget (PR-5). */
 export function PostureDashboard({ api, compact = false }: { api: PostureApi; compact?: boolean }) {
   const id = useId();
   const [project, setProject] = useState('');
@@ -97,8 +98,10 @@ export function PostureDashboard({ api, compact = false }: { api: PostureApi; co
         <>
           <KpiRow dto={dto} onDrill={openDrill} onExpiring={() => setDrill({ kind: 'expiring', title: 'acceptances expiring in 14 days', items: dto.expiring.filter((a) => Date.parse(a.expiresAt) - Date.now() <= 14 * 86_400_000), hidden: dto.hiddenExpiring })} />
           {drill && <DrillDown view={drill} onClose={() => setDrill(null)} />}
+          {compact && <AccuracyCard accuracy={dto.accuracy} compact />}
           {!compact && (
             <>
+              <AccuracyCard accuracy={dto.accuracy} />
               <section aria-labelledby={`${id}-map`} style={{ display: 'grid', gap: 8 }}>
                 <h2 id={`${id}-map`} style={{ margin: 0, font: token('font.heading.small') }}>
                   Where the open requirements are

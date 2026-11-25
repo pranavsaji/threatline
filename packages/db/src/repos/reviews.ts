@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { appError, AgentThreatModelSchema, ContextFactSchema, err, ok, ReviewSchema, ThreatSchema, type Result, type Review } from '@threatline/shared';
-import type { DiscardedThreat, NeedsHumanRow, ReviewRepo, Sample } from '@threatline/core';
+import { appError, AgentThreatModelSchema, ContextFactSchema, err, ok, ReviewSchema, ThreatSchema, type Result, type Review, type Threat } from '@threatline/shared';
+import type { DiscardedThreat, ReviewRepo, ReviewThreatRow, Sample } from '@threatline/core';
 import type { SqlExecutor } from '../executor.js';
 import { collect, parseJson } from '../json.js';
 
@@ -32,6 +32,9 @@ const DiscardedSchema = z.array(
   z.object({ title: z.string(), stride: z.string().optional(), reason: z.enum(['low_votes', 'unsupported_citation', 'duplicate_of_dismissed', 'schema']) }).strict(),
 ) as unknown as z.ZodType<DiscardedThreat[]>;
 const THREAT_BATCH = 20;
+/** Work items per latestThreats query (a review holds up to a few dozen threats). */
+const LATEST_THREATS_BATCH = 25;
+const THREATS_FOR_BATCH = 50;
 const SampleSchema = z.union([AgentThreatModelSchema, z.object({ failed: z.string() }).strict()]) as z.ZodType<Sample>;
 
 export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
@@ -185,6 +188,14 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
       ]);
       return r.ok ? ok(undefined) : r;
     },
+    async claimStage(reviewId, stage, status, checkpoint, at) {
+      // INSERT, not REPLACE: the primary key (review_id, stage) lets exactly one caller claim the stage.
+      const r = await x.exec('INSERT INTO review_stages (review_id, stage, status, checkpoint_json, error, updated_at) VALUES (?, ?, ?, ?, NULL, ?)', [
+        reviewId, stage, status, checkpoint === undefined ? null : JSON.stringify(checkpoint), at ?? new Date().toISOString(),
+      ]);
+      if (r.ok) return ok(true);
+      return r.error.code === 'conflict' ? ok(false) : r;
+    },
     async stage(reviewId, stage) {
       const r = await x.query<Row>('SELECT status, checkpoint_json FROM review_stages WHERE review_id = ? AND stage = ?', [reviewId, stage]);
       if (!r.ok) return r;
@@ -215,7 +226,7 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
         [],
       );
       if (!r.ok) return r;
-      const out: NeedsHumanRow[] = [];
+      const out: ReviewThreatRow[] = [];
       for (const row of r.value) {
         const threat = parseJson(ThreatSchema, row.threat_json, 'threats');
         if (!threat.ok) return threat;
@@ -224,6 +235,57 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
         out.push({ threat: threat.value, review: review.value });
       }
       return ok(out);
+    },
+    async latestThreats(issueIds) {
+      // Bounded: a few work items per query, so no single result carries hundreds of threats' JSON.
+      const ids = [...new Set(issueIds)];
+      const out: ReviewThreatRow[] = [];
+      for (let i = 0; i < ids.length; i += LATEST_THREATS_BATCH) {
+        const chunk = ids.slice(i, i + LATEST_THREATS_BATCH);
+        const r = await x.query<Row>(
+          `SELECT t.threat_json, ${COLS.split(', ').map((c) => `r.${c}`).join(', ')} FROM reviews r JOIN threats t ON t.review_id = r.id
+           WHERE r.issue_id IN (${chunk.map(() => '?').join(', ')}) AND r.revision = (SELECT MAX(r2.revision) FROM reviews r2 WHERE r2.issue_id = r.issue_id)
+           ORDER BY t.position ASC`,
+          chunk,
+        );
+        if (!r.ok) return r;
+        const byIssue = new Map<string, ReviewThreatRow[]>();
+        for (const row of r.value) {
+          const threat = parseJson(ThreatSchema, row.threat_json, 'threats');
+          if (!threat.ok) return threat;
+          const review = toReview(row);
+          if (!review.ok) return review;
+          const list = byIssue.get(review.value.issueId) ?? [];
+          list.push({ threat: threat.value, review: review.value });
+          byIssue.set(review.value.issueId, list);
+        }
+        for (const id of chunk) out.push(...(byIssue.get(id) ?? []));
+      }
+      return ok(out);
+    },
+    async threatsFor(reviewIds, states, limit) {
+      const n = Math.max(1, Math.min(2000, Math.floor(limit)));
+      const ids = [...new Set(reviewIds)].slice(0, 200);
+      const wanted = [...new Set(states)];
+      if (ids.length === 0 || wanted.length === 0) return ok([]);
+      const out: Threat[] = [];
+      // Batches in the given order (most recent review first), so the cap keeps the newest reviews' threats.
+      for (let i = 0; i < ids.length && out.length < n; i += THREATS_FOR_BATCH) {
+        const batch = ids.slice(i, i + THREATS_FOR_BATCH);
+        // Portable "in the order given" (no FIELD() in SQLite): a CASE over the batch's ids.
+        const order = `CASE review_id ${batch.map((_, k) => `WHEN ? THEN ${k}`).join(' ')} END`;
+        const r = await x.query<Row>(
+          `SELECT threat_json FROM threats WHERE review_id IN (${batch.map(() => '?').join(', ')}) AND state IN (${wanted.map(() => '?').join(', ')}) ORDER BY ${order} ASC, position ASC LIMIT ${n - out.length}`,
+          [...batch, ...wanted, ...batch],
+        );
+        if (!r.ok) return r;
+        for (const row of r.value) {
+          const t = parseJson(ThreatSchema, row.threat_json, 'threats');
+          if (!t.ok) return t;
+          out.push(t.value);
+        }
+      }
+      return ok(out.slice(0, n));
     },
     async stages(reviewId) {
       const r = await x.query<Row>('SELECT stage, status, error, updated_at FROM review_stages WHERE review_id = ? ORDER BY updated_at ASC, stage ASC', [reviewId]);

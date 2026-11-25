@@ -1,5 +1,5 @@
 import { engineJob, isEngineReview, reapplyVerification } from '../services/engine.js';
-import { assembleReview, requirementsFor } from '@threatline/core';
+import { assembleReview, firstLookThreats, requirementsFor } from '@threatline/core';
 import { PROMPT_VERSION } from '@threatline/prompts';
 import { appError, err, ok, type ContextBundle, type ContextFact, type Result, type Review, type SitePolicy, type Threat } from '@threatline/shared';
 import type { Sample } from '@threatline/core';
@@ -15,6 +15,8 @@ import { opsAlert } from '../services/ops-alert.js';
 import type { IncidentCause } from '../jobs/types.js';
 import { recordHidden, suppressionsFor } from '../services/suppression-service.js';
 import { isLicensed, licenseRefusal } from '../services/license.js';
+import { commentOnSettle } from '../services/verdict-comment.js';
+import { FIRST_LOOK_STAGE } from '../services/first-look.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -274,6 +276,13 @@ async function startReview(deps: CoreDeps, review: Review, b: ContextBundle, pol
   if (!out.ok) return out;
   const upd = await deps.reviews.update(review.id, { riskScore: out.value.riskScore, ...(rulesOnly ? { status: 'ready' as const } : {}), updatedAt: now.toISOString() });
   if (!upd.ok) return upd;
+  // The first look (docs/ENGINE.md): the rule-based floor this gather's own assembly found, kept for the panel while the
+  // AI review runs, before any model call. It decides nothing (no verdict, requirement or ledger entry reads it), so a
+  // failed write only loses the preview.
+  if (review.status === 'awaiting_agent' && !rulesOnly) {
+    const f = await deps.reviews.saveStage(review.id, FIRST_LOOK_STAGE, 'done', { threats: firstLookThreats(out.value.threats) }, undefined, now.toISOString()).catch(() => null);
+    if (!f?.ok) log('review.first_look_unsaved', { reviewId: review.id });
+  }
   if (engine) {
     // Marks the review as Threatline Engine's. The quarantined injection check runs first; it then starts the runs.
     const m = await deps.reviews.saveStage(review.id, 'engine', 'done', { runs: review.samplesExpected }, undefined, now.toISOString());
@@ -286,6 +295,8 @@ async function startReview(deps: CoreDeps, review: Review, b: ContextBundle, pol
   log('review.created', { issueId: review.issueId, revision: review.revision, reason, paused, partial: b.partial, engine });
   const v = await refreshVerdict(deps, review.issueId);
   if (!v.ok) return v;
+  // A rules-only review is settled now, and so is one paused at the budget: say so on the work item.
+  if (rulesOnly || paused) await commentOnSettle(deps, review.id);
   // A published page now trails the newest revision: re-publish so it says it is out of date.
   return afterChange(deps, review.issueId, true);
 }
@@ -392,6 +403,9 @@ async function assemble(deps: CoreDeps, reviewId: string, again = 0): Promise<Re
   }
   const v = await refreshVerdict(deps, review.issueId);
   if (!v.ok) return v;
+  // Settled (a Rovo agent review that is ready, or any review that failed or timed out): comment the verdict. An engine
+  // review that is ready comments after its verifier instead (commentOnSettle waits for it).
+  if (status !== 'awaiting_agent') await commentOnSettle(deps, review.id);
   return afterChange(deps, review.issueId, status === 'ready' && review.status !== 'ready');
 }
 

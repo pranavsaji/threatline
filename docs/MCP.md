@@ -13,8 +13,8 @@ as the signed-in user, with that user's Jira permissions.
 | `get-merge-attestation` | Signs an attestation for one repository and one head commit, when the work item's verdict allows it. |
 | `verify-requirement` | Marks one requirement Verified with the pull request as evidence, as the caller, ledgered as made through an agent. |
 | `request-risk-acceptance` | Records a pending risk acceptance; a person must approve it in Jira. |
-| `get-review`, `explain-threat` | The cited threat model, and any threat explained in plain language. |
-| `posture-summary` | Open requirements by severity and acceptances that expire soon. |
+| `get-review`, `explain-threat` | The cited threat model, and any threat explained in plain language, with what was seen before on this site (past incidents, the same threat verified or accepted elsewhere; only what the caller can open). |
+| `posture-summary` | Open requirements by severity, acceptances that expire soon, and how accurate Threatline has been here over 90 days ([accuracy](ACCURACY.md)). |
 
 What an agent can never do: approve or reject an acceptance, dismiss a threat, mark anything Not applicable, override
 the gate, or write its own review. Those stay with people, and every one is in the ledger.

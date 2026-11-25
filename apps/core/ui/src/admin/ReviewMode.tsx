@@ -84,8 +84,26 @@ export function ReviewMode(props: PolicySectionProps & { recentAuthors?: AdminPo
         </fieldset>
         <span style={hint}>The change is recorded in the risk ledger. It applies to reviews started from now on.</span>
       </PolicyForm>
+      <ReviewComments {...props} />
       <ReviewAuthors {...props} recent={props.recentAuthors ?? []} />
     </section>
+  );
+}
+
+/** Whether Threatline comments the verdict on the work item when a review finishes (site policy `postReviewComments`). */
+function ReviewComments(props: PolicySectionProps) {
+  const [on, setOn] = useSynced(props.policy.postReviewComments !== false);
+  const s = usePolicySave(props);
+  return (
+    <PolicyForm label="Review comments" submitLabel="Save review comments" onSubmit={() => void s.save({ postReviewComments: on })} {...s}>
+      <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} />
+        Comment on the work item when its review finishes
+      </label>
+      <span style={hint}>
+        One comment per review: the verdict, threat counts, the top risk (only when everyone who can see the work item can open its source) and the requirements. A re-run comments only when the verdict changes.
+      </span>
+    </PolicyForm>
   );
 }
 

@@ -10,6 +10,7 @@ import type {
   ReviewStatus,
   Stride,
   Threat,
+  ThreatState,
   Verdict,
 } from '@threatline/shared';
 import type { KeyPair } from '@threatline/crypto';
@@ -101,6 +102,11 @@ export interface ReviewRepo {
   /** `at` is when the stage reached this status (defaults to now); the admin page reads it as the run's trace. */
   saveStage(reviewId: string, stage: string, status: 'running' | 'done' | 'failed', checkpoint?: unknown, error?: string, at?: string): Promise<Result<void>>;
   stage(reviewId: string, stage: string): Promise<Result<{ status: string; checkpoint?: unknown } | null>>;
+  /**
+   * Records a stage only if the review has none of that name yet (insert, never overwrite): true when this call claimed
+   * it, false when it was already there. For once-only side effects a redelivered or concurrent job must not repeat.
+   */
+  claimStage(reviewId: string, stage: string, status: 'running' | 'done' | 'failed', checkpoint?: unknown, at?: string): Promise<Result<boolean>>;
   /** Newest first by createdAt, at most `limit` (capped at 500); with `since`, only reviews created at or after it. */
   recent(limit: number, since?: string): Promise<Result<Review[]>>;
   /** The review's stage trace in time order, without checkpoints. */
@@ -110,13 +116,27 @@ export interface ReviewRepo {
    * oldest review first, at most `limit` (capped at 500). Indexed on the threat state.
    */
   needsHuman(limit: number): Promise<Result<NeedsHumanRow[]>>;
+  /**
+   * Scale (accuracy, docs/ACCURACY.md): every threat of each of these work items' latest review, with the review,
+   * grouped by work item in threat order. Reads a few work items per query on the (issue_id, revision) and threats
+   * (review_id) indexes, so a posture page's 200 work items take a handful of queries, not one per work item.
+   */
+  latestThreats(issueIds: readonly string[]): Promise<Result<ReviewThreatRow[]>>;
+  /**
+   * Memory ("Seen before", docs/MEMORY.md): the threats of these reviews (at most 200 ids) in these states, in the order
+   * the review ids are given, then by position, at most `limit` (capped at 2000). Read in batches of review ids, so the
+   * cap keeps the first (most recent) reviews' threats.
+   */
+  threatsFor(reviewIds: readonly string[], states: readonly ThreatState[], limit: number): Promise<Result<Threat[]>>;
 }
 
-/** A threat waiting for a security champion, with the (latest) review it belongs to. */
-export interface NeedsHumanRow {
+/** A threat with the review it belongs to. */
+export interface ReviewThreatRow {
   threat: Threat;
   review: Review;
 }
+/** A threat waiting for a security champion, with the (latest) review it belongs to. */
+export type NeedsHumanRow = ReviewThreatRow;
 
 export interface StageTrace {
   stage: string;
@@ -127,6 +147,8 @@ export interface StageTrace {
 
 export interface RequirementRepo {
   forIssue(issueId: string): Promise<Result<Requirement[]>>;
+  /** The requirements of these work items (at most 100 ids; the rest are ignored), by work item id, then id. */
+  forIssues(issueIds: readonly string[]): Promise<Result<Requirement[]>>;
   get(id: string): Promise<Result<Requirement | null>>;
   upsert(r: Requirement): Promise<Result<void>>;
   /**

@@ -1,6 +1,6 @@
 import type { AdminApi, InboxApi, PanelApi, PostureApi } from './bridge.js';
-import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
-import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
+import { ACCURACY_EMPTY, ACCURACY_FIXTURE, DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
+import { DIFF_FIXTURE, FIXTURES, SEEN_BEFORE_FIXTURE } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
 import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
 import { INBOX_FIXTURE } from './inbox/fixtures.js';
@@ -8,7 +8,7 @@ import { SUPPRESSIONS_FIXTURE } from './admin/suppressions-fixture.js';
 import { mockCiApi } from './admin/ci-api.js';
 import { MOCK_KID, checkMockAttestation, mockAttestationToken } from './mock-attestation.js';
 
-/** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|in_progress|failed|… and ?theme=dark. */
+/** Local preview: `pnpm --filter @threatline/core-ui dev`, then ?state=ready|reviewing|in_progress|failed|… and ?theme=dark. */
 export function mockApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PanelApi {
   const dto = FIXTURES[state] ?? FIXTURES.ready!;
   return {
@@ -21,6 +21,7 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
       inScope: dto.inScope ?? true,
       ...(dto.scopeMessage ? { scopeMessage: dto.scopeMessage } : {}),
       ...(dto.licenseInactive ? { licenseInactive: true as const } : {}),
+      ...(dto.firstLook ? { firstLook: { risks: dto.firstLook.risks } } : {}),
     }),
     threats: async () => ({ threats: [], cursor: null }),
     rerun: async () => ({ ok: true }),
@@ -48,6 +49,8 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
         partial: false,
       };
     },
+    // Like panel.memory: history for threats on a ready review only.
+    memory: async () => (dto.review?.status === 'ready' && dto.threats.length > 0 ? structuredClone(SEEN_BEFORE_FIXTURE) : { threats: {}, happenedBefore: null }),
     createRequirements: async (threatIds) => ({ created: threatIds.map((id, i) => ({ requirementId: `req_${id}`, subtaskKey: `PAY-${100 + i}` })), skipped: [] }),
     setStatus: async (requirementId, status, evidence) => {
       const r = dto.requirements.find((x) => x.id === requirementId)!;
@@ -148,10 +151,18 @@ export function mockAdminApi(
   };
 }
 
-export function mockPostureApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready'): PostureApi {
+/**
+ * Local preview of the posture page (`?view=posture`). `?state=empty` is a site with nothing reviewed yet;
+ * `&accuracy=empty` shows the accuracy card before any decision, `&accuracy=unavailable` when it could not be read.
+ */
+export function mockPostureApi(state = new URLSearchParams(window.location.search).get('state') ?? 'ready', accuracy = new URLSearchParams(window.location.search).get('accuracy') ?? 'ready'): PostureApi {
   const empty = state === 'empty';
+  const figures = accuracy === 'empty' ? ACCURACY_EMPTY : accuracy === 'unavailable' ? null : ACCURACY_FIXTURE;
   return {
-    get: async () => (empty ? { ...structuredClone(POSTURE_FIXTURE), projects: [], issuesCounted: 0, byTeamComponent: [], openBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 } } : structuredClone(POSTURE_FIXTURE)),
+    get: async () =>
+      empty
+        ? { ...structuredClone(POSTURE_FIXTURE), projects: [], issuesCounted: 0, byTeamComponent: [], openBySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 }, accuracy: structuredClone(ACCURACY_EMPTY) }
+        : { ...structuredClone(POSTURE_FIXTURE), accuracy: structuredClone(figures) },
     drill: async () => structuredClone(DRILL_FIXTURE),
     release: async (fixVersion) => RELEASE_FIXTURE(fixVersion),
     controls: async () => (empty ? { ...structuredClone(CONTROLS_FIXTURE), issuesCounted: 0, frameworks: CONTROLS_FIXTURE.frameworks.map((f) => ({ ...f, controls: [] })) } : structuredClone(CONTROLS_FIXTURE)),

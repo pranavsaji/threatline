@@ -42,7 +42,7 @@ its requirements were handled. No Rovo, Automation rule or other setup was neede
    independent analyses on the strongest model, then a verifier. To start one by hand: the work item → Threatline panel →
    **Run review**. (Prefer your site's Rovo agent? Choose **Rovo agent review** and follow "Rovo agent mode" below.)
 5. **Open the epic "Add AI support agent"**. If the Threatline panel is not on it, add it once from the apps button
-   under the title (**Threatline security review**), then in the panel's **⋯** menu choose **Show for all work items**. Loading the demo queues its review; within about two to four minutes the Threatline panel shows:
+   under the title (**Threatline security review**), then in the panel's **⋯** menu choose **Show for all work items**. Loading the demo queues its review. Within seconds, before any AI call, the panel shows a **First look** (Threatline's rule-based risks with the sentence each quotes, labelled as replaced by the AI review) and the right-hand column says **Reviewing… · first look: *N* risks**; the gate already blocks. Within about two to four minutes the review settles, Threatline comments the verdict on the work item once (what blocks Done, counts by severity, the top risk when everyone who can see the work item may read its source, and how many requirements can become tasks in one click), and the Threatline panel shows:
    - the risk score and why Done is blocked;
    - threats in plain language first, each with the quote it rests on and a link to its source;
    - a banner naming the design page as containing instructions aimed at the AI: they were treated as data, and the

@@ -12,6 +12,7 @@ import type {
   LedgerRow,
   RequirementRepo,
   ReviewRepo,
+  ReviewThreatRow,
   TreeHead,
   TreeHeadRepo,
   Sample,
@@ -131,6 +132,12 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
       stages.set(`${reviewId}:${stage}`, { status, checkpoint: clone(checkpoint), ...(error ? { error } : {}), at: at ?? new Date().toISOString() });
       return ok(undefined);
     },
+    async claimStage(reviewId, stage, status, checkpoint, at) {
+      const key = `${reviewId}:${stage}`;
+      if (stages.has(key)) return ok(false);
+      stages.set(key, { status, checkpoint: clone(checkpoint), at: at ?? new Date().toISOString() });
+      return ok(true);
+    },
     async stage(reviewId, stage) {
       const s = stages.get(`${reviewId}:${stage}`);
       if (!s) return ok(null);
@@ -158,6 +165,23 @@ export function memoryReviewRepo(): ReviewRepo & { _reviews: Map<string, Review>
       rows.sort((a, b) => severityRank(b.threat.severity) - severityRank(a.threat.severity) || a.review.createdAt.localeCompare(b.review.createdAt) || a.threat.id.localeCompare(b.threat.id));
       return ok(rows.slice(0, n));
     },
+    async latestThreats(issueIds) {
+      // Like SQL: the latest revision of each work item, grouped by work item (in the order asked), threats in order.
+      const out: ReviewThreatRow[] = [];
+      for (const id of new Set(issueIds)) {
+        let latest: Review | undefined;
+        for (const r of reviews.values()) if (r.issueId === id && (latest?.revision ?? -1) < r.revision) latest = r;
+        if (latest) for (const t of threats.get(latest.id) ?? []) out.push({ threat: clone(t), review: clone(latest) });
+      }
+      return ok(out);
+    },
+    async threatsFor(reviewIds, states, limit) {
+      // Like SQL: in the order of the review ids given (at most 200), then by position, at most `limit` (capped at 2000).
+      const n = Math.max(1, Math.min(2000, Math.floor(limit)));
+      const want = new Set(states);
+      const out = [...new Set(reviewIds)].slice(0, 200).flatMap((id) => (threats.get(id) ?? []).filter((t) => want.has(t.state)));
+      return ok(out.slice(0, n).map(clone));
+    },
   };
 }
 
@@ -166,6 +190,10 @@ export function memoryRequirementRepo(): RequirementRepo {
   return {
     async forIssue(issueId) {
       return ok([...reqs.values()].filter((r) => r.issueId === issueId).map(clone));
+    },
+    async forIssues(issueIds) {
+      const ids = new Set([...new Set(issueIds)].slice(0, 100));
+      return ok([...reqs.values()].filter((r) => ids.has(r.issueId)).sort((a, b) => a.issueId.localeCompare(b.issueId) || a.id.localeCompare(b.id)).map(clone));
     },
     async get(id) {
       const r = reqs.get(id);
