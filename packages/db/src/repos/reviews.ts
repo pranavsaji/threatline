@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { appError, AgentThreatModelSchema, ContextFactSchema, err, ok, ReviewSchema, ThreatSchema, type Result, type Review, type Threat } from '@threatline/shared';
-import type { DiscardedThreat, NeedsHumanRow, ReviewRepo, ReviewThreatRow, Sample } from '@threatline/core';
+import type { DiscardedThreat, ReviewRepo, ReviewThreatRow, Sample } from '@threatline/core';
 import type { SqlExecutor } from '../executor.js';
 import { collect, parseJson } from '../json.js';
 
@@ -254,6 +254,7 @@ export function sqlReviewRepo(x: SqlExecutor): ReviewRepo {
         for (const id of chunk) out.push(...(byIssue.get(id) ?? []));
       }
       return ok(out);
+    },
     async threatsFor(reviewIds, states, limit) {
       const n = Math.max(1, Math.min(2000, Math.floor(limit)));
       const ids = [...new Set(reviewIds)].slice(0, 200);
