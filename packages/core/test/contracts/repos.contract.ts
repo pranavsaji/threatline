@@ -137,6 +137,22 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect(after.ok && after.value.map((x) => x.threat.id)).toEqual(['thr_2h', 'thr_1h', 'thr_3m']);
     });
 
+    it('reviews (memory): threatsFor returns these reviews’ threats in these states, in the given review order, bounded', async () => {
+      const r = await f.reviews();
+      await r.create(review({ id: 'rev_a', issueId: '1', issueKey: 'A-1', status: 'ready' }));
+      await r.create(review({ id: 'rev_b', issueId: '2', issueKey: 'A-2', status: 'ready' }));
+      await r.create(review({ id: 'rev_c', issueId: '3', issueKey: 'A-3', status: 'ready' }));
+      await r.saveThreats('rev_a', [threat({ id: 'thr_a1', reviewId: 'rev_a' }), threat({ id: 'thr_a2', reviewId: 'rev_a', state: 'covered' }), threat({ id: 'thr_a3', reviewId: 'rev_a', state: 'dismissed', dismissReason: 'false_positive' })], []);
+      await r.saveThreats('rev_b', [threat({ id: 'thr_b1', reviewId: 'rev_b', state: 'needs_human' })], []);
+      await r.saveThreats('rev_c', [threat({ id: 'thr_c1', reviewId: 'rev_c' })], []);
+      const all = await r.threatsFor(['rev_b', 'rev_a', 'rev_missing'], ['accepted', 'dismissed', 'needs_human'], 50);
+      expect(all.ok && all.value.map((t) => t.id)).toEqual(['thr_b1', 'thr_a1', 'thr_a3']);
+      const capped = await r.threatsFor(['rev_b', 'rev_a'], ['accepted', 'dismissed', 'needs_human'], 2);
+      expect(capped.ok && capped.value.map((t) => t.id)).toEqual(['thr_b1', 'thr_a1']);
+      expect(await r.threatsFor([], ['accepted'], 10)).toEqual({ ok: true, value: [] });
+      expect(await r.threatsFor(['rev_a'], [], 10)).toEqual({ ok: true, value: [] });
+    });
+
     it('reviews: updateWhere writes only while the stored review still matches (compare-and-set)', async () => {
       const r = await f.reviews();
       await r.create(review({ samplesReceived: 2 }));
@@ -195,6 +211,17 @@ export function repoContract(name: string, f: RepoFactory): void {
       expect(list.ok && list.value).toHaveLength(1);
       expect(list.ok && list.value[0]).toMatchObject({ status: 'Verified', evidence: { kind: 'pr' } });
       expect((await r.get('nope')).ok && (await r.get('nope'))).toEqual({ ok: true, value: null });
+    });
+
+    it('requirements (memory): forIssues returns the requirements of several work items at once', async () => {
+      const r = await f.requirements();
+      await r.upsert(req({ id: 'req_b', issueId: '2', issueKey: 'A-2' }));
+      await r.upsert(req({ id: 'req_a2', issueId: '1', issueKey: 'A-1' }));
+      await r.upsert(req({ id: 'req_a1', issueId: '1', issueKey: 'A-1', status: 'Verified' }));
+      await r.upsert(req({ id: 'req_c', issueId: '3', issueKey: 'A-3' }));
+      const got = await r.forIssues(['2', '1', '9']);
+      expect(got.ok && got.value.map((x) => x.id)).toEqual(['req_a1', 'req_a2', 'req_b']);
+      expect(await r.forIssues([])).toEqual({ ok: true, value: [] });
     });
 
     it('requirements: upsertIf saves only while the stored status is an expected one (compare-and-set)', async () => {

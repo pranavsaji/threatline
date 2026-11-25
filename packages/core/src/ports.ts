@@ -10,6 +10,7 @@ import type {
   ReviewStatus,
   Stride,
   Threat,
+  ThreatState,
   Verdict,
 } from '@threatline/shared';
 import type { KeyPair } from '@threatline/crypto';
@@ -110,6 +111,12 @@ export interface ReviewRepo {
    * oldest review first, at most `limit` (capped at 500). Indexed on the threat state.
    */
   needsHuman(limit: number): Promise<Result<NeedsHumanRow[]>>;
+  /**
+   * Memory ("Seen before", docs/MEMORY.md): the threats of these reviews (at most 200 ids) in these states, in the order
+   * the review ids are given, then by position, at most `limit` (capped at 2000). Read in batches of review ids, so the
+   * cap keeps the first (most recent) reviews' threats.
+   */
+  threatsFor(reviewIds: readonly string[], states: readonly ThreatState[], limit: number): Promise<Result<Threat[]>>;
 }
 
 /** A threat waiting for a security champion, with the (latest) review it belongs to. */
@@ -127,6 +134,8 @@ export interface StageTrace {
 
 export interface RequirementRepo {
   forIssue(issueId: string): Promise<Result<Requirement[]>>;
+  /** The requirements of these work items (at most 100 ids; the rest are ignored), by work item id, then id. */
+  forIssues(issueIds: readonly string[]): Promise<Result<Requirement[]>>;
   get(id: string): Promise<Result<Requirement | null>>;
   upsert(r: Requirement): Promise<Result<void>>;
   /**
