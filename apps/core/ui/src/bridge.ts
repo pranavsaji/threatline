@@ -1,7 +1,7 @@
 import type { AcceptanceState, AdminPolicyDto, ApiError, InboxDecideDto, InboxDto, DataClass, Exposure, ThreatDiffDto, WhatIfDto, DigestConfig, DrillDto, Evidence, FactDto, OpsConfig, PanelDto, PostureDto, ReleaseReadinessResult, Requirement, RequirementStatus, RunDto, Severity, SitePolicy, Threat, ThreatExplanation, UsageDto, Stride, SuppressionRule, SuppressionsDto } from './types.js';
 import { ciApiOver, type CiApi } from './admin/ci-api.js';
 
-import type { ControlsPostureDto, DeliveryDto, StatusDto } from './types.js';
+import type { ControlsPostureDto, DeliveryDto, SeenBeforeDto, StatusDto } from './types.js';
 
 /** A compliance control on the posture page: framework id (SOC2, ISO27001, PCIDSS) and control id. */
 export interface ControlDrillQuery {
@@ -85,6 +85,11 @@ export interface PanelApi {
   enrich(): Promise<{ added: number; partial: boolean; facts: FactDto[] } | ApiError>;
   /** Teamwork Graph: pull requests and deployments linked to this work item, as the viewer sees them (never stored). */
   delivery?(): Promise<DeliveryDto | ApiError>;
+  /**
+   * "Seen before" (docs/MEMORY.md): past incidents and the same threat on other work items, per threat, only what the
+   * viewer may open. Loaded after `get`; absent in an API built by hand, where the panel shows no history.
+   */
+  memory?(): Promise<SeenBeforeDto | ApiError>;
   explain(reviewId: string, threatId: string): Promise<ThreatExplanation | ApiError>;
   createRequirements(threatIds: string[]): Promise<CreatedRequirements | ApiError>;
   setStatus(requirementId: string, status: RequirementStatus, evidence?: Pick<Evidence, 'kind' | 'ref'>): Promise<Requirement | ApiError>;
@@ -125,6 +130,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     rerun: () => invoke('panel.rerun'),
     enrich: () => invoke('panel.enrich'),
     delivery: () => invoke('panel.delivery'),
+    memory: () => invoke('panel.memory'),
     explain: (reviewId, threatId) => invoke('threat.explain', { reviewId, threatId }),
     createRequirements: (threatIds) => invoke('requirements.create', { threatIds }),
     setStatus: (requirementId, status, evidence) => invoke('requirements.setStatus', { requirementId, status, ...(evidence ? { evidence } : {}) }),

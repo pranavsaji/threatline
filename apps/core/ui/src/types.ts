@@ -12,3 +12,4 @@ export type { SuppressionsDto, SuppressionRuleDto } from '../../src/services/sup
 export type { SuppressionRule } from '@threatline/shared';
 export type { DiagramDto } from '../../src/services/diagram-service.js';
 export type { CiTokenInfo, CiTokensDto } from '../../src/resolvers/ci.js';
+export type { SeenBeforeDto, SeenItem } from '../../src/services/memory-service.js';

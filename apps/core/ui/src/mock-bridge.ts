@@ -1,6 +1,6 @@
 import type { AdminApi, InboxApi, PanelApi, PostureApi } from './bridge.js';
 import { DRILL_FIXTURE, POSTURE_FIXTURE, RELEASE_FIXTURE } from './posture/fixtures.js';
-import { DIFF_FIXTURE, FIXTURES } from './fixtures.js';
+import { DIFF_FIXTURE, FIXTURES, SEEN_BEFORE_FIXTURE } from './fixtures.js';
 import { ADMIN_POLICY_FIXTURE, RUNS_FIXTURE, USAGE_FIXTURE } from './admin/fixtures.js';
 import { CONTROLS_FIXTURE } from './compliance-fixtures.js';
 import { INBOX_FIXTURE } from './inbox/fixtures.js';
@@ -48,6 +48,8 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
         partial: false,
       };
     },
+    // Like panel.memory: history for threats on a ready review only.
+    memory: async () => (dto.review?.status === 'ready' && dto.threats.length > 0 ? structuredClone(SEEN_BEFORE_FIXTURE) : { threats: {}, happenedBefore: null }),
     createRequirements: async (threatIds) => ({ created: threatIds.map((id, i) => ({ requirementId: `req_${id}`, subtaskKey: `PAY-${100 + i}` })), skipped: [] }),
     setStatus: async (requirementId, status, evidence) => {
       const r = dto.requirements.find((x) => x.id === requirementId)!;

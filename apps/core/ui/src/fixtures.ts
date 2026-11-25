@@ -1,4 +1,4 @@
-import type { FactDto, PanelDto, Threat, ThreatDiffDto } from './types.js';
+import type { FactDto, PanelDto, SeenBeforeDto, Threat, ThreatDiffDto } from './types.js';
 import { REQUIREMENT_CONTROLS_FIXTURE } from './compliance-fixtures.js';
 import { DIAGRAM_FIXTURE } from './diagram-fixture.js';
 
@@ -85,4 +85,17 @@ export const DIFF_FIXTURE: ThreatDiffDto = {
   unchanged: 1,
   hidden: 0,
   summary: '2 new threats since last review',
+};
+
+/** "Seen before" for the ready preview (docs/MEMORY.md): an incident, and the same threat verified, accepted and dismissed elsewhere. */
+export const SEEN_BEFORE_FIXTURE: SeenBeforeDto = {
+  threats: {
+    thr_1: [
+      { kind: 'incident', key: 'INC-7', text: 'Incident · Old sign-in links reused to take over accounts (Sev-2, accounts)', summary: 'Old sign-in links reused to take over accounts', reason: 'same component accounts; shared words: account, link, sign, takeover' },
+      { kind: 'verified', key: 'PAY-3', text: 'same threat · Verified with PR #41', evidence: { label: 'PR #41', url: 'https://bitbucket.org/acme/payments-service/pull-requests/41' }, reason: 'same CWE-640; shared words: expire, link, magic' },
+    ],
+    thr_3: [{ kind: 'accepted', key: 'PAY-9', text: 'same threat · risk accepted until 2027-01-31', until: '2027-01-31', reason: 'same STRIDE category (Elevation of privilege); shared words: account, change, email, takeover' }],
+    thr_2: [{ kind: 'dismissed', key: 'PAY-4', text: 'same threat · dismissed as a false positive', reason: 'same STRIDE category (Information disclosure); same asset (Reset API); shared words: email, reset, reveal' }],
+  },
+  happenedBefore: { key: 'INC-7', summary: 'Old sign-in links reused to take over accounts', threatId: 'thr_1' },
 };

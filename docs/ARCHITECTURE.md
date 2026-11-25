@@ -127,6 +127,17 @@ Work that touches no sensitive path merges freely. **Warn-only** mode (per proje
 **break-glass** (an admin, with a written reason) let work through, and every use is ledgered. Verdicts are recomputed
 when the policy changes or a lenient verdict's window ends.
 
+## Seen before (organisational memory)
+
+`panel.memory` (`apps/core/src/services/memory-service.ts`) runs after `panel.get`, never in it, and never in
+`panel.status`. For the active threats of the latest ready review it reads, bounded: two JQL incident searches (the
+site's incident rule; linked or same component, and the most recent anywhere), the latest ready reviews of other work
+items and their threats (`ReviewRepo.threatsFor`), and those work items' requirements (`RequirementRepo.forIssues`)
+and acceptances (ledger). Matching is deterministic (`packages/core/src/memory.ts`) and each match carries its reason.
+Candidates are cached per work item in KVS for 15 minutes; on every call they are filtered for the viewer with one Jira
+search as the viewer (`id in (…)`) and, for same-threat items, the viewer scoping of that work item's sources. See
+[MEMORY.md](MEMORY.md).
+
 ## Packages and ports
 
 | Package | Role |
@@ -153,7 +164,7 @@ SQL implementation (`packages/core/test/contracts`).
 | Store | What |
 | --- | --- |
 | Forge SQL | `reviews`, `review_stages` (doubles as the run trace), `agent_samples`, `context_facts`, `threats`, `review_discarded`, `requirements`, `feedback`, `issues`, `issue_pages`, `attestations`, `ledger`, `merkle_heads`, `posture_snapshots`, `usage_monthly`, `rate_limits`, `suppression_rules`, `suppression_matches`. Reviews are purged after 400 days; the ledger never is. |
-| KVS | Verdicts (what the gate reads), site and project policy and its version, rate-limit counters, single-use submission tokens. |
+| KVS | Verdicts (what the gate reads), site and project policy and its version, rate-limit counters, single-use submission tokens, "Seen before" matches per work item (15 minutes). |
 | Forge secret storage | The Ed25519 signing key (generated on install, never sent to the UI; rotation keeps old keys verifying for a grace period). |
 | Issue property `threatline.verdict` | Searchable copy of the verdict for JQL and dashboards. It is never read by the gate, because users can edit issue properties. |
 
@@ -189,9 +200,10 @@ exit 1
 
 ## Surfaces
 
-- **Issue panel**: verdict and the reasons behind it, risk score, threats (plain language first, evidence quotes with
-  links), requirements and evidence, risk acceptances, history and the diff since the last review, what-if, merge
-  attestation, champion triage.
+- **Issue panel**: verdict and the reasons behind it, risk score, the one positive action under the headline (turn the
+  open requirements into tasks), threats (plain language first, evidence quotes with links, and what was seen before),
+  requirements and evidence, risk acceptances, history and the diff since the last review, what-if, merge attestation,
+  champion triage.
 - **Admin page**: first-run wizard, projects and guarded transitions, severity policy, roles, budgets, warn-only,
   notifications, recent runs with stage timings, signing keys, ledger verification and Merkle proofs, demo data.
 - **Security posture** global page and dashboard gadget: open Critical/High, where they are, trend, release report.
