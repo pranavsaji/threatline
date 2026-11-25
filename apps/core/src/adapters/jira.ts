@@ -40,6 +40,8 @@ export interface JiraIssue {
   fixVersions: string[];
   assignee?: string;
   created?: string;
+  /** Only when the search asked for the `priority` field. */
+  priority?: string;
 }
 
 export interface JiraComment {
@@ -144,6 +146,7 @@ const IssueSchema = z.object({
     fixVersions: z.array(z.object({ name: z.string() })).nullish(),
     assignee: z.object({ accountId: z.string() }).nullish(),
     created: z.string().nullish(),
+    priority: z.object({ name: z.string() }).nullish(),
   }),
 });
 
@@ -178,6 +181,7 @@ function toIssue(raw: z.infer<typeof IssueSchema>): JiraIssue {
   if (f.parent) issue.parent = { id: f.parent.id, key: f.parent.key };
   if (f.assignee) issue.assignee = f.assignee.accountId;
   if (f.created) issue.created = f.created;
+  if (f.priority?.name) issue.priority = f.priority.name;
   return issue;
 }
 

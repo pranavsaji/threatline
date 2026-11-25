@@ -204,6 +204,13 @@ describe('jira client: reads', () => {
     expect(calls).toHaveLength(1);
   });
 
+  it('search reads the priority name when asked for it (Seen before shows an incident’s priority)', async () => {
+    const body = JSON.stringify({ issues: [{ id: '20007', key: 'INC-7', fields: { summary: 'Duplicate refunds', priority: { name: 'Highest' } } }, { id: '20008', key: 'INC-8', fields: { summary: 'No priority' } }] });
+    const { jira } = client([[/search\/jql/, { status: 200, body }]]);
+    const r = await jira.search('labels = incident', ['summary', 'priority'], 10);
+    expect(r.ok && r.value.map((i) => [i.key, i.priority])).toEqual([['INC-7', 'Highest'], ['INC-8', undefined]]);
+  });
+
   it('children searches by parent id', async () => {
     const { jira, calls } = client([[/search\/jql/, [{ status: 200, body: fixture('jira', 'search-page1') }, { status: 200, body: fixture('jira', 'search-page2') }]]]);
     const r = await jira.children('10042');
