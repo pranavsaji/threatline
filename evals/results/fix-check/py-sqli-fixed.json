@@ -1,0 +1,10 @@
+{
+  "caseId": "py-sqli-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"search_orders now binds the term as a parameter and validates sort against the SORTABLE allow-list before interpolation.\",\"quotes\":[{\"path\":\"orders/search.py\",\"line\":8,\"text\":\"SORTABLE = {\\\"created_at\\\", \\\"total\\\", \\\"status\\\"}\"},{\"path\":\"orders/search.py\",\"line\":11,\"text\":\"if sort not in SORTABLE:\"},{\"path\":\"orders/search.py\",\"line\":14,\"text\":\"return conn.execute(sql, (f\\\"%{term}%\\\",)).fetchall()\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

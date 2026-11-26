@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-ratelimit-per-ip",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"rateLimit added to /sign-in/code but keyGenerator uses req.ip, not the account identifier, and counts all attempts rather than wrong codes\",\"quotes\":[{\"path\":\"src/auth/routes.ts\",\"line\":6,\"text\":\"rateLimit({ windowMs: 15 * 60_000, max: 5, keyGenerator: (req) => req.ip }),\"}],\"missing\":\"Key the limiter on the target account (email/user id) so distributed-IP brute force against one account is refused within the 15-minute window.\",\"suggestion\":{\"summary\":\"Key the rate limiter by account identifier instead of client IP\",\"code\":\"router.post('/sign-in/code',\\n  rateLimit({\\n    windowMs: 15 * 60_000,\\n    max: 5,\\n    keyGenerator: (req) => String(req.body?.email ?? req.body?.userId ?? req.ip).toLowerCase(),\\n    skipSuccessfulRequests: true,\\n  }),\\n  async (req, res) => {\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

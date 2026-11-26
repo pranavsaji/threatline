@@ -1,0 +1,10 @@
+{
+  "caseId": "go-ssrf-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"safeClient's Dialer.Control blocks loopback/private/link-local/unspecified IPs at connect time (so also after redirects), but the diff never shows the delivery worker using safeClient().\",\"quotes\":[{\"path\":\"internal/delivery/client.go\",\"line\":10,\"text\":\"if ip == nil || ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified() {\"},{\"path\":\"internal/delivery/client.go\",\"line\":11,\"text\":\"return fmt.Errorf(\\\"refusing to connect to %s\\\", ip)\"}],\"missing\":\"Proof the delivery worker performs requests via safeClient() instead of http.DefaultClient; also block link-local multicast/metadata ranges and limit redirects.\",\"suggestion\":{\"summary\":\"Wire safeClient into the delivery worker and test the metadata attack\",\"code\":\"// internal/delivery/worker.go\\nvar deliveryHTTP = safeClient()\\n\\nfunc (w *Worker) deliver(ctx context.Context, hook Webhook, body []byte) error {\\n\\treq, err := http.NewRequestWithContext(ctx, http.MethodPost, hook.URL, bytes.NewReader(body))\\n\\tif err != nil {\\n\\t\\treturn err\\n\\t}\\n\\tresp, err := deliveryHTTP.Do(req) // was http.DefaultClient.Do\\n\\tif err != nil {\\n\\t\\treturn err\\n\\t}\\n\\tdefer resp.Body.Close()\\n\\treturn nil\\n}\\n\\n// internal/delivery/worker_test.go\\nfunc TestDeliveryRefusesMetadataEndpoint(t *testing.T) {\\n\\terr := (&Worker{}).deliver(context.Background(),\\n\\t\\tWebhook{URL: \\\"http://169.254.169.254/latest/meta-data/\\\"}, []byte(\\\"{}\\\"))\\n\\tif err == nil || !strings.Contains(err.Error(), \\\"refusing to connect\\\") {\\n\\t\\tt.Fatalf(\\\"expected SSRF refusal, got %v\\\", err)\\n\\t}\\n}\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

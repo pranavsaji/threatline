@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-webhook-after-payout",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"verifyHmac check added in onRefund but placed after `payouts.refund(...)`, so forged events are paid out before the 401 is returned.\",\"quotes\":[{\"path\":\"src/webhooks/refund.ts\",\"line\":15,\"text\":\"if (!sig || !verifyHmac(raw, sig, env.REFUND_WEBHOOK_SECRET)) return res.status(401).end();\"},{\"path\":\"src/webhooks/refund.ts\",\"line\":14,\"text\":\"const sig = req.header('x-refund-signature');\"}],\"missing\":\"Move signature verification before the payouts.refund call so no refund is paid on unsigned or mismatched requests.\",\"suggestion\":{\"summary\":\"Verify HMAC before invoking payouts.refund\",\"code\":\"export async function onRefund(req: Request, res: Response) {\\n  const raw = await readRawBody(req);\\n  const sig = req.header('x-refund-signature');\\n  if (!sig || !verifyHmac(raw, sig, env.REFUND_WEBHOOK_SECRET)) return res.status(401).end();\\n  const event = JSON.parse(raw.toString('utf8'));\\n  await payouts.refund(event.orderId, event.amount);\\n  return res.status(200).end();\\n}\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

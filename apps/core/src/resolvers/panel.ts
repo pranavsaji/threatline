@@ -19,6 +19,9 @@ import type { ApiError } from './errors.js';
 import { isLicensed, licenseRefusal } from '../services/license.js';
 import type { DeliveryLinks, LinkedDeployment, LinkedPullRequest } from '../adapters/graph-delivery.js';
 import { engineStage, scopeFirstLook, storedFirstLook, type FirstLookDto } from '../services/first-look.js';
+import { readFixCheck } from '../services/fix-check-store.js';
+import { fixHold, type FixHold } from '@threatline/core';
+import type { FixCheckRecord } from '@threatline/shared';
 
 export const PAGE_SIZE = 50;
 const HISTORY_REVISIONS = 5;
@@ -91,6 +94,22 @@ export interface PanelDto {
    * Display only; absent once the review settles, and on reviews gathered before the first look existed.
    */
   firstLook?: FirstLookDto;
+  /** The latest fix check of a change for this work item (docs/FIX_CHECK.md), with findings for the shown requirements. */
+  fixCheck?: FixCheckDto;
+}
+
+/** A fix check as the panel shows it: no CI token id; `holds` says which shown requirements it holds, and why. */
+export type FixCheckDto = Omit<FixCheckRecord, 'by'> & { holds: Record<string, FixHold> };
+
+export function fixCheckDto(record: FixCheckRecord, shown: readonly Requirement[], now: Date): FixCheckDto {
+  const ids = new Set(shown.map((r) => r.id));
+  const { by: _by, ...rest } = record;
+  const holds: Record<string, FixHold> = {};
+  for (const r of shown) {
+    const h = fixHold(record, r, now);
+    if (h) holds[r.id] = h;
+  }
+  return { ...rest, findings: record.findings.filter((f) => ids.has(f.requirementId)), confirmations: record.confirmations.filter((c) => ids.has(c.requirementId)), holds };
 }
 
 type Denied = { error: 'not_found' | 'unavailable' | 'rate_limited'; message?: string };
@@ -320,6 +339,9 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
   const acceptances = rebuildAcceptances(ledger.value, deps.clock.now()).filter((a) => shownIds.has(a.requirementId));
   const p = policy.value;
   const diagram = review ? await buildDiagram(deps, review.id, { threats, requirements: requirements.value, sketchVisible }) : undefined;
+  // Display only (the verdict reads it on its own): a fix check that cannot be read is left out here.
+  const fix = await readFixCheck(deps, v.issueId);
+  const fixCheck = fix.ok && fix.value ? fixCheckDto(fix.value, shownRequirements, deps.clock.now()) : undefined;
   const outOfScope = scopeRefusal(auth.issue, p);
   const verifying = review ? await verificationPending(deps, review).catch(() => false) : false;
 
@@ -353,6 +375,7 @@ export async function panelGet(deps: CoreDeps, v: Viewer): Promise<PanelDto | De
     ...(verifying ? { verifying: true } : {}),
     ...(isLicensed(license) ? {} : { licenseInactive: true as const }),
     ...(firstLook ? { firstLook } : {}),
+    ...(fixCheck ? { fixCheck } : {}),
   };
 }
 

@@ -20,7 +20,7 @@ export interface ClockPort {
 }
 
 export type ModelTier = 'fast' | 'balanced' | 'deep';
-export type LlmPurpose = 'extract' | 'propose' | 'gaps' | 'verify' | 'requirements' | 'explain' | 'release';
+export type LlmPurpose = 'extract' | 'propose' | 'gaps' | 'verify' | 'requirements' | 'explain' | 'release' | 'fix_check';
 
 export interface LlmRequest {
   system: string;
@@ -188,7 +188,9 @@ export type LedgerEventType =
   | 'suppression.expired'
   | 'suppression.unhidden'
   | 'ci_token.created'
-  | 'ci_token.revoked';
+  | 'ci_token.revoked'
+  | 'fix_check.completed'
+  | 'fix_check.confirmed';
 
 export interface LedgerInsert {
   seq: number;

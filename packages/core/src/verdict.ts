@@ -2,6 +2,7 @@ import {
   severityRank,
   type Acceptance,
   type BlockReason,
+  type FixCheckRecord,
   type Requirement,
   type Review,
   type Severity,
@@ -9,6 +10,7 @@ import {
   type Threat,
   type Verdict,
 } from '@threatline/shared';
+import { fixHold } from './fix-check.js';
 import { warnOnlyUntil } from './policy.js';
 import { gateThreats } from './suppressions.js';
 
@@ -37,6 +39,8 @@ export interface VerdictInput {
    * the state it had. Without it, suppressions are still checked against the threshold and their expiry.
    */
   activeSuppressions?: ReadonlySet<string>;
+  /** The work item's latest fix check (docs/FIX_CHECK.md): it can hold verified requirements, never release one. */
+  fixCheck?: FixCheckRecord | null;
 }
 
 const IN_PROGRESS = new Set(['awaiting_agent', 'queued', 'gathering', 'modeling']);
@@ -111,13 +115,21 @@ export function computeVerdict(i: VerdictInput): Verdict {
     const mustResolve = threats.filter((t) => atThreshold(t) && (t.state === 'accepted' || (t.state === 'needs_human' && reviewConfirmed)));
     const open: Array<{ id: string; severity: Severity }> = [];
     const outgrown: Array<{ name: string; accepted: Severity; now: Severity }> = [];
+    const fixPending: Array<{ id: string; severity: Severity }> = [];
+    const fixHeld: Array<{ id: string; severity: Severity }> = [];
     for (const t of mustResolve) {
       const req = i.requirements.find((q) => q.threatId === t.id);
       if (!req) {
         open.push({ id: t.id, severity: t.severity });
         continue;
       }
-      if (RESOLVED.has(req.status)) continue;
+      if (RESOLVED.has(req.status)) {
+        // A verified requirement whose change the fix check could not show fixes it waits for a champion.
+        const hold = fixHold(i.fixCheck, req, i.now);
+        if (hold?.kind === 'pending') fixPending.push({ id: req.id, severity: req.severity });
+        else if (hold) fixHeld.push({ id: req.id, severity: req.severity });
+        continue;
+      }
       const active = i.acceptances.filter((a) => a.requirementId === req.id && isActive(a, i.now));
       if (active.some((a) => acceptanceCovers(a, req))) continue;
       if (active[0]) outgrown.push({ name: req.subtaskKey ?? `a ${req.severity} requirement`, accepted: active[0].severity, now: req.severity });
@@ -136,6 +148,22 @@ export function computeVerdict(i: VerdictInput): Verdict {
           message: `The risk acceptance for ${o.name} was accepted at ${o.accepted}, but the requirement is now ${o.now}, so it no longer counts. Revoke it and request a new risk acceptance in the Threatline panel.`,
         });
       for (const o of open) bump(o.severity);
+    }
+    if (fixPending.length > 0) {
+      reasons.push({
+        code: 'fix_check_pending',
+        message: `Threatline is checking whether the pull request fixes ${count(fixPending.length, 'verified requirement')}.`,
+        requirementIds: fixPending.map((o) => o.id),
+      });
+      for (const o of fixPending) bump(o.severity);
+    }
+    if (fixHeld.length > 0) {
+      reasons.push({
+        code: 'fix_unconfirmed',
+        message: `The pull request does not show it fixes ${count(fixHeld.length, 'verified requirement')}. A security champion must confirm ${fixHeld.length === 1 ? 'it' : 'them'}, or the developer fixes and pushes again.`,
+        requirementIds: fixHeld.map((o) => o.id),
+      });
+      for (const o of fixHeld) bump(o.severity);
     }
   }
 

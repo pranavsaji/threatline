@@ -26,8 +26,10 @@ Threatline makes security review part of "Done". One story shows all of it:
    a Given/When/Then requirement with a fix-by date and a copyable test skeleton.
 3. **Try to move it to Done: blocked.** The workflow validator lists the open requirements. Missing, failed or
    out-of-date reviews block too, with a one-click re-run. The gate fails closed.
-4. **Fix or accept.** Verify a requirement with a PR link, or accept the risk with a reason, controls, an expiry and an
-   approver who is not you. Done passes.
+4. **Fix or accept.** Push the fix: CI reports the tests and sends the pull request's change, and Threatline Engine
+   checks the code actually fixes each requirement, quoting the lines that do. A green test that proves nothing, a
+   comment that claims the fix, a check after the payout: held for a security champion, with what is missing and a
+   suggested change. Or accept the risk with a reason, controls, an expiry and an approver who is not you. Done passes.
 5. **Merge.** A signed Ed25519 attestation lets the Bitbucket merge check (or the Threatline GitHub Action) pass the
    sensitive pull request for its exact head commit. Change one character and it fails.
 
@@ -81,6 +83,8 @@ code decides. Consensus, quote grounding, scoring, the verdict and the gates are
 
 - A review a developer cannot talk their way out of, that still explains itself in plain language.
 - Signed attestations: change one character in the pull request and the merge check fails.
+- A fix check that reads the code: on 22 real and fake fixes in four languages it called none of the 14 fake or
+  incomplete ones fixed, and the model can only hold a requirement, never release one.
 - An eval harness with recorded runs, a judge and a grader, and a CI gate that replays the production model's recordings
   and fails if recall, high-severity recall, judged precision or injection resistance drops.
 
@@ -91,8 +95,8 @@ verbatim quotes, coverage, the verifier) mattered more than adding threat types.
 
 ## What's next
 
-Marketplace listing, a check that a pull request really touches the code a requirement points to, Teamwork Graph
-memory of past incidents across the organisation, and fix suggestions proposed as pull requests.
+Marketplace listing, Teamwork Graph memory of incidents and postmortems from connected tools, and the fix check's
+suggested changes opened as pull requests on request.
 
 ## Demo video (3:22)
 

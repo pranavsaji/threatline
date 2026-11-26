@@ -17,6 +17,7 @@ import { recordHidden, suppressionsFor } from '../services/suppression-service.j
 import { isLicensed, licenseRefusal } from '../services/license.js';
 import { commentOnSettle } from '../services/verdict-comment.js';
 import { FIRST_LOOK_STAGE } from '../services/first-look.js';
+import { fixCheckJob } from '../services/fix-check-service.js';
 
 /** Propagate to children, and re-publish the Confluence page when this work item has one (RQ-6). */
 async function afterChange(deps: CoreDeps, issueId: string, republish: boolean): Promise<Result<void>> {
@@ -456,6 +457,8 @@ export async function handleJob(deps: CoreDeps, job: ReviewJob, run: JobRun = {}
     }
     case 'engine':
       return engineJob(deps, job, run.retriesLeft ?? 0);
+    case 'fix_check':
+      return fixCheckJob(deps, job, run.retriesLeft ?? 0);
     case 'incident':
       return reopenForIncident(deps, job);
     case 'migrate': {

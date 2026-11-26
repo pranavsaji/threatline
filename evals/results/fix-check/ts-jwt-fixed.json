@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-jwt-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"requireAuth now uses jwt.verify with an RS256-only algorithms allowlist and returns 401 from the catch block, rejecting alg none, other algs, and bad signatures.\",\"quotes\":[{\"path\":\"src/auth/middleware.ts\",\"line\":18,\"text\":\"claims = jwt.verify(token ?? '', env.JWT_PUBLIC_KEY, { algorithms: ['RS256'] }) as JwtPayload;\"},{\"path\":\"src/auth/middleware.ts\",\"line\":20,\"text\":\"return res.status(401).end();\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

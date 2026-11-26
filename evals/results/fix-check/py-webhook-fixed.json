@@ -1,0 +1,10 @@
+{
+  "caseId": "py-webhook-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"on_refund computes HMAC-SHA256 over raw body and rejects with 401 via compare_digest before payouts.refund is called.\",\"quotes\":[{\"path\":\"payments/webhooks/refund.py\",\"line\":26,\"text\":\"expected = hmac.new(settings.REFUND_WEBHOOK_SECRET.encode(), raw, hashlib.sha256).hexdigest()\"},{\"path\":\"payments/webhooks/refund.py\",\"line\":27,\"text\":\"if not sig or not hmac.compare_digest(sig, expected):\"},{\"path\":\"payments/webhooks/refund.py\",\"line\":28,\"text\":\"raise HTTPException(status_code=401)\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

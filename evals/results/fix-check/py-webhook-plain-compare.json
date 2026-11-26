@@ -1,0 +1,10 @@
+{
+  "caseId": "py-webhook-plain-compare",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"on_refund rejects missing/bad signatures with 401 before json.loads and payout, but uses `!=` string compare, not hmac.compare_digest constant-time.\",\"quotes\":[{\"path\":\"payments/webhooks/refund.py\",\"line\":25,\"text\":\"if sig != hmac.new(settings.REFUND_WEBHOOK_SECRET.encode(), raw, hashlib.sha256).hexdigest():\"},{\"path\":\"payments/webhooks/refund.py\",\"line\":26,\"text\":\"raise HTTPException(status_code=401)\"}],\"missing\":\"Constant-time comparison via hmac.compare_digest to avoid timing leakage of the expected digest.\",\"suggestion\":{\"summary\":\"Use hmac.compare_digest for the signature comparison\",\"code\":\"    sig = request.headers.get(\\\"x-refund-signature\\\", \\\"\\\")\\n    expected = hmac.new(settings.REFUND_WEBHOOK_SECRET.encode(), raw, hashlib.sha256).hexdigest()\\n    if not sig or not hmac.compare_digest(sig, expected):\\n        raise HTTPException(status_code=401)\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

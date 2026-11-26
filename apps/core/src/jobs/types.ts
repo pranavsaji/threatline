@@ -41,5 +41,7 @@ export const ReviewJobSchema = z.discriminatedUnion('kind', [
   z
     .object({ kind: z.literal('engine'), reviewId: z.string().min(1).max(64), stage: z.enum(['extract', 'propose', 'verify']), n: z.number().int().min(0).max(4).optional() })
     .strict(),
+  /** Fix check (docs/FIX_CHECK.md): judge the stored change of this commit against the work item's requirements. */
+  z.object({ kind: z.literal('fix_check'), issueId, commitSha: z.string().regex(/^[0-9a-f]{40}$/) }).strict(),
 ]);
 export type ReviewJob = z.infer<typeof ReviewJobSchema>;

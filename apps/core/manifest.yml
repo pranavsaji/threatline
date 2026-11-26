@@ -65,10 +65,14 @@ modules:
             statusCode: 200
             contentType: application/json
             body: "{\"result\":\"recorded\",\"verdict\":\"block\",\"message\":\"Threatline recorded this CI run. Security requirements still block Done: see the work item's Threatline panel for which ones.\"}"
+          - key: recorded-checking
+            statusCode: 200
+            contentType: application/json
+            body: "{\"result\":\"recorded\",\"verdict\":\"block\",\"fixCheck\":\"checking\",\"message\":\"Threatline recorded this CI run and is checking whether the change fixes the security requirements (usually within two minutes). Done and merge wait for the check: see the work item's Threatline panel.\"}"
           - key: bad-request
             statusCode: 400
             contentType: application/json
-            body: "{\"error\":\"validation\",\"message\":\"The report is not valid: send issueKey, repo, a 40-character commitSha, an https runUrl and results (see docs/CI_VERIFICATION.md).\"}"
+            body: "{\"error\":\"validation\",\"message\":\"The report is not valid: send issueKey, repo, a 40-character commitSha, an https runUrl and results, and optionally a diff of at most 200,000 characters and an https prUrl (see docs/CI_VERIFICATION.md).\"}"
           - key: unauthorized
             statusCode: 401
             contentType: application/json
@@ -88,7 +92,7 @@ modules:
           - key: too-large
             statusCode: 413
             contentType: application/json
-            body: "{\"error\":\"too_large\",\"message\":\"The report is larger than 256 KB. Send only tests whose names carry a requirement id.\"}"
+            body: "{\"error\":\"too_large\",\"message\":\"The report is larger than 256 KB. Send only tests whose names carry a requirement id, and a diff of at most 200,000 characters.\"}"
           - key: rate-limited
             statusCode: 429
             contentType: application/json
@@ -218,7 +222,7 @@ modules:
       name: Get security requirements
       function: getRequirementsFn
       actionVerb: GET
-      description: Returns a Jira work item's security requirements with acceptance criteria, ASVS ids, status, fix-by date, file hints and optional test skeletons. Call this before editing code for the work item.
+      description: Returns a Jira work item's security requirements with acceptance criteria, status, fix-by date, file hints, test skeletons, and whether the latest pull request fixes each. Call this before editing code for the work item.
       inputs:
         issueKey:
           title: Issue key

@@ -97,6 +97,8 @@ export interface PanelApi {
   /** Champions: show a team rule's hidden threats on this work item again (ledgered). */
   unhide(ruleId: string): Promise<Threat[] | ApiError>;
   confirm(reviewId: string, kind: 'review' | 'budget'): Promise<{ seq: number } | ApiError>;
+  /** Champions: confirm a verified requirement is fixed although the fix check could not show it (docs/FIX_CHECK.md). */
+  confirmFix?(requirementId: string): Promise<{ ok: true } | ApiError>;
   publish(): Promise<{ pageId: string; url: string; created: boolean } | ApiError>;
   requestAcceptance(input: AcceptanceInput): Promise<{ acceptanceId: string; needsApprover: 'none' | 'tech_lead' | 'champion'; entryHash: string } | ApiError>;
   decideAcceptance(acceptanceId: string, decision: 'approve' | 'reject', note?: string): Promise<{ state: AcceptanceState; entryHash: string } | ApiError>;
@@ -137,6 +139,7 @@ export function panelApiOver(invoke: Invoke): PanelApi {
     triage: (input) => invoke('threats.triage', input),
     unhide: (ruleId) => invoke('suppressions.unhide', { ruleId }),
     confirm: (reviewId, kind) => invoke('review.confirm', { reviewId, kind }),
+    confirmFix: (requirementId) => invoke('fixCheck.confirm', { requirementId }),
     publish: () => invoke('confluence.publish'),
     requestAcceptance: (input) => invoke('acceptance.request', { ...input }),
     decideAcceptance: (acceptanceId, decision, note) => invoke('acceptance.decide', { acceptanceId, decision, ...(note ? { note } : {}) }),

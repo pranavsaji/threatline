@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-webhook-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"onRefund computes HMAC over raw body and returns 401 via timing-safe safeEqual before payouts.refund is called.\",\"quotes\":[{\"path\":\"src/webhooks/refund.ts\",\"line\":14,\"text\":\"if (!sig || !safeEqual(Buffer.from(sig, 'hex'), expected)) return res.status(401).end();\"},{\"path\":\"src/webhooks/refund.ts\",\"line\":13,\"text\":\"const expected = createHmac('sha256', env.REFUND_WEBHOOK_SECRET).update(raw).digest();\"},{\"path\":\"src/webhooks/safe-equal.ts\",\"line\":2,\"text\":\"export const safeEqual = (a: Buffer, b: Buffer) => a.length === b.length && timingSafeEqual(a, b);\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

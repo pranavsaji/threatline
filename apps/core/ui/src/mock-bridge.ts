@@ -59,6 +59,7 @@ export function mockApi(state = new URLSearchParams(window.location.search).get(
     triage: async () => dto.threats,
     unhide: async (ruleId) => dto.threats.map((t) => (t.state === 'suppressed' && t.suppression?.ruleId === ruleId ? { ...t, state: t.suppression.restoreTo ?? 'accepted', suppression: { ...t.suppression, outcome: 'unhidden' as const } } : t)),
     confirm: async () => ({ seq: 1 }),
+    confirmFix: async () => ({ ok: true as const }),
     requestAcceptance: async () => ({ acceptanceId: 'acc_mock', needsApprover: 'champion', entryHash: 'f'.repeat(64) }),
     decideAcceptance: async (_id, decision) => ({ state: decision === 'approve' ? 'active' : 'rejected', entryHash: 'e'.repeat(64) }),
     revokeAcceptance: async () => ({ entryHash: 'd'.repeat(64) }),

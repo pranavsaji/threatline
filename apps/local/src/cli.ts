@@ -13,6 +13,9 @@
  *   rematch --record-set <name> [--subset 30|all|holdout] [--match claude-code|recorded|resume] [--match-model m] [--concurrency 4] [--yes]
  *     replays a recorded Engine run and has a separate claude -p call decide which reported threat finds each must-find
  *     threat (recorded into evals/results/<name>/matched/), so recall is not limited by the keyword matcher.
+ *   fix-eval [--llm claude-code|recorded|resume] [--model claude-opus-5] [--only id,id] [--yes]
+ *     the fix-check eval (docs/FIX_CHECK.md, evals/fixtures/fix-cases.ts) through runFixCheck; claude-code records each
+ *     reply into evals/results/fix-check/, recorded replays them (the CI gate does the same).
  *   sign-demo
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,6 +28,8 @@ import { CLEAN_CASES, POISONED_CASES } from '../../../evals/fixtures/cases.js';
 import { reportMarkdown, runCase, runEval, selectCases, type EvalPath } from '../../../evals/runner/run.js';
 import { scoreCase } from '../../../evals/runner/metrics.js';
 import { gateCheck, loadRecording, recordingLlm, replayLlm, saveRecording } from '../../../evals/runner/recorded.js';
+import { fixReportMarkdown, runFixEval } from '../../../evals/runner/fix-eval.js';
+import { FIX_CASES } from '../../../evals/fixtures/fix-cases.js';
 import { addMatch, emptyTotals, matchCase, MATCH_VERSION, parseMatch, type MatchItem } from '../../../evals/runner/match.js';
 
 const AGENT_RECORDED = 'evals/results/recorded';
@@ -300,6 +305,22 @@ ${missing.length ? `\nNot graded: ${missing.sort().join('; ')}\n` : ''}`;
     const base = `evals/results/${date}-match-${set}-${which}`;
     writeFileSync(`${base}.md`, md);
     writeFileSync(`${base}.json`, JSON.stringify({ set, subset: which, model, version: MATCH_VERSION, date, totals, keyword, missing }, null, 2));
+    console.log(md);
+    console.log(`wrote ${base}.md and ${base}.json`);
+    return;
+  }
+  if (cmd === 'fix-eval') {
+    const which = flag('llm', 'recorded')!;
+    const model = flag('model', 'claude-opus-5')!;
+    const only = flag('only')?.split(',').map((x) => x.trim()).filter(Boolean);
+    const live = which === 'claude-code' || which === 'resume' ? claudeCodeLlm({ model }) : undefined;
+    if (live && !(await confirm(only?.length ?? FIX_CASES.length, model))) return;
+    const r = await runFixEval({ mode: which === 'claude-code' ? 'live' : which === 'resume' ? 'resume' : 'recorded', model: live ? model : `recorded (${model})`, ...(live ? { live } : {}), ...(only ? { only } : {}) });
+    const date = new Date().toISOString().slice(0, 10);
+    const md = fixReportMarkdown(r, date);
+    const base = `evals/results/${date}-fix-check-${which === 'recorded' ? 'recorded' : model}`;
+    writeFileSync(`${base}.md`, md);
+    writeFileSync(`${base}.json`, JSON.stringify(r, null, 2));
     console.log(md);
     console.log(`wrote ${base}.md and ${base}.json`);
     return;

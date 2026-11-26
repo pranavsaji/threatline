@@ -45,6 +45,10 @@ inputs:
     description: CI verification. JUnit XML files to read, as path globs relative to the workspace, one per line (for example reports/**/*.xml).
     required: false
     default: ''
+  fix-check:
+    description: Fix check (docs/FIX_CHECK.md). true also sends the pull request's change (git diff base...head), and Threatline Engine checks whether it fixes each security requirement, quoting the lines that do. Needs actions/checkout with fetch-depth 0, and threatline-url and threatline-token. Runs on pull_request events.
+    required: false
+    default: 'false'
 outputs:
   outcome:
     description: pass_attested, pass_not_sensitive, warn, fail_missing, fail_signature, fail_stale_commit, fail_expired, fail_other_repo, fail_other_issue or config_error.

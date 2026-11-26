@@ -21,14 +21,18 @@ Ranked by how much each widens the gap between "a security checklist" and "secur
 - **Turn requirements into tasks**: one primary action under the panel's headline creates the Jira work items for every
   open requirement and links the new keys.
 
+- **Does the pull request actually fix it?** ([docs](FIX_CHECK.md)) CI sends the pull request's change; Threatline
+  Engine says, per requirement, fixed, partly fixed or not addressed, quoting the added lines that enforce it (each
+  quote checked against the diff by code). A verified requirement the change does not show is fixed waits for a
+  champion before Done or merge. Anything not fixed comes with what is still missing and a suggested change.
+- **Past incidents in the review itself** ([docs](MEMORY.md#in-the-review)): the gap check walks each past incident in
+  the review context and asks whether this design repeats it.
+
 ## Next
 
-1. **Does the pull request actually fix it?** The merge check reads the diff: did it touch the files the requirement
-   points to, and add the tests its criteria imply? A "verified" requirement whose PR never touched the hinted code is
-   flagged to a champion.
-2. **Teamwork Graph memory.** Seen before reads Jira and Threatline's own history today. Next: incidents and
-   postmortems from connected tools (Jira Service Management, Opsgenie, Confluence) and code ownership through Teamwork
-   Graph, the same CWE on recently shipped work, and the history as context for the review itself.
-3. **Fix suggestions.** For each requirement, a suggested patch and test from the repository's own code, proposed as a
-   pull request, never merged by Threatline.
-4. **Marketplace listing**, with per-site model and budget controls.
+1. **Teamwork Graph memory.** Seen before and the gap check read Jira and Threatline's own history today. Next:
+   incidents and postmortems from connected tools (Jira Service Management, Opsgenie, Confluence) and code ownership
+   through Teamwork Graph, and the same CWE on recently shipped work.
+2. **Fix pull requests.** The fix check already writes a suggested change for each requirement still open; next, open
+   it as a pull request on request (never merged by Threatline).
+3. **Marketplace listing**, with per-site model and budget controls.

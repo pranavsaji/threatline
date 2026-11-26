@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-jwt-any-alg",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"requireAuth now calls jwt.verify instead of decode, but the algorithms allowlist still includes 'none' and HS256, permitting unsigned tokens and public-key-as-HMAC confusion.\",\"quotes\":[{\"path\":\"src/auth/middleware.ts\",\"line\":16,\"text\":\"const claims = jwt.verify(token ?? '', env.JWT_PUBLIC_KEY, { algorithms: ['RS256', 'HS256', 'none'] }) as JwtPayload;\"}],\"missing\":\"Restrict algorithms to ['RS256'] only, and wrap verify in try/catch returning 401 so verification errors don't surface as 500s.\",\"suggestion\":{\"summary\":\"Allow only RS256 and return 401 on verify failure\",\"code\":\"export function requireAuth(req: Request, res: Response, next: NextFunction) {\\n  const token = req.header('authorization')?.replace(/^Bearer /, '');\\n  if (!token) return res.status(401).end();\\n  let claims: JwtPayload;\\n  try {\\n    claims = jwt.verify(token, env.JWT_PUBLIC_KEY, { algorithms: ['RS256'] }) as JwtPayload;\\n  } catch {\\n    return res.status(401).end();\\n  }\\n  if (!claims) return res.status(401).end();\\n  // ...\\n}\\n\\n// test\\nit('rejects alg=none tokens', async () => {\\n  const forged = jwt.sign({ sub: 'admin' }, '', { algorithm: 'none' });\\n  await request(app).get('/me').set('authorization', `Bearer ${forged}`).expect(401);\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

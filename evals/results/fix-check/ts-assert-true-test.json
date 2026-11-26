@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-assert-true-test",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"not_addressed\",\"reason\":\"Only a TODO comment added; route still fetches invoice by id with no ownership check. Test asserts expect(true), exercising nothing.\",\"quotes\":[],\"missing\":\"Compare invoice.customerId to req.user.id and return 404 before sending the PDF.\",\"suggestion\":{\"summary\":\"Enforce ownership and return 404; test the cross-customer attack\",\"code\":\"const invoice = await db.invoices.findById(req.params.id);\\nif (!invoice || invoice.customerId !== req.user.id) {\\n  return res.status(404).end();\\n}\\n\\n// test\\nit('refuses another customer', async () => {\\n  const res = await request(app)\\n    .get('/invoices/999.pdf')\\n    .set('Cookie', await signInAs('customer-a'));\\n  expect(res.status).toBe(404);\\n  expect(res.body).toEqual({});\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
