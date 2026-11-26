@@ -10,6 +10,8 @@ import { readVerdict } from '../../src/services/verdict-service.js';
 import { fixCheckConfirm } from '../../src/resolvers/requirements.js';
 import { panelGet } from '../../src/resolvers/panel.js';
 import { ADMIN, CHAMP, DEV, ISSUE, reviewed } from '../support/reviewed.js';
+import { jiraIssue } from '../support/core-deps.js';
+import { ok } from '@threatline/shared';
 
 const SHA = 'ab'.repeat(20);
 const SHA2 = 'cd'.repeat(20);
@@ -133,6 +135,18 @@ describe('fix check (docs/FIX_CHECK.md): CI sends the change, Threatline Engine 
     await s.report({ results: [] });
     await s.run();
     expect((await s.verdict()).state).toBe('pass');
+  });
+
+  it('security: naming the requirement’s own sub-task (branch PAY-101-…) checks the change where the requirement lives, so it cannot skip the hold', async () => {
+    const s = await setup('not_addressed');
+    await s.t.deps.requirements.upsert({ ...(s.req as Requirement), subtaskKey: 'PAY-101' });
+    s.t.jira.issue = async (ref) => ok(ref === 'PAY-101' ? jiraIssue({ id: '20001', key: 'PAY-101', parent: { id: ISSUE, key: 'PAY-7' } }) : jiraIssue({ id: ISSUE, key: 'PAY-7' }));
+    const res = await s.report({ issueKey: 'PAY-101' });
+    expect(body(res)).toMatchObject({ verdict: 'block', fixCheck: 'checking', verified: 1 });
+    expect(s.t.pushed).toContainEqual({ kind: 'fix_check', issueId: ISSUE, commitSha: SHA });
+    expect(((await readFixCheck(s.t.deps, '20001')) as { ok: true; value: unknown }).value).toBeNull();
+    await s.run();
+    expect((await s.verdict()).reasons.map((x) => x.code)).toEqual(['fix_unconfirmed']);
   });
 
   it('refuses a change over the size limit, and a pull request link that is not https', async () => {

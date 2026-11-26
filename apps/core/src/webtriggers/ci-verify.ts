@@ -146,9 +146,18 @@ export async function ciVerify(deps: CoreDeps, req: WebTriggerRequestLike): Prom
   // Fix check first: its pending record holds every requirement this report verifies until the check settles, so no
   // attestation can be issued in between. If the change cannot be stored, nothing is verified.
   let fixCheck: CiVerifyResponse['fixCheck'];
+  // Security: a branch may name a requirement's own sub-task (PAY-101) rather than its work item (PAY-7). The fix check
+  // must land where the requirements and the verdict live, or naming the sub-task would skip it: so a sub-task that is
+  // a requirement of its parent is checked as the parent.
+  let target = { id: issue.value.id, key: issue.value.key };
+  if (report.diff && issue.value.parent) {
+    const parentReqs = await deps.requirements.forIssue(issue.value.parent.id);
+    if (!parentReqs.ok) return unavailable();
+    if (parentReqs.value.some((r) => r.subtaskKey === issue.value.key)) target = { id: issue.value.parent.id, key: issue.value.parent.key };
+  }
   if (report.diff) {
     const started = await startFixCheck(deps, {
-      issueId: issue.value.id, issueKey: issue.value.key, repo: report.repo, commitSha: report.commitSha, runUrl: report.runUrl, by: token.id, diff: report.diff,
+      issueId: target.id, issueKey: target.key, repo: report.repo, commitSha: report.commitSha, runUrl: report.runUrl, by: token.id, diff: report.diff,
       ...(report.prUrl ? { prUrl: report.prUrl } : {}),
     });
     if (!started.ok) return unavailable();
@@ -157,7 +166,7 @@ export async function ciVerify(deps: CoreDeps, req: WebTriggerRequestLike): Prom
 
   const ci = { tokenId: token.id, commitSha: report.commitSha, repo: report.repo };
   const viewer = { accountId: `ci:${token.id}` };
-  let verdictIssueId = issue.value.id;
+  let verdictIssueId = target.id;
   const results: CiRequirementResult[] = [];
   for (const [requirementId, t] of [...tally.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     const base = { requirementId, ...t };
