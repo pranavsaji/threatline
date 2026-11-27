@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-ratelimit-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"verifyCode reads the per-account otp-fail counter and throws 429 before codes.check, incrementing with a 15-minute NX expiry on each wrong code.\",\"quotes\":[{\"path\":\"src/auth/otp.ts\",\"line\":22,\"text\":\"if ((await redis.get(key)) >= 5) throw new HttpError(429, 'Too many attempts. Try again in 15 minutes.');\"},{\"path\":\"src/auth/otp.ts\",\"line\":25,\"text\":\"await redis.multi().incr(key).expire(key, 15 * 60, 'NX').exec();\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

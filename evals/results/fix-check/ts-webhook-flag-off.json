@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-webhook-flag-off",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"onRefund calls verifyHmac and returns 401 before parsing, but the check is gated on flags.verifyRefundSignatures, which defaults to false unless env var set to 'true'.\",\"quotes\":[{\"path\":\"src/webhooks/refund.ts\",\"line\":12,\"text\":\"if (flags.verifyRefundSignatures && !verifyHmac(raw, req.header('x-refund-signature'), env.REFUND_WEBHOOK_SECRET)) {\"},{\"path\":\"src/config/flags.ts\",\"line\":5,\"text\":\"verifyRefundSignatures: process.env.VERIFY_REFUND_SIGNATURES === 'true',\"}],\"missing\":\"Signature verification must be unconditional (or default-on), so forged webhooks are rejected even when the env var is unset; also confirm verifyHmac uses constant-time compare.\",\"suggestion\":{\"summary\":\"Verify signature unconditionally, remove the opt-in flag\",\"code\":\"export async function onRefund(req: Request, res: Response) {\\n  const raw = await readRawBody(req);\\n  if (!verifyHmac(raw, req.header('x-refund-signature'), env.REFUND_WEBHOOK_SECRET)) {\\n    return res.status(401).end();\\n  }\\n  const event = JSON.parse(raw.toString('utf8'));\\n}\\n\\n// test\\nit('rejects refund webhook with bad signature', async () => {\\n  const res = await post('/webhooks/refund', { amount: 100 }, { 'x-refund-signature': 'deadbeef' });\\n  expect(res.status).toBe(401);\\n  expect(refundsPaid).toHaveLength(0);\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -151,7 +151,9 @@ Any other CI can run the same script with `THREATLINE_URL`, `THREATLINE_TOKEN`, 
 }
 ```
 
-`status` is `passed`, `failed` or `skipped`; at most 5,000 results and 200 distinct requirement ids per report. Unknown
+`status` is `passed`, `failed` or `skipped`; at most 5,000 results and 200 distinct requirement ids per report.
+Two optional fields turn on the [fix check](FIX_CHECK.md): `diff`, the pull request's unified diff (`base...head`, at
+most 200,000 characters), and `prUrl`, its https link. With a diff, `results` may be empty. Unknown
 fields are refused. The script and the action send only the tests whose names carry a requirement id, and never drop a
 result to make a report fit: a report over 256 KB fails instead.
 
@@ -164,6 +166,7 @@ print their own per-requirement summary from the JUnit results they sent.
 | Output | HTTP | When |
 | --- | --- | --- |
 | `recorded-pass` / `recorded-warn` / `recorded-block` | 200 | Processed. The body's `verdict` is what the Done gate now sees for the work item. |
+| `recorded-checking` | 200 | Processed, with a diff: the [fix check](FIX_CHECK.md) is running, and Done and merge wait for it. |
 | `bad-request` | 400 | Not JSON, or not the format above. |
 | `unauthorized` | 401 | Missing, malformed, wrong or revoked token. |
 | `forbidden` | 403 | The token is limited to other projects, or Threatline is not on for the work item's project. |

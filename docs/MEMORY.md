@@ -144,3 +144,14 @@ Locally: `pnpm --filter @threatline/core-ui dev`, open `?state=ready`.
   Jira's incidents and Threatline's own reviews.
 - **The same CWE on recently shipped work** (Done work items whose code reached production), from the delivery check.
 - **History as review context.** Seen before is shown to people; it is not fed to the model that writes the review.
+
+## In the review
+
+Seen before shows history next to a threat after the review. The review itself also learns from it: the gatherer puts
+past incidents linked to the work item or on its components into the review context (only those the person who caused
+the review may open), and when there are any, Threatline Engine's gap check gets one more step: for each incident, does
+this design have the same weakness, and does a listed threat already cover it? A threat it finds this way is held to
+the same rules as any gap-check threat: it must quote the design word for word, stays hidden until the verifier keeps
+it, and can only ever add to what blocks. A review with no past incidents in its context gets exactly the prompt the
+eval measured.
+

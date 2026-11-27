@@ -1,5 +1,5 @@
 import { panelDelivery, panelDiff, panelEnrich, panelGet, panelRerun, panelStatus, panelThreats, panelWhatIf, threatExplain, type Viewer } from './panel.js';
-import { requirementsCreate, requirementsSetStatus } from './requirements.js';
+import { fixCheckConfirm, requirementsCreate, requirementsSetStatus } from './requirements.js';
 import { panelMemory } from './memory.js';
 import { reviewConfirm, threatsTriage } from './threats.js';
 import { confluencePublish } from './confluence.js';
@@ -41,6 +41,7 @@ export function resolverTable(env: { enricher: () => Enricher; delivery?: () => 
     'threat.explain': (deps, v, payload) => threatExplain(deps, v, payload as { reviewId?: unknown; threatId?: unknown }),
     'requirements.create': (deps, v, payload) => requirementsCreate(deps, v, payload),
     'requirements.setStatus': (deps, v, payload) => requirementsSetStatus(deps, v, payload),
+    'fixCheck.confirm': (deps, v, payload) => fixCheckConfirm(deps, v, payload),
     'threats.triage': (deps, v, payload) => threatsTriage(deps, v, payload),
     'review.confirm': (deps, v, payload) => reviewConfirm(deps, v, payload),
     'confluence.publish': (deps, v, payload) => confluencePublish(deps, v, payload),

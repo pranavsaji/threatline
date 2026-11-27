@@ -17,6 +17,7 @@ import { useFocusReturn } from '../components/inline-form.js';
 import { field } from './form-styles.js';
 import { useInFlight } from '../components/in-flight.js';
 import { createdParts } from './CreateTasks.js';
+import { FixCheckLine } from './FixCheck.js';
 
 const STATUS_LABEL: Record<RequirementStatus, string> = {
   Open: 'Open',
@@ -153,6 +154,7 @@ export function RequirementsTab({ dto, api, onChanged, prLinks = [] }: { dto: Pa
             ))}
             <ControlLozenges controls={dto.requirementControls?.[r.id]} />
             <EvidenceLine r={r} />
+            <FixCheckLine requirement={r} fix={dto.fixCheck} champion={champion} api={api} onChanged={onChanged} />
             {/* One row of controls: what to do with the requirement first, then the test skeleton that helps verify it. */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               {canEdit && r.status !== 'AcceptedRisk' && (

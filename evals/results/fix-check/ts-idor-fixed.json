@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-idor-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"findOne scopes query by req.user.customerId, so another customer's invoice yields null and the existing 404 branch returns nothing.\",\"quotes\":[{\"path\":\"src/invoices/routes.ts\",\"line\":31,\"text\":\"const invoice = await db.invoices.findOne({ id: req.params.id, customerId: req.user.customerId });\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

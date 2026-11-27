@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { explicitIssueKeys, namedIssueKeys, requirementIdsIn } from '@threatline/shared/ci';
@@ -21,6 +22,13 @@ export interface CiReportInput {
   repo: string;
   commitSha: string;
   runUrl: string;
+  /**
+   * Fix check (docs/FIX_CHECK.md): also send the pull request's change (`git diff base...head`), so Threatline checks
+   * whether it fixes each requirement. `base` is the pull request's base commit; `prUrl` its https link.
+   */
+  fixCheck?: { base: string; prUrl?: string };
+  /** Runs git with these arguments in `root` and returns stdout (injected in tests). */
+  git?: (args: string[]) => string;
   fetch?: typeof fetch;
 }
 export interface CiReportOutcome {
@@ -91,7 +99,7 @@ export function findJUnitFiles(root: string, globs: string): string[] {
 
 /** The parts of a GitHub event the report reads. */
 export interface GitHubEventLike {
-  pull_request?: { title?: string; head?: { ref?: string; sha?: string } };
+  pull_request?: { title?: string; html_url?: string; head?: { ref?: string; sha?: string }; base?: { sha?: string } };
 }
 
 /**
@@ -99,23 +107,29 @@ export interface GitHubEventLike {
  * request title and branch, exactly as the merge gate finds it (namedIssueKeys); on a push, from the branch name.
  */
 export function actionReportConfig(
-  inputs: { url?: string; token?: string; junit?: string },
+  inputs: { url?: string; token?: string; junit?: string; fixCheck?: string },
   env: Record<string, string | undefined>,
   event: GitHubEventLike,
 ): { ok: true; value: Omit<CiReportInput, 'fetch'> | null } | { ok: false; message: string } {
   const url = (inputs.url ?? '').trim();
   const token = (inputs.token ?? '').trim();
   const junit = (inputs.junit ?? '').trim();
-  if (!url && !token && !junit) return { ok: true, value: null };
-  if (!url || !token || !junit) return { ok: false, message: 'Threatline: to report test results, set all of threatline-url, threatline-token (a secret) and junit.' };
+  const fix = (inputs.fixCheck ?? '').trim().toLowerCase() || 'false';
+  if (fix !== 'true' && fix !== 'false') return { ok: false, message: 'Threatline: fix-check must be true or false.' };
+  if (!url && !token && !junit && fix === 'false') return { ok: true, value: null };
+  if (!url || !token || (!junit && fix === 'false')) return { ok: false, message: 'Threatline: to report to Threatline, set threatline-url, threatline-token (a secret), and junit, fix-check: true, or both.' };
   const pr = event.pull_request;
+  if (fix === 'true' && !pr?.base?.sha) return { ok: false, message: 'Threatline: fix-check runs on pull_request events (it checks the pull request\'s change). Run this step on pull_request.' };
   const branch = pr?.head?.ref ?? (env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || '');
   const repo = env.GITHUB_REPOSITORY ?? '';
   const attempt = Number(env.GITHUB_RUN_ATTEMPT ?? '1');
   const runUrl = `${(env.GITHUB_SERVER_URL ?? 'https://github.com').replace(/\/+$/, '')}/${repo}/actions/runs/${env.GITHUB_RUN_ID ?? ''}${attempt > 1 ? `/attempts/${attempt}` : ''}`;
   return {
     ok: true,
-    value: { url, token, junit, root: env.GITHUB_WORKSPACE || process.cwd(), issueKeys: namedIssueKeys(pr?.title ?? '', branch), repo, commitSha: pr?.head?.sha ?? env.GITHUB_SHA ?? '', runUrl },
+    value: {
+      url, token, junit, root: env.GITHUB_WORKSPACE || process.cwd(), issueKeys: namedIssueKeys(pr?.title ?? '', branch), repo, commitSha: pr?.head?.sha ?? env.GITHUB_SHA ?? '', runUrl,
+      ...(fix === 'true' && pr?.base?.sha ? { fixCheck: { base: pr.base.sha, ...(pr.html_url?.startsWith('https://') ? { prUrl: pr.html_url } : {}) } } : {}),
+    },
   };
 }
 
@@ -137,6 +151,53 @@ const resultLine = (key: string, r: ServerResult) => {
   return `${key}: ${r.outcome.replace(/_/g, ' ')} ${r.requirementId} (${counts})${r.message ? `: ${r.message}` : ''}`;
 };
 
+/** Lock files, bundles, maps and binaries: never the fix, and the first to go when the change does not fit. */
+const GENERATED = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|Cargo\.lock|poetry\.lock|Pipfile\.lock|go\.sum|composer\.lock|Gemfile\.lock|gradle\.lockfile)$|\.min\.(js|css)$|\.(map|snap|svg|png|jpe?g|gif|ico|pdf|woff2?|ttf)$|(^|\/)(dist|build|vendor|node_modules|__snapshots__)\//i;
+/** What Threatline accepts as the change (characters). */
+const MAX_DIFF = 200_000;
+const COMMITISH = /^[0-9a-f]{7,40}$/i;
+
+const defaultGit = (root: string) => (args: string[]) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+
+/**
+ * The change as `git diff base...head` (what the pull request merges), with generated files left out, and cut at whole
+ * files to fit `budget` bytes of the report. Returns the files it had to leave out, so the log can say so.
+ */
+export function fitDiff(text: string, budget: number): { text: string; left: string[] } {
+  const parts = text.split(/(?=^diff --git )/m).filter((p) => p.trim());
+  const pathOf = (p: string) => /^diff --git "?a\/.+?"? "?b\/(.+?)"?$/m.exec(p)?.[1] ?? '(unknown)';
+  let size = 2;
+  let chars = 0;
+  const kept: string[] = [];
+  const left: string[] = [];
+  for (const p of parts) {
+    const path = pathOf(p);
+    const cost = Buffer.byteLength(JSON.stringify(p), 'utf8') - 2;
+    if (GENERATED.test(path) || size + cost > budget || chars + p.length > MAX_DIFF) {
+      left.push(path);
+      continue;
+    }
+    kept.push(p);
+    size += cost;
+    chars += p.length;
+  }
+  return { text: kept.join(''), left };
+}
+
+function readChange(i: CiReportInput, head: string): { ok: true; text: string } | { ok: false; message: string } {
+  const base = i.fixCheck!.base.trim();
+  if (!COMMITISH.test(base)) return { ok: false, message: 'Threatline: the fix check needs the pull request base commit (a hash).' };
+  const git = i.git ?? defaultGit(i.root);
+  try {
+    return { ok: true, text: git(['diff', '--no-color', '--no-ext-diff', '--find-renames', '--unified=3', `${base}...${head}`]) };
+  } catch {
+    return {
+      ok: false,
+      message: `Threatline: could not compute the change (git diff ${base.slice(0, 12)}...${head.slice(0, 12)}). Fetch the base branch's history: actions/checkout with fetch-depth: 0, or clone depth: full in bitbucket-pipelines.yml.`,
+    };
+  }
+}
+
 export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
   const doFetch = i.fetch ?? fetch;
   if (!allowedUrl(i.url)) return fail('Threatline: threatline-url must be the https web trigger URL from Threatline admin → CI verification.');
@@ -145,14 +206,22 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
   if (!/^[0-9a-f]{40}$/.test(commitSha)) return fail('Threatline: the commit is not a full 40-character hash.');
   if (!allowedUrl(i.runUrl) || !i.runUrl.startsWith('https://')) return fail('Threatline: the CI run link must be an https URL.');
 
-  let files: string[];
-  try {
-    files = findJUnitFiles(i.root, i.junit);
-  } catch (e) {
-    return fail(`Threatline: could not search for JUnit files (${e instanceof Error ? e.message : 'error'}).`);
+  let files: string[] = [];
+  if (i.junit.trim()) {
+    try {
+      files = findJUnitFiles(i.root, i.junit);
+    } catch (e) {
+      return fail(`Threatline: could not search for JUnit files (${e instanceof Error ? e.message : 'error'}).`);
+    }
+    if (files.length === 0) return fail(`Threatline: junit matched no files (${i.junit.split('\n').map((s) => s.trim()).filter(Boolean).join(', ')}). Run this after the tests, and check the reporter's output path.`);
+    if (files.length > MAX_FILES) return fail(`Threatline: junit matched ${files.length} files; narrow it to at most ${MAX_FILES}.`);
+  } else if (!i.fixCheck) return fail('Threatline: set junit (test results), the fix check, or both.');
+  let change: string | undefined;
+  if (i.fixCheck) {
+    const c = readChange(i, commitSha);
+    if (!c.ok) return fail(c.message);
+    change = c.text;
   }
-  if (files.length === 0) return fail(`Threatline: junit matched no files (${i.junit.split('\n').map((s) => s.trim()).filter(Boolean).join(', ')}). Run this after the tests, and check the reporter's output path.`);
-  if (files.length > MAX_FILES) return fail(`Threatline: junit matched ${files.length} files; narrow it to at most ${MAX_FILES}.`);
 
   const cases: TestCase[] = [];
   let total = 0;
@@ -164,7 +233,7 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
     total += parsed.cases.length;
     for (const c of parsed.cases) if (requirementIdsIn(c.name).length > 0) cases.push({ name: c.name.slice(0, 2000), status: c.status });
   }
-  const lines = [`Threatline: ${cases.length} of ${total} tests in ${files.length} JUnit file(s) name a requirement.`];
+  const lines = files.length > 0 ? [`Threatline: ${cases.length} of ${total} tests in ${files.length} JUnit file(s) name a requirement.`] : [];
   const keys = [...new Set(i.issueKeys)];
   if (keys.length === 0) return warn('Threatline: the branch or pull request title names no Jira work item, so no requirement was reported.', lines);
   if (keys.length > MAX_KEYS) return fail(`Threatline: the branch and title name ${keys.length} work items; name at most ${MAX_KEYS}.`, lines);
@@ -185,9 +254,20 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
     }
   const passing = [...local.values()].filter((t) => t.passed > 0 && t.failed === 0).length;
   for (const issueKey of keys) {
-    const body = JSON.stringify({ issueKey, repo: i.repo, commitSha, runUrl: i.runUrl, results: cases });
+    const report = { issueKey, repo: i.repo, commitSha, runUrl: i.runUrl, results: cases, ...(i.fixCheck?.prUrl ? { prUrl: i.fixCheck.prUrl } : {}) };
+    let body = JSON.stringify(report);
     if (Buffer.byteLength(body, 'utf8') > MAX_BODY_BYTES)
       return fail(`Threatline: the report for ${issueKey} is larger than 256 KB (${cases.length} tests). Report fewer test files with the junit input; results are never dropped to fit.`, lines);
+    if (change !== undefined) {
+      // Test results are never dropped; the change is cut at whole files to fit what is left of the report.
+      const fit = fitDiff(change, MAX_BODY_BYTES - Buffer.byteLength(body, 'utf8') - 64);
+      if (!fit.text) {
+        lines.push(`${issueKey}: the change has no reviewable files${fit.left.length ? ` (${fit.left.length} generated or too large)` : ''}, so no fix check was sent.`);
+      } else {
+        body = JSON.stringify({ ...report, diff: fit.text });
+        lines.push(`${issueKey}: sent the change for a fix check (${(fit.text.length / 1024).toFixed(0)} KB${fit.left.length ? `; left out ${fit.left.length} file(s): ${fit.left.slice(0, 5).join(', ')}${fit.left.length > 5 ? ', …' : ''}` : ''}).`);
+      }
+    }
     let res: Response;
     try {
       res = await doFetch(i.url, { method: 'POST', headers: { authorization: `Bearer ${i.token}`, 'content-type': 'application/json', 'user-agent': 'threatline-ci-report' }, body, signal: AbortSignal.timeout(TIMEOUT_MS) });
@@ -196,7 +276,7 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
       continue;
     }
     const text = await res.text().catch(() => '');
-    let parsed: { message?: unknown; verdict?: unknown; results?: unknown } = {};
+    let parsed: { message?: unknown; verdict?: unknown; results?: unknown; fixCheck?: unknown } = {};
     try {
       parsed = JSON.parse(text) as typeof parsed;
     } catch {
@@ -209,6 +289,7 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
         lines.push(resultLine(issueKey, r));
         if (r.outcome === 'verified') verified++;
       }
+    if (parsed.fixCheck === 'checking') lines.push(`${issueKey}: Threatline is checking whether this change fixes its security requirements. Done and merge wait for the check (the work item's Threatline panel shows the result).`);
     if (typeof parsed.verdict === 'string') lines.push(`${issueKey} verdict: ${parsed.verdict}${!Array.isArray(parsed.results) && serverMessage ? ` (${serverMessage.trim()})` : ''}`);
     if (res.ok) continue;
     if (res.status === 429 || res.status >= 500) {
@@ -241,9 +322,14 @@ export async function runCiReport(i: CiReportInput): Promise<CiReportOutcome> {
  */
 export function cliReportConfig(argv: string[], env: Record<string, string | undefined>): { ok: true; value: Omit<CiReportInput, 'fetch'> } | { ok: false; message: string } {
   const flags: Record<string, string[]> = {};
+  let fixFlag = false;
   for (let k = 0; k < argv.length; k++) {
-    const m = /^--(junit|issue-key|url|commit|repo|run-url)(?:=(.*))?$/.exec(argv[k]!);
-    if (!m) return { ok: false, message: `Threatline: unknown argument ${argv[k]!.slice(0, 40)}. Use --junit, --issue-key, --url, --commit, --repo or --run-url (the token comes from THREATLINE_TOKEN).` };
+    if (argv[k] === '--fix-check') {
+      fixFlag = true;
+      continue;
+    }
+    const m = /^--(junit|issue-key|url|commit|repo|run-url|diff-base|pr-url)(?:=(.*))?$/.exec(argv[k]!);
+    if (!m) return { ok: false, message: `Threatline: unknown argument ${argv[k]!.slice(0, 40)}. Use --junit, --fix-check, --diff-base, --pr-url, --issue-key, --url, --commit, --repo or --run-url (the token comes from THREATLINE_TOKEN).` };
     const value = m[2] ?? argv[++k];
     if (value === undefined) return { ok: false, message: `Threatline: --${m[1]} needs a value.` };
     (flags[m[1]!] ??= []).push(value);
@@ -265,9 +351,15 @@ export function cliReportConfig(argv: string[], env: Record<string, string | und
     commitSha: one('commit', env.THREATLINE_COMMIT, env.BITBUCKET_COMMIT, env.GITHUB_SHA),
     runUrl: one('run-url', env.THREATLINE_RUN_URL, bitbucketRun, githubRun),
   };
+  // Fix check: --fix-check (or --diff-base) sends the pull request's change; in Bitbucket Pipelines the base is the
+  // pull request's destination commit and the link is built from BITBUCKET_PR_ID.
+  const base = one('diff-base', env.THREATLINE_DIFF_BASE, fixFlag ? env.BITBUCKET_PR_DESTINATION_COMMIT : undefined);
+  const prUrl = one('pr-url', env.THREATLINE_PR_URL, env.BITBUCKET_PR_ID && repo ? `https://bitbucket.org/${repo}/pull-requests/${env.BITBUCKET_PR_ID}` : undefined);
+  if ((fixFlag || base) && !base) return { ok: false, message: 'Threatline: --fix-check needs the pull request base commit: run it in a pull-requests pipeline (BITBUCKET_PR_DESTINATION_COMMIT), or pass --diff-base.' };
+  const withFix = base ? { ...value, fixCheck: { base, ...(prUrl.startsWith('https://') ? { prUrl } : {}) } } : value;
   if (!value.url) return { ok: false, message: 'Threatline: set THREATLINE_URL (or --url) to the web trigger URL from Threatline admin → CI verification.' };
   if (!value.token) return { ok: false, message: 'Threatline: set THREATLINE_TOKEN to the CI token (a secured repository variable).' };
-  if (!value.junit.trim()) return { ok: false, message: 'Threatline: pass --junit <glob> (for example --junit "test-results/**/*.xml").' };
+  if (!value.junit.trim() && !base) return { ok: false, message: 'Threatline: pass --junit <glob> (for example --junit "test-results/**/*.xml"), --fix-check, or both.' };
   if (!value.repo || !value.runUrl) return { ok: false, message: 'Threatline: cannot tell the repository or the run link; set --repo and --run-url.' };
-  return { ok: true, value };
+  return { ok: true, value: withFix };
 }

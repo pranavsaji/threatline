@@ -95,7 +95,7 @@ describe('the bundled CI report (GitHub Action and Bitbucket script) against a s
   it('GitHub Action: a partial report setup is a configuration error', async () => {
     const r = await run(dist, [], { 'INPUT_MERGE-GATE': 'false', 'INPUT_THREATLINE-URL': url, GITHUB_EVENT_NAME: 'push' });
     expect(r.status).toBe(1);
-    expect(r.stdout).toMatch(/::error title=Threatline::Threatline: to report test results, set all of/);
+    expect(r.stdout).toMatch(/::error title=Threatline::Threatline: to report to Threatline, set threatline-url, threatline-token/);
   });
 
   it('Bitbucket Pipelines script: reads the pipeline variables, never echoes the token, and fails on a refused token', async () => {

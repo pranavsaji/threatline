@@ -1,0 +1,10 @@
+{
+  "caseId": "java-idor-fixed",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"fixed\",\"reason\":\"Lookup scoped by authenticated customer via findByIdAndCustomerId, throwing NotFound before rendering, so cross-customer ids return 404 with no body.\",\"quotes\":[{\"path\":\"src/main/java/com/acme/invoices/InvoiceController.java\",\"line\":42,\"text\":\"Invoice invoice = invoices.findByIdAndCustomerId(id, me.getId()).orElseThrow(NotFound::new);\"}]}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-idor-client-side",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"not_addressed\",\"reason\":\"InvoicePage only hides the view client-side after useInvoice already fetched the record; no server-side ownership check on the invoice/PDF endpoint.\",\"quotes\":[],\"missing\":\"Server-side authorization in the invoice fetch/PDF handler scoping by authenticated customerId and returning 404 for others.\",\"suggestion\":{\"summary\":\"Enforce ownership in the invoice API handler, returning 404\",\"code\":\"// api/src/routes/invoices.ts\\nrouter.get('/invoices/:id/pdf', async (req, res) => {\\n  const invoice = await db.invoice.findUnique({ where: { id: req.params.id } });\\n  if (!invoice || invoice.customerId !== req.user.customerId) {\\n    return res.status(404).end();\\n  }\\n  return res.type('application/pdf').send(await renderPdf(invoice));\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

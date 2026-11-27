@@ -98,6 +98,36 @@ export const FIXTURES: Record<string, PanelDto> = {
   /** An incident on the component reopened the review (docs/INCIDENTS.md). */
   reopened: withReview({ revision: 2 }, { history: [{ revision: 1, createdAt: '2026-11-16T05:30:43.000Z', riskScore: 60, status: 'ready', added: 2, removed: 0 }, { revision: 2, createdAt: '2026-11-21T09:12:00.000Z', riskScore: 72, status: 'ready', added: 2, removed: 0, reopenedBy: { incidentKey: 'PAY-9', components: ['Payments API'], linked: false, at: '2026-11-21T09:11:00.000Z' } }] }),
   pass: { ...base, verdict: { ...base.verdict!, state: 'pass', blockingCount: 0, maxOpenSeverity: null, reasons: [] }, requirements: base.requirements.map((r) => ({ ...r, status: 'Verified' as const, verifiedBy: 'acc-dev', evidence: { kind: 'pr' as const, ref: 'https://bitbucket.org/acme/payments/pull-requests/42', attester: 'acc-dev' } })) },
+  // Fix check (docs/FIX_CHECK.md): CI verified both; the change fixes one and only pretends to fix the other.
+  fix_check: {
+    ...base,
+    verdict: { ...base.verdict!, state: 'block', blockingCount: 1, maxOpenSeverity: 'Critical', reasons: [{ code: 'fix_unconfirmed', message: 'The pull request does not show it fixes 1 verified requirement. A security champion must confirm it, or the developer fixes and pushes again.', requirementIds: ['req_1'] }] },
+    roles: ['viewer', 'developer', 'champion'],
+    requirements: base.requirements.map((r) => ({ ...r, status: 'Verified' as const, verifiedBy: 'ci:tok_1', evidence: { kind: 'ci' as const, ref: 'https://bitbucket.org/acme/payments-service/pipelines/results/42', note: '2 test(s) passed', commitSha: '4f1c2a9be03d5e6f7a8b9c0d1e2f3a4b5c6d7e8f', repo: 'acme/payments-service', attester: 'ci:tok_1' } })),
+    fixCheck: {
+      issueId: '66405', issueKey: 'PAY-6', repo: 'acme/payments-service', commitSha: '4f1c2a9be03d5e6f7a8b9c0d1e2f3a4b5c6d7e8f', prUrl: 'https://bitbucket.org/acme/payments-service/pull-requests/7',
+      runUrl: 'https://bitbucket.org/acme/payments-service/pipelines/results/42', status: 'done', requestedAt: now, finishedAt: now, model: 'claude-opus-5', promptVersion: 'fix-v1.0.0', files: 4, omittedFiles: 1,
+      findings: [
+        {
+          requirementId: 'req_1', verdict: 'not_addressed', reason: 'changeEmail() still updates the address straight away; the new test only checks that the endpoint answers 200.', quotes: [],
+          missing: 'A one-time code sent to the old address, checked before the email changes.', testsNamed: 2, touchesHints: true,
+          suggestion: {
+            summary: 'Require a one-time code from the old address before saving the new one',
+            code: "export async function changeEmail(user: User, next: string, code: string) {\n  if (!(await otp.verify(user.email, code))) throw new HttpError(403, 'Enter the code we sent to your current address');\n  await users.update(user.id, { email: next });\n  await audit.log('email.changed', { userId: user.id });\n}\n\nit('[req_1] refuses a change without the code from the old address', async () => {\n  await expect(changeEmail(alice, 'evil@example.com', '000000')).rejects.toThrow('403');\n});",
+          },
+        },
+        {
+          requirementId: 'req_2', verdict: 'fixed', reason: 'consumeMagicLink() refuses links older than 15 minutes and deletes each link on first use.', testsNamed: 1, touchesHints: true,
+          quotes: [
+            { path: 'src/auth/magic-link.ts', line: 41, text: 'if (Date.now() - link.createdAt > 15 * 60_000) throw new HttpError(401, "This link has expired");' },
+            { path: 'src/auth/magic-link.ts', line: 43, text: 'await links.delete(link.id);' },
+          ],
+        },
+      ],
+      confirmations: [],
+      holds: { req_1: { kind: 'unconfirmed', why: 'not_fixed' } },
+    },
+  },
 };
 
 /** R7 preview: what a re-run after one new design paragraph shows. */

@@ -9,3 +9,4 @@ export * from './attestation.js';
 export * from './policy.js';
 export * from './agent-output.js';
 export * from './suppression.js';
+export * from './fix-check.js';

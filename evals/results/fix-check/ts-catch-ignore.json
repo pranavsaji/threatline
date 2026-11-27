@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-catch-ignore",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"assertSignature is called but its throw is swallowed in the catch and only logged; payouts.refund still executes for invalid or missing signatures.\",\"quotes\":[{\"path\":\"src/webhooks/refund.ts\",\"line\":13,\"text\":\"assertSignature(raw, req.header('x-refund-signature'), env.REFUND_WEBHOOK_SECRET);\"},{\"path\":\"src/webhooks/refund.ts\",\"line\":15,\"text\":\"logger.warn('refund webhook signature check failed', { error: String(e) });\"}],\"missing\":\"The catch must return HTTP 401 and stop processing before payouts.refund, instead of merely logging the failure.\",\"suggestion\":{\"summary\":\"Return 401 in catch block before paying refund\",\"code\":\"  try {\\n    assertSignature(raw, req.header('x-refund-signature'), env.REFUND_WEBHOOK_SECRET);\\n  } catch (e) {\\n    logger.warn('refund webhook signature check failed', { error: String(e) });\\n    return res.status(401).json({ error: 'invalid signature' });\\n  }\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

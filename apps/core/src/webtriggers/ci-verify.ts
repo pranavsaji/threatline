@@ -4,7 +4,9 @@ import type { CoreDeps } from '../deps.js';
 import { log } from '../adapters/log.js';
 import { authenticateCi } from '../services/ci-tokens.js';
 import { setRequirementStatus } from '../services/requirements-service.js';
-import { readVerdict } from '../services/verdict-service.js';
+import { readVerdict, refreshVerdict } from '../services/verdict-service.js';
+import { startFixCheck } from '../services/fix-check-service.js';
+import { MAX_FIX_DIFF } from '@threatline/core';
 
 /**
  * Web trigger `ci-verify` (docs/CI_VERIFICATION.md): CI reports which tests passed on a commit; every requirement whose
@@ -49,6 +51,8 @@ export interface CiVerifyResponse {
   results: CiRequirementResult[];
   /** Tests whose names carry no requirement id. */
   ignoredTests: number;
+  /** The change was sent for a fix check (docs/FIX_CHECK.md): `checking` until it settles, or why it did not run. */
+  fixCheck?: 'checking' | 'already_checked' | 'not_run';
 }
 
 const ISSUE_KEY = /^[A-Z][A-Z0-9_]{0,254}-\d{1,18}$/;
@@ -71,6 +75,9 @@ const ReportSchema = z
     results: z
       .array(z.object({ name: z.string().min(1).max(2000), status: z.enum(['passed', 'failed', 'skipped']) }).strict())
       .max(MAX_RESULTS),
+    /** Fix check: the pull request's unified diff (base...head), and the pull request's https link. */
+    diff: z.string().min(1).max(MAX_FIX_DIFF, `a diff of at most ${MAX_FIX_DIFF} characters`).optional(),
+    prUrl: z.string().max(2000).refine(httpsUrl, 'an https link to the pull request').optional(),
   })
   .strict();
 
@@ -136,9 +143,30 @@ export async function ciVerify(deps: CoreDeps, req: WebTriggerRequestLike): Prom
   }
   if (tally.size > MAX_IDS) return refuse(400, 'validation', `The report names more than ${MAX_IDS} requirements. Report one work item's tests at a time.`);
 
+  // Fix check first: its pending record holds every requirement this report verifies until the check settles, so no
+  // attestation can be issued in between. If the change cannot be stored, nothing is verified.
+  let fixCheck: CiVerifyResponse['fixCheck'];
+  // Security: a branch may name a requirement's own sub-task (PAY-101) rather than its work item (PAY-7). The fix check
+  // must land where the requirements and the verdict live, or naming the sub-task would skip it: so a sub-task that is
+  // a requirement of its parent is checked as the parent.
+  let target = { id: issue.value.id, key: issue.value.key };
+  if (report.diff && issue.value.parent) {
+    const parentReqs = await deps.requirements.forIssue(issue.value.parent.id);
+    if (!parentReqs.ok) return unavailable();
+    if (parentReqs.value.some((r) => r.subtaskKey === issue.value.key)) target = { id: issue.value.parent.id, key: issue.value.parent.key };
+  }
+  if (report.diff) {
+    const started = await startFixCheck(deps, {
+      issueId: target.id, issueKey: target.key, repo: report.repo, commitSha: report.commitSha, runUrl: report.runUrl, by: token.id, diff: report.diff,
+      ...(report.prUrl ? { prUrl: report.prUrl } : {}),
+    });
+    if (!started.ok) return unavailable();
+    fixCheck = started.value.status === 'failed' ? 'not_run' : started.value.status === 'done' ? 'already_checked' : 'checking';
+  }
+
   const ci = { tokenId: token.id, commitSha: report.commitSha, repo: report.repo };
   const viewer = { accountId: `ci:${token.id}` };
-  let verdictIssueId = issue.value.id;
+  let verdictIssueId = target.id;
   const results: CiRequirementResult[] = [];
   for (const [requirementId, t] of [...tally.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     const base = { requirementId, ...t };
@@ -188,11 +216,12 @@ export async function ciVerify(deps: CoreDeps, req: WebTriggerRequestLike): Prom
     else results.push({ ...base, outcome: 'error', message: 'Threatline could not record this; nothing changed. Retry the report.' });
   }
 
-  const verdict = await readVerdict(deps, verdictIssueId);
+  // A fix check changes the verdict even when no requirement moved: recompute it rather than read the stored one.
+  const verdict = fixCheck ? await refreshVerdict(deps, verdictIssueId) : await readVerdict(deps, verdictIssueId);
   const state: CiVerifyResponse['verdict'] = verdict.ok && verdict.value ? verdict.value.state : 'block';
   const verified = results.filter((r) => r.outcome === 'verified').length;
   const failedToRecord = results.some((r) => r.outcome === 'error');
-  log('ci.verify', { tokenId: token.id, issueKey: report.issueKey, requirements: results.length, verified, errors: results.filter((r) => r.outcome === 'error').length });
-  const out: CiVerifyResponse = { issueKey: report.issueKey, commitSha: report.commitSha, verdict: state, verified, results, ignoredTests };
+  log('ci.verify', { tokenId: token.id, issueKey: report.issueKey, requirements: results.length, verified, errors: results.filter((r) => r.outcome === 'error').length, ...(fixCheck ? { fixCheck } : {}) });
+  const out: CiVerifyResponse = { issueKey: report.issueKey, commitSha: report.commitSha, verdict: state, verified, results, ignoredTests, ...(fixCheck ? { fixCheck } : {}) };
   return respond(failedToRecord ? 503 : 200, out);
 }

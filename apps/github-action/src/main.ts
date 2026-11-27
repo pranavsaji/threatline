@@ -20,7 +20,7 @@ async function main(): Promise<number> {
   const event = (eventPath && existsSync(eventPath) ? JSON.parse(readFileSync(eventPath, 'utf8')) : {}) as Event;
   const gateInput = (input('merge-gate') ?? '').trim().toLowerCase() || 'true';
   if (gateInput !== 'true' && gateInput !== 'false') return finish(false, 'config_error', 'Threatline: merge-gate must be true or false.');
-  const report = actionReportConfig({ url: input('threatline-url'), token: input('threatline-token'), junit: input('junit') }, env, event);
+  const report = actionReportConfig({ url: input('threatline-url'), token: input('threatline-token'), junit: input('junit'), fixCheck: input('fix-check') }, env, event);
   if (!report.ok) return finish(false, 'config_error', report.message);
   if (gateInput === 'false' && !report.value) return finish(false, 'config_error', 'Threatline: merge-gate is false and no report is configured (threatline-url, threatline-token, junit), so this step does nothing.');
 

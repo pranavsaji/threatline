@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-idor-one-route",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"PDF route now scopes query by req.user.customerId, but the JSON route at line 36 still uses findById with no ownership check and returns the invoice.\",\"quotes\":[{\"path\":\"src/invoices/routes.ts\",\"line\":31,\"text\":\"const invoice = await db.invoices.findOne({ id: req.params.id, customerId: req.user.customerId });\"}],\"missing\":\"Same customerId scoping plus 404 on miss for GET /invoices/:id JSON handler.\",\"suggestion\":{\"summary\":\"Scope JSON invoice lookup to the authenticated customer and 404 on miss\",\"code\":\"router.get('/invoices/:id', requireAuth, async (req, res) => {\\n  const invoice = await db.invoices.findOne({ id: req.params.id, customerId: req.user.customerId });\\n  if (!invoice) return res.status(404).end();\\n  res.json(invoice);\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

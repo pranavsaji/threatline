@@ -4,6 +4,7 @@ import type { CoreDeps } from '../deps.js';
 import type { JiraIssue } from '../adapters/jira.js';
 import { log } from '../adapters/log.js';
 import { isBudgetPaused } from './budget.js';
+import { readFixCheck } from './fix-check-store.js';
 
 export const contextKey = (issueId: string) => `ctx:${issueId}`;
 /**
@@ -193,6 +194,9 @@ async function ownVerdict(
   if (!requirements.ok) return requirements;
   const paused = await isBudgetPaused(deps, policy, now);
   if (!paused.ok) return paused;
+  // Fail closed: a fix check that cannot be read fails the verdict (it might hold a verified requirement).
+  const fixCheck = await readFixCheck(deps, issue.id);
+  if (!fixCheck.ok) return fixCheck;
   let current: string | null = null;
   try {
     const v = await deps.state.get<unknown>(contextKey(issue.id));
@@ -222,6 +226,7 @@ async function ownVerdict(
     injectionSuspected,
     now,
     panelUrl,
+    fixCheck: fixCheck.value,
   });
   const [first, ...more] = verdict.reasons;
   if (scope && first) verdict.reasons = [{ ...first, message: `Threatline reviewed this work item before it ${scope}, so its review and security requirements still apply. ${first.message}` }, ...more];

@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-webhook-test-only",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"not_addressed\",\"reason\":\"Only a test added, which posts a refund without any signature and asserts 200 — no HMAC verification code exists in the diff.\",\"quotes\":[],\"missing\":\"Server-side HMAC verification middleware on /webhooks/refund rejecting missing/invalid signatures with 401 before refund processing.\",\"suggestion\":{\"summary\":\"Add HMAC signature check before refund handling, plus a test asserting 401\",\"code\":\"// src/webhooks/refund.ts\\nimport crypto from 'crypto';\\n\\nrouter.post('/webhooks/refund', (req, res, next) => {\\n  const sig = req.get('X-Signature') || '';\\n  const expected = crypto\\n    .createHmac('sha256', process.env.REFUND_WEBHOOK_SECRET!)\\n    .update(req.rawBody)\\n    .digest('hex');\\n  const a = Buffer.from(sig);\\n  const b = Buffer.from(expected);\\n  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {\\n    return res.status(401).end();\\n  }\\n  return next();\\n}, handleRefund);\\n\\n// test/webhooks/refund.test.ts\\nit('rejects unsigned refund events', async () => {\\n  const res = await post('/webhooks/refund', { orderId: 'o1', amount: 10 });\\n  expect(res.status).toBe(401);\\n});\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

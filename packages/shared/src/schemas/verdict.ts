@@ -10,6 +10,8 @@ export const BlockReasonCodeSchema = z.enum([
   'open_requirement',
   'needs_human',
   'injection_unconfirmed',
+  'fix_check_pending',
+  'fix_unconfirmed',
 ]);
 export type BlockReasonCode = z.infer<typeof BlockReasonCodeSchema>;
 

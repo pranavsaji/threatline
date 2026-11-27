@@ -1,0 +1,10 @@
+{
+  "caseId": "py-sqli-sort-left",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"search_orders now binds the term parameter, but `sort` is still f-string interpolated into ORDER BY with no allow-list validation.\",\"quotes\":[{\"path\":\"orders/search.py\",\"line\":11,\"text\":\"return conn.execute(sql, (f\\\"%{term}%\\\",)).fetchall()\"}],\"missing\":\"Validate sort against an allow-list of column names (and direction) before building the ORDER BY clause; reject or default otherwise.\",\"suggestion\":{\"summary\":\"Restrict sort column to an allow-list before interpolation\",\"code\":\"ALLOWED_SORTS = {\\\"id\\\", \\\"customer_name\\\", \\\"created_at\\\", \\\"total\\\"}\\n\\ndef search_orders(conn, term: str, sort: str):\\n    if sort not in ALLOWED_SORTS:\\n        raise ValueError(f\\\"invalid sort column: {sort}\\\")\\n    sql = f\\\"SELECT * FROM orders WHERE customer_name LIKE %s ORDER BY {sort}\\\"\\n    return conn.execute(sql, (f\\\"%{term}%\\\",)).fetchall()\\n\\n\\ndef test_sort_injection_rejected(conn):\\n    import pytest\\n    with pytest.raises(ValueError):\\n        search_orders(conn, \\\"a\\\", \\\"id; DROP TABLE orders--\\\")\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

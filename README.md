@@ -1,11 +1,11 @@
 # Threatline
 
-![tests](https://img.shields.io/badge/tests-2%2C007%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-2%2C052%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/line%20coverage-92.9%25-brightgreen)
 ![high-severity recall](https://img.shields.io/badge/high--severity%20recall%20%28graded%2C%20Opus%205%29-60%2F60-blue)
 ![injection resistance](https://img.shields.io/badge/injection%20resistance%20%2855%20cases%2C%20Opus%205%29-15%2F15-blue)
 ![egress](https://img.shields.io/badge/egress-none-informational)
-![Jira app](https://img.shields.io/badge/Threatline%20for%20Jira-5.16.0-0052CC)
+![Jira app](https://img.shields.io/badge/Threatline%20for%20Jira-5.18.0-0052CC)
 ![Bitbucket app](https://img.shields.io/badge/Threatline%20for%20Bitbucket-2.12.0-0052CC)
 
 **Security review that gates Done and merge.** Security review is advisory, so it loses to the deadline. Threatline
@@ -22,6 +22,7 @@ someone allowed to accept it.
 | **Remembers** | Under each threat, **Seen before**: the incident it repeats and the same threat on other work, fixed or accepted. |
 | **Turns into work** | **Turn 9 requirements into tasks**: one click, under the headline. |
 | **Proves itself** | 60 of 60 high-severity threats on the eval, and **Accuracy here** measured on your own champions' decisions. |
+| **Checks the fix** | CI sends the pull request; Threatline Engine says whether it actually fixes each requirement, quoting the lines that do. A green test that proves nothing does not get through: **0 false fixes** on 22 real and fake fixes. |
 | **Stops it shipping** | Other tools warn. Threatline refuses Done and the merge until each requirement is fixed or knowingly accepted. |
 
 ![Threatline issue panel](docs/screenshots/jira-1-issue-panel.png)
@@ -58,11 +59,11 @@ someone allowed to accept it.
 | --- | --- |
 | **What** | AI threat modelling for Jira work items, enforced at Done (workflow validator) and at merge (signed attestation checked by a Bitbucket merge check or a GitHub Action). |
 | **Who it is for** | Software teams that ship through Jira and Bitbucket or GitHub, and the security champions who cannot read every design. |
-| **Apps** | **Threatline for Jira** 5.16.0 (Jira, with Confluence) and **Threatline for Bitbucket** 2.12.0, both on Atlassian Forge in production. Two apps because Forge cannot put a site (Jira, Confluence) and a Bitbucket workspace in one app; they share only a public key. |
+| **Apps** | **Threatline for Jira** 5.18.0 (Jira, with Confluence) and **Threatline for Bitbucket** 2.12.0, both on Atlassian Forge in production. Two apps because Forge cannot put a site (Jira, Confluence) and a Bitbucket workspace in one app; they share only a public key. |
 | **AI** | Threatline Engine on Atlassian-hosted Forge LLMs (`claude-opus-5` for the runs, gap check and verifier; a Sonnet model for the quarantined injection check). Rovo agent mode is optional. Rule-based mode works on sites with no AI at all. |
 | **Data** | No egress: neither manifest declares an external host, so nothing leaves Atlassian. Logs hold ids, timings and counts, never work item text, page text or prompts. |
-| **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word ([eval](#eval)). |
-| **Quality** | 2,007 tests in 158 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
+| **Measured** | On the production model and path: 60 of 60 high-severity must-find threats, 97.7% graded recall, 15 of 15 poisoned designs held, 99.8% of citations found word for word; the fix check called none of 14 fake or incomplete fixes fixed ([eval](#eval)). |
+| **Quality** | 2,052 tests in 162 files, 92.9% line coverage of the server code, Playwright journeys in a real browser, semgrep, gitleaks, `pnpm audit` and knip in CI with zero high findings. |
 | **Codegeist 2026** | Apps for Software Teams. Built on Forge LLMs, Jira, Confluence, Bitbucket, Rovo (agent, actions, skill, MCP server), Teamwork Graph and Forge SQL. |
 
 ## The problem
@@ -131,6 +132,8 @@ the production apps ([index](docs/screenshots/README.md)).
 
 | Version (Jira / Bitbucket) | Date | What changed |
 | --- | --- | --- |
+| 5.18.0 / 2.12.0 | 2026-11-26 | **Fix check** ([docs](docs/FIX_CHECK.md)): CI sends the pull request's change (`fix-check: true` in the GitHub Action, `--fix-check` in Bitbucket Pipelines), and Threatline Engine says per requirement whether it is fixed, partly fixed or not addressed, quoting the added lines that enforce it, each checked against the diff by code. A verified requirement the change does not show is fixed waits for a security champion before Done and merge; anything not fixed comes with what is still missing and a **suggested change** to copy. **Past incidents in the review**: the gap check asks of each past incident in the context whether this design repeats it. |
+| 5.17.0 / 2.12.0 | 2026-11-25 | One quiet panel: colour only for severity and exceptions, details on demand, the champion's confirm inline in the headline, grouped admin navigation. |
 | 5.16.0 / 2.12.0 | 2026-11-24 | **First look in seconds** from Threatline's rules while the AI review runs. **Verdict comment** on the work item when a review settles (once per revision, names a threat only when every viewer may see its evidence, never Threatline's own comments in the next review). **Turn N requirements into tasks** under the headline. **Seen before**: past incidents and the same threat on other work items, under each threat. **Accuracy here** on the posture page, gadget and `posture-summary`. |
 | 5.15.0 / 2.12.0 | 2026-11-24 | The Security gate label sizes its frame to its content and shows the second reason when two things block Done; setup checklist items keep their status beside long text. |
 | 5.14.0 / 2.12.0 | 2026-11-24 | **Security gate label** on every work item (`jira:issueContext`): ✕ Blocks Done, ✓ Ready for Done, Reviewing…, Warn only or Not reviewed, with the top reason, without opening the panel. **Check an attestation** in the panel: paste a merge attestation and see whether this site's key signed it, for which work item and commit, or exactly why not. **One-click champion group** from groups the admin is already in. The panel's headline says what stands between the work item and Done. |
@@ -235,6 +238,12 @@ rule in code, with tests:
 - **CI closes the loop.** Tests named after a requirement pass in CI (the GitHub Action or Bitbucket Pipelines) and
   Threatline marks it Verified with the run as evidence, no clicking. CI tokens are rate limited to 120 reports an hour
   ([CI verification](docs/CI_VERIFICATION.md)).
+- **The fix check reads the code.** A passing test can prove nothing. With `fix-check` on, CI also sends the pull
+  request's change, and Threatline Engine says for each requirement whether it is fixed, partly fixed or not addressed,
+  quoting the added lines that enforce it; code checks every quote against the diff. A verified requirement the change
+  does not show is fixed waits for a security champion before Done and merge, and anything not fixed comes with what is
+  still missing and a suggested change. The model can only hold a requirement, never release one
+  ([fix check](docs/FIX_CHECK.md)).
 - **Delivery check (Teamwork Graph).** The panel lists the pull requests and deployments linked to the work item from
   any connected provider, read as the viewer, never stored and never sent to a model. If code reached production while
   security requirements were still open, the panel says so: the one alert neither gate can raise by itself.
@@ -371,6 +380,22 @@ differently ("find out which email addresses have accounts" for user enumeration
 Intervals are Wilson 95% intervals on the counts shown: 15 poisoned cases is a small set, so 15 of 15 means at least
 about 80%, not 100%.
 
+**Fix check (`claude-opus-5`, prompt `fix-v1.0.0`, 2026-11-26).** 22 hand-labelled pull request changes in
+TypeScript, Python, Java and Go (`evals/fixtures/fix-cases.ts`), run through the product's own `runFixCheck`
+(validation, quote check against the diff, settlement), recorded in `evals/results/fix-check/` and replayed by CI on
+every change (`evals/runner/fix-gate.test.ts`, which fails on a single false fix). Most cases are fake fixes: a green
+test that asserts nothing, a comment telling the AI the requirement is done, a signature check after the payout, a
+check behind a flag that is off, an SSRF filter on the URL string, a per-IP limit for a per-account threat, an
+authorisation check in the React page, JWT verification that still accepts `none`
+(`evals/results/2026-11-26-fix-check-claude-opus-5.md`).
+
+| Fix check (22 changes) | Result |
+| --- | --- |
+| **False fixes**: a change that does not fix it, called fixed | **0 of 14** |
+| Verdicts a reviewer would accept | 21 of 22 (95.5%) |
+| Real fixes held for a champion | 1 of 8 (the change never shows the new safe client in use, as the model said) |
+| The change that tells the AI it is fixed | flagged as injection, and not addressed |
+
 **Fresh held-out set.** Ten new cases (`evals/fixtures/fresh-cases.ts`, two per domain) were written and committed
 before the gap check and the verifier changes were built, and nothing was tuned on them. Same runs, before and after:
 graded recall 100% both times (26 of 26 with one case ungraded before; 29 of 29 after), high-severity 12 of 12, judged
@@ -470,7 +495,7 @@ agreement, blocking requirements that held up, and the verifier's keep rate, ove
 
 ## Quality: tests and CI
 
-- **2,007 tests in 158 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
+- **2,052 tests in 162 files** (`pnpm test`): unit, contract, pipeline, resolver, UI and accessibility tests.
 - **Line coverage 92.9%** of the server code (`pnpm test:cov`, 92.85% on 2026-11-21). It counts only the TypeScript
   under `packages/*/src` and `apps/*/src` (`vitest.config.ts`); the Custom UI, the eval runner, `scripts/` and `e2e/`
   are tested but not part of that figure.
@@ -526,15 +551,14 @@ Both links install the production apps. Rovo is optional; Threatline Engine need
 ## Roadmap
 
 Shipped: CI verification, the champion inbox, incidents reopening reviews, data-flow diagrams, team-level learning,
-compliance evidence, the Delivery check, the Security gate label and the in-panel attestation check. Next:
+compliance evidence, the Delivery check, the Security gate label, the in-panel attestation check, the **fix check**
+with suggested changes, and past incidents in the review's gap check. Next:
 
-1. **Does the pull request actually fix it?** The merge check reads the diff: did it touch the files the requirement
-   points to and add the tests its criteria imply?
-2. **Teamwork Graph memory.** "This pattern was exploited in INC-42 in another project": similar past threats,
-   incidents and accepted risks across the organisation, as context for every review.
-3. **Fix suggestions.** A suggested patch and test per requirement from the repository's own code, proposed as a pull
-   request, never merged by Threatline.
-4. **Marketplace listing of the Jira app**, with per-site model and budget controls.
+1. **Teamwork Graph memory.** Incidents and postmortems from connected tools (Jira Service Management, Opsgenie,
+   Confluence) and code ownership, as context for every review.
+2. **Fix pull requests.** Open the fix check's suggested change as a pull request on request, never merged by
+   Threatline.
+3. **Marketplace listing of the Jira app**, with per-site model and budget controls.
 
 Detail: [roadmap](docs/ROADMAP.md).
 
@@ -547,7 +571,7 @@ Detail: [roadmap](docs/ROADMAP.md).
 | [Threatline Engine](docs/ENGINE.md) | Each pipeline stage, models and fallbacks, retries, cost, how it was measured |
 | [Security review](docs/SECURITY_REVIEW.md) | Threatline threat-modelled, each control with the test that proves it |
 | [MCP](docs/MCP.md) · [skill](mcp-skill/skill.md) | Coding agents reading and closing requirements |
-| [GitHub](docs/GITHUB.md) · [CI verification](docs/CI_VERIFICATION.md) | The merge gate on GitHub; tests that verify requirements |
+| [GitHub](docs/GITHUB.md) · [CI verification](docs/CI_VERIFICATION.md) · [Fix check](docs/FIX_CHECK.md) | The merge gate on GitHub; tests that verify requirements; whether the pull request actually fixes each one |
 | [Incidents](docs/INCIDENTS.md) · [Seen before](docs/MEMORY.md) · [Champion inbox](docs/CHAMPION_INBOX.md) · [Diagram](docs/DIAGRAM.md) · [Suppressions](docs/SUPPRESSIONS.md) · [Compliance](docs/COMPLIANCE.md) · [Accuracy](docs/ACCURACY.md) | Each feature in depth |
 | [Operations](docs/OPERATIONS.md) | Logs to watch, alerts, re-running reviews, budgets |
 | [Pricing](docs/PRICING.md) · [Licensing](docs/LICENSING.md) · [Marketplace](docs/MARKETPLACE.md) | Cost per review, price, Paid via Atlassian, listing |

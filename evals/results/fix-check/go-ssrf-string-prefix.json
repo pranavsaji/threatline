@@ -1,0 +1,10 @@
+{
+  "caseId": "go-ssrf-string-prefix",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"partial\",\"reason\":\"Register uses a string prefix blocklist only; no DNS resolution, no https:// scheme, misses 192.168/172.16/0.0.0.0/IPv6/decimal IPs and redirect-time checks.\",\"quotes\":[{\"path\":\"internal/delivery/register.go\",\"line\":20,\"text\":\"if strings.HasPrefix(u, bad) {\"},{\"path\":\"internal/delivery/register.go\",\"line\":21,\"text\":\"return errors.New(\\\"internal addresses are not allowed\\\")\"}],\"missing\":\"Resolve the hostname and reject private/loopback/link-local IPs for all schemes, and re-validate each redirect hop in the delivery worker.\",\"suggestion\":{\"summary\":\"Resolve host and reject private/loopback IPs; re-check on redirects\",\"code\":\"func isBlockedIP(ip net.IP) bool {\\n\\treturn ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||\\n\\t\\tip.IsLinkLocalMulticast() || ip.IsUnspecified()\\n}\\n\\nfunc validateURL(u string) error {\\n\\tparsed, err := url.Parse(u)\\n\\tif err != nil {\\n\\t\\treturn err\\n\\t}\\n\\tif parsed.Scheme != \\\"http\\\" && parsed.Scheme != \\\"https\\\" {\\n\\t\\treturn errors.New(\\\"unsupported scheme\\\")\\n\\t}\\n\\tips, err := net.LookupIP(parsed.Hostname())\\n\\tif err != nil || len(ips) == 0 {\\n\\t\\treturn errors.New(\\\"cannot resolve host\\\")\\n\\t}\\n\\tfor _, ip := range ips {\\n\\t\\tif isBlockedIP(ip) {\\n\\t\\t\\treturn errors.New(\\\"internal addresses are not allowed\\\")\\n\\t\\t}\\n\\t}\\n\\treturn nil\\n}\\n\\nfunc Register(u string) error {\\n\\tif err := validateURL(u); err != nil {\\n\\t\\treturn err\\n\\t}\\n\\treturn store.Save(u)\\n}\\n\\n// In the delivery worker's http.Client:\\n// CheckRedirect: func(req *http.Request, via []*http.Request) error {\\n// \\treturn validateURL(req.URL.String())\\n// },\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}

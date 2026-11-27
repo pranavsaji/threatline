@@ -6,6 +6,15 @@ import { buildReviewContext, renderReviewContext } from './review-context.js';
 import type { Sample } from './ports.js';
 import { severityOf } from './threats/severity.js';
 
+/**
+ * The past incidents in the review context (the gatherer adds those linked to the work item or on its components, and
+ * only those the person who caused the review may open): their keys, for the gap check's incident step.
+ */
+export function pastIncidentKeys(bundle: Pick<ContextBundle, 'facts'>): string[] {
+  const keys = bundle.facts.filter((f) => f.sourceType === 'incident').map((f) => /\b([A-Z][A-Z0-9_]{0,254}-\d{1,18}):/.exec(f.title)?.[1]);
+  return [...new Set(keys.filter((k): k is string => !!k))];
+}
+
 /** Threats a reviewer sees on the review (what the gap check is told the first review agreed on). */
 const shown = (t: Threat) => t.state === 'accepted' || t.state === 'needs_human';
 
@@ -32,6 +41,7 @@ export async function engineGapCheck(
     context,
     found: threats.filter(shown).map((t) => item(t, t.severity)),
     minority: minorityThreats(samples).slice(0, 12).map((t) => item(t)),
+    incidents: pastIncidentKeys(bundle),
   });
   const req = { ...p, purpose: 'gaps' as const, tier: 'deep' as const, maxOutputTokens: 2500 + 1500 * MAX_GAP_THREATS };
   const r = await callText(deps, usage, req);

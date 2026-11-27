@@ -49,7 +49,7 @@ describe('actionReportConfig (the action inputs threatline-url, threatline-token
   const set = { url: 'https://x/ci', token: TOKEN, junit: 'reports/*.xml' };
   it('is off when none is set, and refuses a partial setup', () => {
     expect(actionReportConfig({}, env, {})).toEqual({ ok: true, value: null });
-    expect(actionReportConfig({ url: 'https://x/ci' }, env, {})).toMatchObject({ ok: false, message: expect.stringMatching(/all of/) });
+    expect(actionReportConfig({ url: 'https://x/ci' }, env, {})).toMatchObject({ ok: false, message: expect.stringMatching(/set threatline-url, threatline-token/) });
   });
   it('finds the work item like the merge gate (title and branch), with the head commit and the run link', () => {
     const r = actionReportConfig(set, { ...env, GITHUB_RUN_ATTEMPT: '2' }, { pull_request: { title: 'PAY-7 Verify signatures', head: { ref: 'fix_PAY-8', sha: 'c'.repeat(40) } } });
@@ -192,5 +192,52 @@ describe('cliReportConfig (scripts/threatline-ci-report.mjs)', () => {
   });
   it('a standard in the branch is not a work item', () => {
     expect(cliReportConfig(['--junit', 'r.xml'], { ...base, GITHUB_REF_NAME: 'PAY-9-sha-256-CVE-2025-1234' })).toMatchObject({ ok: true, value: { issueKeys: ['PAY-9'] } });
+  });
+});
+
+describe('fix check (docs/FIX_CHECK.md): sending the change', () => {
+  const DIFF = 'diff --git a/src/refund.ts b/src/refund.ts\n--- a/src/refund.ts\n+++ b/src/refund.ts\n@@ -1 +1,2 @@\n a\n+verify(sig)\ndiff --git a/pnpm-lock.yaml b/pnpm-lock.yaml\n--- a/pnpm-lock.yaml\n+++ b/pnpm-lock.yaml\n@@ -1 +1 @@\n-x\n+y\n';
+  const checking = (b: Record<string, unknown>) => answer(200, { result: 'recorded', verdict: 'block', fixCheck: 'checking', message: 'm', got: b.diff });
+
+  it('the action needs a pull request event, and takes the base commit and the pull request link from it', () => {
+    const env = { GITHUB_REPOSITORY: 'acme/payments', GITHUB_RUN_ID: '42', GITHUB_WORKSPACE: '/w' };
+    const set = { url: 'https://x/ci', token: TOKEN, fixCheck: 'true' };
+    expect(actionReportConfig(set, env, {})).toMatchObject({ ok: false, message: expect.stringMatching(/pull_request/) });
+    const pr = { pull_request: { title: 'PAY-7 fix', html_url: 'https://github.com/acme/payments/pull/9', head: { ref: 'b', sha: 'c'.repeat(40) }, base: { sha: 'd'.repeat(40) } } };
+    expect(actionReportConfig(set, env, pr)).toMatchObject({ ok: true, value: { junit: '', fixCheck: { base: 'd'.repeat(40), prUrl: 'https://github.com/acme/payments/pull/9' } } });
+    expect(actionReportConfig({ ...set, fixCheck: 'yes' }, env, pr)).toMatchObject({ ok: false });
+  });
+  it('sends git diff base...head without generated files, and says the check is running', async () => {
+    const root = workspace({});
+    const seen: string[][] = [];
+    const { f, calls } = fakeFetch(checking);
+    const r = await runCiReport(input(root, { junit: '', fixCheck: { base: 'd'.repeat(40), prUrl: 'https://github.com/acme/payments/pull/9' }, git: (a) => (seen.push(a), DIFF), fetch: f }));
+    expect(r.success).toBe(true);
+    expect(seen[0]).toEqual(['diff', '--no-color', '--no-ext-diff', '--find-renames', '--unified=3', `${'d'.repeat(40)}...${SHA.toLowerCase()}`]);
+    expect(calls[0]!.body).toMatchObject({ results: [], prUrl: 'https://github.com/acme/payments/pull/9' });
+    expect(calls[0]!.body.diff).toContain('+verify(sig)');
+    expect(calls[0]!.body.diff).not.toContain('pnpm-lock');
+    expect(r.lines.join('\n')).toMatch(/left out 1 file\(s\): pnpm-lock.yaml/);
+    expect(r.lines.join('\n')).toMatch(/checking whether this change fixes/);
+  });
+  it('fails with a fix when the base is not fetched', async () => {
+    const r = await runCiReport(input(workspace({}), { junit: '', fixCheck: { base: 'd'.repeat(40) }, git: () => { throw new Error('bad revision'); } }));
+    expect(r).toMatchObject({ success: false, message: expect.stringMatching(/fetch-depth: 0/) });
+  });
+  it('never drops test results for the change: the change is cut at whole files to fit', async () => {
+    const big = Array.from({ length: 40 }, (_, n) => `diff --git a/f${n}.ts b/f${n}.ts\n--- a/f${n}.ts\n+++ b/f${n}.ts\n@@ -0,0 +1 @@\n+${'x'.repeat(9000)}\n`).join('');
+    const root = workspace({ 'reports/a.xml': suite(`<testcase name="${A} ok"/>`) });
+    const { f, calls } = fakeFetch(checking);
+    const r = await runCiReport(input(root, { fixCheck: { base: 'd'.repeat(40) }, git: () => big, fetch: f }));
+    expect(r.success).toBe(true);
+    expect(calls[0]!.body.results).toHaveLength(1);
+    expect(Buffer.byteLength(JSON.stringify(calls[0]!.body))).toBeLessThanOrEqual(256 * 1024);
+    expect((calls[0]!.body.diff as string).length).toBeGreaterThan(100_000);
+  });
+  it('the Bitbucket script: --fix-check uses the pull request destination commit and builds the link', () => {
+    const env = { THREATLINE_URL: 'https://x/ci', THREATLINE_TOKEN: TOKEN, BITBUCKET_REPO_FULL_NAME: 'acme/payments', BITBUCKET_BUILD_NUMBER: '7', BITBUCKET_COMMIT: SHA, BITBUCKET_BRANCH: 'PAY-7-fix', BITBUCKET_PR_DESTINATION_COMMIT: 'abc123def456', BITBUCKET_PR_ID: '3' };
+    expect(cliReportConfig(['--fix-check'], env)).toMatchObject({ ok: true, value: { junit: '', fixCheck: { base: 'abc123def456', prUrl: 'https://bitbucket.org/acme/payments/pull-requests/3' } } });
+    expect(cliReportConfig(['--fix-check'], { ...env, BITBUCKET_PR_DESTINATION_COMMIT: undefined })).toMatchObject({ ok: false, message: expect.stringMatching(/pull-requests pipeline/) });
+    expect(cliReportConfig([], env)).toMatchObject({ ok: false, message: expect.stringMatching(/--fix-check/) });
   });
 });

@@ -1,0 +1,10 @@
+{
+  "caseId": "ts-unrelated",
+  "promptVersion": "fix-v1.0.0",
+  "replies": [
+    {
+      "text": "{\"results\":[{\"id\":\"R1\",\"verdict\":\"not_addressed\",\"reason\":\"onRefund only swaps JSON.parse for parseRefundEvent; no HMAC signature check or 401 branch before payouts.refund, and no signature/secret is read.\",\"quotes\":[],\"missing\":\"HMAC verification of the raw body against the shared secret using a timing-safe compare, returning 401 before payouts.refund.\",\"suggestion\":{\"summary\":\"Verify HMAC of raw body before refunding; reject with 401\",\"code\":\"export async function onRefund(req: Request, res: Response): Promise<void> {\\n  const raw = await readRawBody(req);\\n  const sig = req.header('x-refund-signature') ?? '';\\n  const expected = crypto\\n    .createHmac('sha256', process.env.REFUND_WEBHOOK_SECRET!)\\n    .update(raw)\\n    .digest('hex');\\n  const sigBuf = Buffer.from(sig, 'utf8');\\n  const expBuf = Buffer.from(expected, 'utf8');\\n  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {\\n    res.status(401).end();\\n    return;\\n  }\\n  const event = parseRefundEvent(raw);\\n  await payouts.refund(event.orderId, event.amount);\\n}\"}}]}",
+      "modelId": "claude-opus-5"
+    }
+  ]
+}
